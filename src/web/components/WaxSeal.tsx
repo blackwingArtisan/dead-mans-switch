@@ -84,20 +84,15 @@ export function WaxSeal({ size = 96, mark, tone = 'oxblood', cracked = false, cl
         <circle cx="50" cy="50" r="33" fill="none" stroke={lo} strokeWidth="1.6" opacity="0.8" />
         <circle cx="50" cy="50" r="29" fill="none" stroke={hi} strokeWidth="0.7" opacity="0.5" strokeDasharray="1.5 2.2" />
         {mark ? (
-          <text
-            x="50"
-            y="51"
-            textAnchor="middle"
-            dominantBaseline="central"
-            fontFamily="'Cinzel Decorative', 'Cormorant Garamond', serif"
-            fontWeight="700"
-            fontSize={mark.length > 1 ? 22 : 34}
-            fill={lo}
-            stroke={hi}
-            strokeWidth="0.6"
-          >
-            {mark}
-          </text>
+          <g fontFamily="'Cinzel Decorative', 'Cormorant Garamond', serif" fontWeight="700" fontSize={mark.length > 1 ? 24 : 36} textAnchor="middle" dominantBaseline="central">
+            {/* a pale offset under the mark reads as the lit edge of a deep impression */}
+            <text x="50.9" y="52" fill={hi} opacity="0.75">
+              {mark}
+            </text>
+            <text x="50" y="51" fill={lo}>
+              {mark}
+            </text>
+          </g>
         ) : (
           <g fill={lo} stroke={hi} strokeWidth="0.5">
             {/* candle sigil */}

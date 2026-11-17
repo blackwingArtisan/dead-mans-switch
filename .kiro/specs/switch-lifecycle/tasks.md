@@ -46,9 +46,10 @@
   - [x] 7.2 Check-in during grace cancels (Req 4.1)
   - [x] 7.3 Vault-custody link opens on its own (Req 3.2)
   - [x] 7.4 Landing and honest page on desktop and mobile, no horizontal scroll (Req 10.2, 10.5)
+  - [x] 7.5 Production adapters (KvStore, ResendMailer) and the Worker entry tested against in-memory fakes, no network
+  - [x] 7.6 Automated accessibility audit (axe, WCAG 2.2 AA) on every page and state in the e2e suite (Req 10.1)
 
 - [ ] 8. Hardening (next)
-  - [ ] 8.1 Automated accessibility audit (axe) in the e2e suite (Req 10.1)
-  - [ ] 8.2 Durable Object per vigil to serialise concurrent writes in production
-  - [ ] 8.3 Rate limiting on token routes in the Worker
-  - [ ] 8.4 Optional Shamir split of the vault half across witnesses
+  - [ ] 8.1 Durable Object per vigil to serialise concurrent writes in production
+  - [ ] 8.2 Rate limiting on token routes in the Worker
+  - [ ] 8.3 Optional Shamir split of the vault half across witnesses

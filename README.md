@@ -48,13 +48,13 @@ Local data lives in `./data` (`vaults.json`, `outbox.json`, `clock.json`). Delet
 ## Test it
 
 ```bash
-npm test              # Vitest: state machine, crypto, full API lifecycle
+npm test              # Vitest: state machine, crypto, full API lifecycle, production adapters and Worker (with fakes)
 npm run e2e           # Playwright: builds and starts a fresh server on :3142, drives real browsers
 npm run typecheck     # web + server, and the Cloudflare Worker against Workers types
 npm run check         # all of the above plus a production build
 ```
 
-The end-to-end suite writes a letter, fast-forwards past the grace period, confirms as a witness in a separate browser, opens the letter as the recipient in a fresh browser with a pasted keepsake, and checks the link refuses a second opening. It also covers a check-in during grace, a vault-custody link, and mobile layout.
+The end-to-end suite writes a letter, fast-forwards past the grace period, confirms as a witness in a separate browser, opens the letter as the recipient in a fresh browser with a pasted keepsake, and checks the link refuses a second opening. It also covers a check-in during grace, a vault-custody link, mobile layout, and an axe WCAG 2.2 AA audit of every page and state.
 
 ## Architecture
 

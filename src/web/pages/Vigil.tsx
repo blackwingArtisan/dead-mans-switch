@@ -323,8 +323,10 @@ function Witnesses({ vault, onChange }: { vault: VaultView; onChange: (v: VaultV
       <ul className="people">
         {vault.witnesses.map((w) => (
           <li key={w.id} className="people__row">
-            <span className="people__name">{w.name}</span>
-            <span className="people__email">{w.email}</span>
+            <span className="people__who">
+              <span className="people__name">{w.name}</span>
+              <span className="people__email">{w.email}</span>
+            </span>
             {w.asked && <span className={`tag tag--${w.response}`}>{w.response === 'pending' ? 'asked' : w.response}</span>}
             {live && (
               <button
