@@ -1,0 +1,47 @@
+{
+  "name": "dead-mans-switch",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Letters for the people you love, sealed until you can no longer check in.",
+  "license": "MIT",
+  "author": "Stubborn Otter Software",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "node scripts/dev.mjs",
+    "dev:api": "tsx watch src/server/node.ts",
+    "dev:web": "vite",
+    "build": "vite build",
+    "start": "tsx src/server/node.ts",
+    "demo": "npm run build && npm start",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "e2e": "playwright test",
+    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.worker.json --noEmit",
+    "check": "npm run typecheck && npm test && npm run build && npm run e2e"
+  },
+  "dependencies": {
+    "@fontsource/cinzel-decorative": "^5.3.0",
+    "@fontsource/cormorant-garamond": "^5.3.0",
+    "@fontsource/im-fell-english": "^5.3.0",
+    "@hono/node-server": "^2.1.8",
+    "dompurify": "^3.4.18",
+    "hono": "^4.13.19",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^5.20261117.1",
+    "@playwright/test": "^1.65.1",
+    "@types/node": "^26.6.6",
+    "@types/react": "^18.3.31",
+    "@types/react-dom": "^18.3.7",
+    "@vitejs/plugin-react": "^6.3.0",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.8",
+    "vitest": "^5.1.0"
+  }
+}

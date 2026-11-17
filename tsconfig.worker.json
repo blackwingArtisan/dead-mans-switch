@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2023"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "isolatedModules": true,
+    "skipLibCheck": true,
+    "types": ["@cloudflare/workers-types"],
+    "noEmit": true
+  },
+  "include": ["src/worker", "src/core", "src/server/app.ts", "src/server/service.ts", "src/server/emails.ts", "src/server/ports.ts", "src/server/adapters/clocks.ts", "src/server/adapters/kv-store.ts", "src/server/adapters/mailers.ts"]
+}

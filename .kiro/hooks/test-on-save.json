@@ -1,0 +1,13 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Run unit tests on save",
+      "description": "Keeps the state machine, crypto and API green while editing source or tests.",
+      "trigger": "PostFileSave",
+      "matcher": "^(src|tests/unit)/.*\\.(ts|tsx)$",
+      "action": { "type": "command", "command": "npm test --silent" },
+      "timeout": 120
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+# Cloudflare Workers (free plan). Not deployed from this repo by default.
+name = "dead-mans-switch"
+main = "src/worker/index.ts"
+compatibility_date = "2026-11-01"
+
+[assets]
+directory = "dist/web"
+binding = "ASSETS"
+not_found_handling = "single-page-application"
+
+[[kv_namespaces]]
+binding = "DMS_KV"
+id = "replace-with-your-kv-namespace-id"
+
+[triggers]
+crons = ["*/15 * * * *"]
+
+[vars]
+DMS_BASE_URL = "https://dead-mans-switch.example.workers.dev"
+DMS_MAIL_FROM = "Dead Man's Switch <switch@example.com>"
+# RESEND_API_KEY is a secret: wrangler secret put RESEND_API_KEY

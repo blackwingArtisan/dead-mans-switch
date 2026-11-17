@@ -1,0 +1,22 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Typecheck and test before finishing",
+      "description": "Before the agent stops, type-check web, server and worker, then run the unit suite.",
+      "trigger": "Stop",
+      "action": { "type": "command", "command": "npm run typecheck && npm test --silent" },
+      "timeout": 300
+    },
+    {
+      "name": "Security review of crypto changes",
+      "description": "Reminds the agent of the key-custody rules whenever crypto code changes.",
+      "trigger": "PostFileSave",
+      "matcher": "src/core/crypto\\.ts$",
+      "action": {
+        "type": "agent",
+        "prompt": "You just edited the letter crypto. Re-check: AES-GCM 256 only, a fresh random 96-bit IV per encryption, the full letter key never leaves the browser, key halves are never logged, and tests/unit/crypto.test.ts still covers round-trip, tamper and wrong-half cases."
+      }
+    }
+  ]
+}

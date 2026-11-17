@@ -1,0 +1,229 @@
+import DOMPurify from 'dompurify';
+import { useEffect, useMemo, useState, type FormEvent } from 'react';
+import { keepsakeTagOf, openLetter } from '../../core/crypto';
+import { fromBase32, toBase64Url } from '../../core/encoding';
+import type { LetterContent } from '../../core/types';
+import { api, keepsakes, type OpenInfo } from '../lib/api';
+import { longDate } from '../lib/format';
+import { Shell } from '../components/Chrome';
+import { WaxSeal } from '../components/WaxSeal';
+
+const ALLOWED_TAGS = ['p', 'br', 'strong', 'b', 'em', 'i', 'u', 'h2', 'h3', 'blockquote', 'ul', 'ol', 'li', 'div', 'span'];
+
+/** Accepts a whole keepsake link, a bare base64url half, or a printed base32 code. */
+export function parseKeepsake(input: string): string | null {
+  const text = input.trim();
+  if (!text) return null;
+  const fragment = text.includes('#') ? text.slice(text.indexOf('#') + 1) : null;
+  if (fragment) {
+    const k = new URLSearchParams(fragment).get('k');
+    if (k) return k;
+  }
+  if (/^[A-Za-z0-9_-]{43}$/.test(text)) return text;
+  try {
+    return toBase64Url(fromBase32(text, 32));
+  } catch {
+    return null;
+  }
+}
+
+function download(content: LetterContent, info: OpenInfo, safeHtml: string): void {
+  const doc = `<!doctype html><html><head><meta charset="utf-8"><title>${escape(content.title || `A letter from ${info.authorName}`)}</title>
+<style>body{font-family:Georgia,serif;max-width:640px;margin:48px auto;padding:0 20px;line-height:1.7;color:#2b1d12;background:#f4ead4}h1{font-weight:normal}blockquote{border-left:3px solid #8e1b1b;margin-left:0;padding-left:16px;font-style:italic}.from{margin-top:40px;font-style:italic}</style></head>
+<body><h1>${escape(content.title || `A letter from ${info.authorName}`)}</h1>${safeHtml}<p class="from">${escape(content.from || info.authorName)}</p>
+<p style="color:#7a6a55;font-size:13px;margin-top:48px">Sealed ${escape(longDate(info.sealedAt))}. Opened ${escape(longDate(Date.now()))}.</p></body></html>`;
+  const url = URL.createObjectURL(new Blob([doc], { type: 'text/html' }));
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `letter-from-${info.authorName.toLowerCase().replace(/[^a-z0-9]+/g, '-')}.html`;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function escape(text: string): string {
+  return text.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
+}
+
+export function Open({ token, hash }: { token: string; hash: string }) {
+  const fromLink = useMemo(() => new URLSearchParams(hash.replace(/^#/, '')).get('k'), [hash]);
+  const [info, setInfo] = useState<OpenInfo | null>(null);
+  const [error, setError] = useState('');
+  const [typed, setTyped] = useState('');
+  const [half, setHalf] = useState<string | null>(fromLink);
+  const [stage, setStage] = useState<'sealed' | 'breaking' | 'open'>('sealed');
+  const [letter, setLetter] = useState<LetterContent | null>(null);
+
+  useEffect(() => {
+    // Keep the key half out of browser history once it has been read.
+    if (fromLink) window.history.replaceState({}, '', window.location.pathname);
+    api.openInfo(token).then(
+      (i) => {
+        setInfo(i);
+        if (fromLink) keepsakes.save(i.letterId, fromLink);
+        else {
+          const remembered = keepsakes.get(i.letterId);
+          if (remembered) setHalf(remembered);
+        }
+      },
+      (err) => setError(err instanceof Error ? err.message : 'This link could not be read.'),
+    );
+  }, [token, fromLink]);
+
+  const safeHtml = useMemo(
+    () => (letter ? DOMPurify.sanitize(letter.html, { ALLOWED_TAGS, ALLOWED_ATTR: [] }) : ''),
+    [letter],
+  );
+
+  const breakSeal = async (e?: FormEvent) => {
+    e?.preventDefault();
+    if (!info) return;
+    setError('');
+    const k = half ?? parseKeepsake(typed);
+    if (!k) {
+      setError('That does not look like a keepsake. Paste the whole keepsake link, or type the code exactly as printed.');
+      return;
+    }
+    if (info.keepsakeTag && (await keepsakeTagOf(k)) !== info.keepsakeTag) {
+      setError('That keepsake belongs to a different letter. Nothing has been opened, so you can try another.');
+      setHalf(null);
+      return;
+    }
+    setStage('breaking');
+    try {
+      const sealed = await api.breakSeal(token);
+      const content = await openLetter(sealed.letterId, sealed, k);
+      const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+      await new Promise((r) => setTimeout(r, reduce ? 0 : 1300));
+      setLetter(content);
+      setStage('open');
+    } catch (err) {
+      setStage('sealed');
+      setError(err instanceof Error ? err.message : 'The seal would not break.');
+    }
+  };
+
+  if (!info) {
+    return (
+      <Shell>
+        {error ? (
+          <section className="notice">
+            <WaxSeal size={96} tone="ink" cracked />
+            <h1 className="display display--md">This link is not valid</h1>
+            <p className="lede">{error}</p>
+          </section>
+        ) : (
+          <p className="loading" role="status">
+            Fetching the envelope…
+          </p>
+        )}
+      </Shell>
+    );
+  }
+
+  if (stage === 'open' && letter) {
+    return (
+      <Shell>
+        <article className="letter" aria-labelledby="letter-title" data-testid="opened-letter">
+          <div className="letter__seal-halves" aria-hidden="true">
+            <WaxSeal size={84} cracked mark={info.authorName.trim()[0]} />
+          </div>
+          <div className="letter__page parchment">
+            <p className="letter__eyebrow">
+              From {info.authorName} · sealed {longDate(info.sealedAt)}
+            </p>
+            <h1 id="letter-title" className="letter__title">
+              {letter.title || `For ${info.recipientName}`}
+            </h1>
+            <div className="letter__body" dangerouslySetInnerHTML={{ __html: safeHtml }} />
+            {letter.from && <p className="letter__from">{letter.from}</p>}
+          </div>
+          <div className="letter__after">
+            <p className="hint">This link opened once. The vault has now forgotten its copy, so keep your own.</p>
+            <div className="letter__actions">
+              <button type="button" className="btn btn--wax" onClick={() => download(letter, info, safeHtml)}>
+                Keep this letter (download)
+              </button>
+              <button type="button" className="btn btn--ghost" onClick={() => window.print()}>
+                Print
+              </button>
+            </div>
+          </div>
+        </article>
+      </Shell>
+    );
+  }
+
+  if (info.opened) {
+    return (
+      <Shell>
+        <section className="notice">
+          <WaxSeal size={110} cracked mark={info.authorName.trim()[0]} />
+          <h1 className="display display--md">This seal has already been broken</h1>
+          <p className="lede">
+            The letter from {info.authorName} was opened on {info.openedAt ? longDate(info.openedAt) : 'an earlier day'}. Each letter opens
+            once, and the vault forgot its copy afterwards. If you saved or printed it then, that copy is the letter.
+          </p>
+        </section>
+      </Shell>
+    );
+  }
+
+  const needsKeepsake = info.custody === 'keepsake' && !half;
+
+  return (
+    <Shell>
+      <section className={`envelope-stage envelope-stage--${stage}`} aria-labelledby="open-title">
+        <div className="big-envelope" aria-hidden="true">
+          <div className="big-envelope__back" />
+          <div className="big-envelope__flap" />
+          <div className="big-envelope__seal">
+            <WaxSeal size={120} mark={info.authorName.trim()[0]} cracked={stage === 'breaking'} />
+          </div>
+        </div>
+        <p className="eyebrow">For {info.recipientName}</p>
+        <h1 id="open-title" className="display display--md">
+          A letter from {info.authorName}
+        </h1>
+        <p className="lede">
+          Sealed {longDate(info.sealedAt)}. {info.authorName.split(' ')[0]} asked that it reach you only if they could no longer check in.
+          We are sorry to be the ones to bring it.
+        </p>
+
+        <form className="form open-form" onSubmit={breakSeal}>
+          {needsKeepsake ? (
+            <div className="field">
+              <label htmlFor="keepsake-input">Your keepsake</label>
+              <input
+                id="keepsake-input"
+                value={typed}
+                onChange={(e) => setTyped(e.target.value)}
+                placeholder="Paste the keepsake link, or type the code"
+                aria-describedby="keepsake-hint"
+                autoComplete="off"
+                spellCheck={false}
+              />
+              <p id="keepsake-hint" className="hint">
+                {info.authorName.split(' ')[0]} gave you a keepsake ahead of time: a link, or a code on a printed card. It is the other
+                half of this letter’s key.
+              </p>
+            </div>
+          ) : (
+            <p className="hint" data-testid="keepsake-ready">
+              {info.custody === 'vault' ? 'This link carries its own key.' : 'Your keepsake was found on this device.'} The letter is
+              decrypted here, in your browser.
+            </p>
+          )}
+          {error && (
+            <p className="form-error" role="alert">
+              {error}
+            </p>
+          )}
+          <button type="submit" className="btn btn--wax btn--large" disabled={stage === 'breaking'} data-testid="break-seal">
+            {stage === 'breaking' ? 'The wax gives way…' : 'Break the seal'}
+          </button>
+          <p className="hint">The link opens once. When the letter appears, save a copy.</p>
+        </form>
+      </section>
+    </Shell>
+  );
+}
