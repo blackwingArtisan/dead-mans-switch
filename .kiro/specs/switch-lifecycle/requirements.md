@@ -114,6 +114,8 @@ Terms used below:
 1. WHERE the server runs with the machine clock and the outbox mailer THE SYSTEM SHALL expose a time machine that advances the clock by days or jumps to the next scheduled event, then runs the scheduler.
 2. THE SYSTEM SHALL record every email in a local outbox with clickable links, and send nothing over the network.
 3. WHERE the server runs with the real clock or a real mailer THE SYSTEM SHALL NOT expose the time machine, the outbox or the reset routes.
+4. THE SYSTEM SHALL use the real clock unless the operator explicitly asks for the time machine.
+5. IF the time machine is requested for a base URL that is not a localhost origin THEN THE SYSTEM SHALL refuse to start.
 
 ## Requirement 10: Accessible gothic interface
 
@@ -125,3 +127,12 @@ Terms used below:
 3. WHILE the user prefers reduced motion THE SYSTEM SHALL disable flicker, embers and seal animations.
 4. THE SYSTEM SHALL state every state, deadline and consequence in text, never only through imagery.
 5. THE SYSTEM SHALL lay out without horizontal scrolling at 360 px wide.
+
+## Requirement 11: Response hardening
+
+**User story:** As a recipient opening a letter, I want the page that decrypts it to be locked down, so that a flaw in the letter's HTML cannot leak my keepsake or the letter.
+
+#### Acceptance criteria
+1. THE SYSTEM SHALL send a Content-Security-Policy that allows scripts only from its own origin, blocks plugins, forbids framing and limits network requests to its own origin, on every response.
+2. THE SYSTEM SHALL send `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff` and `Referrer-Policy: no-referrer` on every response.
+3. WHEN one client exceeds the request limit on witness or letter links within a window THE SYSTEM SHALL answer 429 with a `Retry-After` header until the window passes.

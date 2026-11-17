@@ -16,7 +16,7 @@ inclusion: always
 | `VaultStore` | `MemoryStore`, optionally persisted to a JSON file | `KvStore` on Workers KV |
 | `Mailer` | `OutboxMailer` writing to a local outbox | `ResendMailer` over HTTPS |
 
-Selection is by env var: `DMS_CLOCK`, `DMS_STORE`, `DMS_MAILER`. Defaults are always the free local implementations. Tests never call a paid or networked service.
+Selection is by env var: `DMS_CLOCK`, `DMS_STORE`, `DMS_MAILER`. Store and mail default to the free local implementations. The clock defaults to the system clock; the time machine is opt-in (`--time-machine`) because its routes act on every vault. Tests never call a paid or networked service.
 
 ## Rules
 - The switch state machine is a **pure function**: `(vault, event, now) -> { vault, effects }`. No I/O inside it. Effects (emails) are performed by the caller.
@@ -24,7 +24,7 @@ Selection is by env var: `DMS_CLOCK`, `DMS_STORE`, `DMS_MAILER`. Defaults are al
 - Crypto uses WebCrypto only (`crypto.subtle`), AES-GCM 256 with a fresh 96-bit IV per encryption. No hand-rolled ciphers. Random bytes from `crypto.getRandomValues`.
 - Never log letter content, keys or key halves. Never send a full letter key to the server.
 - Tokens (owner, witness, open) are 32 random bytes, base64url. Compare in constant time on the server.
-- Decrypted letter HTML is sanitised (DOMPurify) before it is rendered.
+- Decrypted letter HTML is sanitised (DOMPurify) before it is rendered, and every response carries the strict CSP from `src/server/security.ts`. No inline scripts and no third-party origins in the web app.
 - Keep dependencies few and well known.
 
 ## Commands

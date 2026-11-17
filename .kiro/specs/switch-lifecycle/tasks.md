@@ -51,5 +51,8 @@
 
 - [ ] 8. Hardening (next)
   - [ ] 8.1 Durable Object per vigil to serialise concurrent writes in production
-  - [ ] 8.2 Rate limiting on token routes in the Worker
+  - [x] 8.2 Rate limiting on token routes, per process or isolate (Req 11.3)
+  - [x] 8.4 Security headers on every response, including Worker static assets (Req 11.1, 11.2)
+  - [x] 8.5 Time machine opt-in and refused for public origins (Req 9.4, 9.5)
+  - [ ] 8.6 Global rate limit through a Durable Object or Cloudflare's rate-limiting binding
   - [ ] 8.3 Optional Shamir split of the vault half across witnesses

@@ -33,3 +33,7 @@ The two-call budget for this build was spent, so the spec in `.kiro/specs/switch
 ## Lesson
 
 In Kiro CLI 3.x, trust the canonical tool names (`read`, `write`) in `--trust-tools`; the 2.x names alone are not enough in `--no-interactive` mode.
+
+## Hardening pass (no further calls)
+
+The security hardening (CSP and related headers, token-route rate limit, opt-in time machine) was added to the spec as Requirement 11, Requirement 9.4-9.5 and tasks 8.2-8.6. No further `kiro-cli` calls were made: the two-call budget for this build was already spent.

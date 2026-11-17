@@ -118,6 +118,8 @@ describe('Cloudflare Worker entry', () => {
 
     const page = await worker.fetch(new Request('https://switch.example.com/write'), env);
     expect(await page.text()).toContain('static');
+    expect(page.headers.get('Content-Security-Policy')).toContain("frame-ancestors 'none'");
+    expect(page.headers.get('X-Frame-Options')).toBe('DENY');
 
     const created = await worker.fetch(
       new Request('https://switch.example.com/api/vaults', {

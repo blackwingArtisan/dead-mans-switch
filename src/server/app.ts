@@ -5,6 +5,14 @@ import { DAY, HOUR } from '../core/time';
 import { ValidationError } from '../core/vault';
 import type { OutboxMailer } from './adapters/mailers';
 import type { AdjustableClock } from './ports';
+import {
+  DEFAULT_TOKEN_RATE_LIMIT,
+  cloudflareClientKey,
+  rateLimit,
+  securityHeaders,
+  type ClientKey,
+  type RateLimitOptions,
+} from './security';
 import { HttpError, SwitchService, type ServiceDeps } from './service';
 
 export interface DevTools {
@@ -17,6 +25,10 @@ export interface DevTools {
 export interface AppDeps extends ServiceDeps {
   /** Present only locally: the time machine and the outbox. Never in production. */
   dev?: DevTools;
+  /** Limits on the witness and letter-link routes. `false` turns them off. */
+  tokenRateLimit?: RateLimitOptions | false;
+  /** How to identify a client for rate limiting. Defaults to Cloudflare's connecting IP. */
+  clientKey?: ClientKey;
 }
 
 type Vars = { Variables: { vaultId: string } };
@@ -33,11 +45,18 @@ export function createApp(deps: AppDeps) {
     return c.json({ error: 'Something went wrong in the crypt. Please try again.' }, 500);
   });
 
+  app.use('*', securityHeaders());
   app.use('/api/*', async (c, next) => {
     await next();
     c.header('Cache-Control', 'no-store');
-    c.header('Referrer-Policy', 'no-referrer');
   });
+
+  const limits = deps.tokenRateLimit ?? DEFAULT_TOKEN_RATE_LIMIT;
+  if (limits) {
+    const limiter = rateLimit(deps.clock, limits, deps.clientKey ?? cloudflareClientKey);
+    app.use('/api/witness/*', limiter);
+    app.use('/api/open/*', limiter);
+  }
 
   const json = async (c: Context): Promise<Record<string, unknown>> => {
     try {

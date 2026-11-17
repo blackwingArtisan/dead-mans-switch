@@ -4,15 +4,17 @@
  * Env (all optional; defaults are free and local):
  *   PORT            3140
  *   DMS_BASE_URL    http://localhost:$PORT   (used in email links)
- *   DMS_CLOCK       machine | system         (machine = demo time machine)
+ *   DMS_CLOCK       system | machine         (machine = demo time machine; also --time-machine)
  *   DMS_STORE       file | memory            (file = ./data/vaults.json)
  *   DMS_DATA_DIR    ./data
  *   DMS_MAILER      outbox | resend          (outbox = ./data/outbox.json)
  *   RESEND_API_KEY, DMS_MAIL_FROM            (only for DMS_MAILER=resend)
+ *   DMS_TRUST_PROXY 0 | 1                    (1 = rate-limit by X-Forwarded-For)
  */
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { serve } from '@hono/node-server';
+import { getConnInfo } from '@hono/node-server/conninfo';
 import { serveStatic } from '@hono/node-server/serve-static';
 import { createApp } from './app';
 import { MachineClock, SystemClock } from './adapters/clocks';
@@ -27,6 +29,14 @@ const dataDir = resolve(env.DMS_DATA_DIR ?? 'data');
 const useFiles = (env.DMS_STORE ?? 'file') === 'file';
 if (useFiles) mkdirSync(dataDir, { recursive: true });
 
+function isLocalOrigin(url: string): boolean {
+  try {
+    return ['localhost', '127.0.0.1', '[::1]'].includes(new URL(url).hostname);
+  } catch {
+    return false;
+  }
+}
+
 function readJson<T>(file: string, fallback: T): T {
   const path = join(dataDir, file);
   if (!useFiles || !existsSync(path)) return fallback;
@@ -40,7 +50,13 @@ function writeJson(file: string, value: unknown): void {
   if (useFiles) writeFileSync(join(dataDir, file), JSON.stringify(value, null, 2));
 }
 
-const machine = (env.DMS_CLOCK ?? 'machine') === 'machine' ? new MachineClock() : null;
+// The time machine and outbox routes act on every vault, so they are opt-in and local-only.
+const wantMachine = process.argv.includes('--time-machine') || env.DMS_CLOCK === 'machine';
+if (wantMachine && !isLocalOrigin(baseUrl)) {
+  console.error(`Refusing to start the time machine for ${baseUrl}. It is a local demo tool; use DMS_CLOCK=system.`);
+  process.exit(1);
+}
+const machine = wantMachine ? new MachineClock() : null;
 const savedClock = readJson<{ offsetMs: number }>('clock.json', { offsetMs: 0 });
 if (machine && savedClock.offsetMs > 0) machine.advance(savedClock.offsetMs);
 const clock = machine ?? new SystemClock();
@@ -76,7 +92,18 @@ const dev = machine && mailer === outbox
     }
   : undefined;
 
-const { app, service } = createApp({ store, mailer, clock, baseUrl, dev });
+const { app, service } = createApp({
+  store,
+  mailer,
+  clock,
+  baseUrl,
+  dev,
+  // Behind a proxy every client shares its address; set DMS_TRUST_PROXY=1 to key on X-Forwarded-For.
+  clientKey: (c) =>
+    (env.DMS_TRUST_PROXY === '1' ? c.req.header('x-forwarded-for')?.split(',')[0]?.trim() : undefined) ??
+    getConnInfo(c).remote.address ??
+    'anonymous',
+});
 
 const webRoot = resolve(env.DMS_WEB_ROOT ?? 'dist/web');
 if (existsSync(webRoot)) {

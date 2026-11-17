@@ -32,7 +32,7 @@ Requires Node 20 or newer.
 
 ```bash
 npm install
-npm run demo          # builds the web app and serves everything on http://localhost:3140
+npm run demo          # builds the web app and serves everything on http://localhost:3140, time machine on
 ```
 
 Open http://localhost:3140, choose **Try a demo vigil**, then open the **Time machine** (bottom right):
@@ -41,14 +41,16 @@ Open http://localhost:3140, choose **Try a demo vigil**, then open the **Time ma
 3. In the outbox, open **Witness asked** and confirm as the witness.
 4. Open **Letter released** for June (vault custody) and break the seal.
 
-For development with hot reload: `npm run dev` (web on :3141, API on :3140).
+For development with hot reload: `npm run dev` (web on :3141, API on :3140, time machine on).
+
+`npm start` runs the same server the way a deployment would: system clock, no time machine, no demo routes. The time machine is opt-in (`--time-machine` or `DMS_CLOCK=machine`) and the server refuses to start it for anything but a localhost origin.
 
 Local data lives in `./data` (`vaults.json`, `outbox.json`, `clock.json`). Delete the folder or use **Reset the whole demo** to start over.
 
 ## Test it
 
 ```bash
-npm test              # Vitest: state machine, crypto, full API lifecycle, production adapters and Worker (with fakes)
+npm test              # Vitest: state machine, crypto, full API lifecycle, security headers and rate limit, production adapters and Worker (with fakes), Node entry as a CLI
 npm run e2e           # Playwright: builds and starts a fresh server on :3142, drives real browsers
 npm run typecheck     # web + server, and the Cloudflare Worker against Workers types
 npm run check         # all of the above plus a production build
@@ -79,7 +81,7 @@ Each letter gets a random key K. K is split into a keepsake half A (random) and 
 
 | Port | Local (default, free) | Real (written and type-checked, not run in tests) | Env |
 |---|---|---|---|
-| Clock | `MachineClock` (time machine) | `SystemClock` | `DMS_CLOCK=machine\|system` |
+| Clock | `MachineClock` (time machine, opt-in for demos) | `SystemClock` (default) | `DMS_CLOCK=machine\|system`, or `--time-machine` |
 | Store | `MemoryStore` + JSON file | `KvStore` (Workers KV) | `DMS_STORE=file\|memory` |
 | Mail | `OutboxMailer` (local outbox) | `ResendMailer` (HTTPS) | `DMS_MAILER=outbox\|resend` |
 
@@ -95,6 +97,10 @@ Cloudflare Workers free plan: static assets for the web app, one KV namespace, a
 - **Spec** in [`.kiro/specs/switch-lifecycle`](.kiro/specs/switch-lifecycle): EARS requirements, design (with Mermaid state diagram and the key scheme) and the task plan the build followed.
 - **Hooks** in [`.kiro/hooks`](.kiro/hooks): unit tests on every save, typecheck and tests before the agent stops, and a crypto-custody review prompt whenever `src/core/crypto.ts` changes.
 - **[KIRO-LOG.md](KIRO-LOG.md)**: every `kiro-cli` call, its prompt, its output and what was learned.
+
+## Security headers and limits
+
+Every response, including the Worker's static assets, carries a strict Content-Security-Policy (scripts from the same origin only, no plugins, no framing, same-origin network calls), `X-Frame-Options: DENY`, `nosniff`, `no-referrer` and a closed Permissions-Policy. The end-to-end run checks that the policy never blocks the app. Witness and letter links are rate-limited per client (60 a minute, then 429). The limiter lives in memory per process or isolate; a global limit would use a Durable Object.
 
 ## Accessibility
 

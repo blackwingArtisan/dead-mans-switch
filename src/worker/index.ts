@@ -8,6 +8,7 @@ import { createApp } from '../server/app';
 import { SystemClock } from '../server/adapters/clocks';
 import { KvStore } from '../server/adapters/kv-store';
 import { ResendMailer } from '../server/adapters/mailers';
+import { withSecurityHeaders } from '../server/security';
 
 export interface Env {
   DMS_KV: KVNamespace;
@@ -17,20 +18,28 @@ export interface Env {
   DMS_BASE_URL: string;
 }
 
+// One app per isolate, so in-memory state such as the rate limiter survives between requests.
+const apps = new WeakMap<Env, ReturnType<typeof createApp>>();
+
 function build(env: Env) {
-  return createApp({
-    store: new KvStore(env.DMS_KV),
-    mailer: new ResendMailer(env.RESEND_API_KEY, env.DMS_MAIL_FROM),
-    clock: new SystemClock(),
-    baseUrl: env.DMS_BASE_URL,
-  });
+  let built = apps.get(env);
+  if (!built) {
+    built = createApp({
+      store: new KvStore(env.DMS_KV),
+      mailer: new ResendMailer(env.RESEND_API_KEY, env.DMS_MAIL_FROM),
+      clock: new SystemClock(),
+      baseUrl: env.DMS_BASE_URL,
+    });
+    apps.set(env, built);
+  }
+  return built;
 }
 
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
     if (url.pathname.startsWith('/api/')) return build(env).app.fetch(request, env);
-    return env.ASSETS.fetch(request);
+    return withSecurityHeaders(await env.ASSETS.fetch(request));
   },
 
   async scheduled(_controller: ScheduledController, env: Env, ctx: ExecutionContext): Promise<void> {

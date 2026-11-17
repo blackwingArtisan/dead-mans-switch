@@ -29,7 +29,7 @@ flowchart LR
 | `VaultStore` | `MemoryStore`, optionally persisted to `data/vaults.json` | `KvStore` on Workers KV |
 | `Mailer` | `OutboxMailer`: an in-memory list persisted to `data/outbox.json` | `ResendMailer` over HTTPS |
 
-Selection is by env var in `src/server/node.ts` (`DMS_CLOCK`, `DMS_STORE`, `DMS_MAILER`). The Worker in `src/worker/index.ts` always uses the production adapters. Dev routes (`/api/dev/*`) exist only when both the machine clock and the outbox are in use.
+Selection is by env var in `src/server/node.ts` (`DMS_CLOCK`, `DMS_STORE`, `DMS_MAILER`). The Worker in `src/worker/index.ts` always uses the production adapters. Dev routes (`/api/dev/*`) exist only when both the machine clock and the outbox are in use. The machine clock is opt-in (`--time-machine` or `DMS_CLOCK=machine`; `npm run demo` and `npm run dev` pass it), and the Node entry refuses to start it when `DMS_BASE_URL` is not a localhost origin.
 
 ## State machine
 
@@ -123,7 +123,12 @@ Honest limits (also on `/how-it-works`):
 | POST | `/api/open/:token/break` | open link | one-time hand-over of the sealed copy |
 | GET/POST/DELETE | `/api/dev/clock`, `/api/dev/outbox`, `/api/dev/reset` | local only | time machine and outbox |
 
-Errors are JSON `{ error }`: 400 validation, 401 owner token, 404 unknown link, 409 state conflict, 410 spent link.
+Errors are JSON `{ error }`: 400 validation, 401 owner token, 404 unknown link, 409 state conflict, 410 spent link, 429 too many requests.
+
+### Response hardening
+
+- Every response (API, HTML and, on the Worker, static assets) carries `Content-Security-Policy` (`script-src 'self'`, `object-src 'none'`, `base-uri 'none'`, `frame-ancestors 'none'`, same-origin connect, font and image sources), `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `Referrer-Policy: no-referrer`, a closed `Permissions-Policy` and `Cross-Origin-Opener-Policy: same-origin`. This backs up DOMPurify: a sanitiser miss in a released letter still cannot run script or reach another origin. Defined once in `src/server/security.ts`.
+- `/api/witness/*` and `/api/open/*` are rate-limited per client (fixed window, 60 requests a minute by default; 429 with `Retry-After`). The key is the Cloudflare connecting IP on the Worker and the socket address on Node (`DMS_TRUST_PROXY=1` uses `X-Forwarded-For`). The window lives in memory per process or isolate, so it slows guessing and noise rather than guaranteeing a global cap; the 256-bit tokens remain the real defence.
 
 ## Service flow
 
@@ -150,4 +155,6 @@ Every route validates input and returns a message that says what to do. The UI s
 - `tests/unit/machine.test.ts`: every transition, every cancel path, k-of-n, silence window, denial round, pause, idempotence, cascade, guards, purity.
 - `tests/unit/crypto.test.ts`: round trip, no plaintext or key in stored data, fresh IV and key, wrong half, zero half, tamper, AAD binding, malformed keepsakes, keepsake tag, base32 handwriting tolerance.
 - `tests/unit/api.test.ts`: the full lifecycle through HTTP with both custody modes, one-time opening, stand-down, denial, next-event jump, pause, validation and auth.
-- `tests/e2e/*.spec.ts` (Playwright against the built server): write a letter, fast-forward, witness confirms in a separate browser, recipient opens with a pasted keepsake in a fresh browser, link refuses a second opening; check-in during grace; vault-custody link; landing and honest-page smoke tests on desktop and mobile.
+- `tests/e2e/*.spec.ts` (Playwright against the built server): write a letter, fast-forward, witness confirms in a separate browser, recipient opens with a pasted keepsake in a fresh browser, link refuses a second opening; check-in during grace; vault-custody link; landing and honest-page smoke tests on desktop and mobile; the lifecycle run also asserts the CSP header and that no CSP violation is reported in the author's or the recipient's browser.
+- `tests/unit/security.test.ts`: security headers on every response, the token-route rate limit, and that dev routes are absent without the local adapters.
+- `tests/unit/node-entry.test.ts` (CLI): the Node entry starts without the time machine by default, enables it only on request, and refuses it for a public origin.

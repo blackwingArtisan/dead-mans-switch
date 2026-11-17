@@ -5,6 +5,15 @@ test.beforeEach(async ({ request }) => {
   expect((await request.post('/api/dev/reset')).ok()).toBe(true);
 });
 
+/** Collects Content-Security-Policy violations reported on a page, so the strict policy is proven not to break the app. */
+function watchCsp(page: Page): string[] {
+  const violations: string[] = [];
+  page.on('console', (msg) => {
+    if (msg.type() === 'error' && /Content Security Policy/i.test(msg.text())) violations.push(msg.text());
+  });
+  return violations;
+}
+
 async function openTimeMachine(page: Page) {
   const panel = page.getByRole('complementary', { name: /time machine/i });
   if (!(await panel.isVisible())) await page.getByRole('button', { name: /time machine/i }).click();
@@ -21,8 +30,10 @@ async function outboxLink(page: Page, kind: string, recipient: string): Promise<
 }
 
 test('write a letter, fall silent, witness confirms, recipient opens it once', async ({ page, browser }) => {
+  const cspViolations = watchCsp(page);
   // The author begins a vigil.
-  await page.goto('/');
+  const landing = await page.goto('/');
+  expect(landing?.headers()['content-security-policy']).toContain("script-src 'self'");
   await page.getByLabel('Your name').fill('Mara Whitlock');
   await page.getByLabel('Your email').fill('mara@example.com');
   await page.getByRole('button', { name: 'Light the candle' }).click();
@@ -73,6 +84,7 @@ test('write a letter, fall silent, witness confirms, recipient opens it once', a
   const releaseHref = await outboxLink(page, 'release', 'Theo Whitlock');
   const theoCtx = await browser.newContext({ reducedMotion: 'reduce' });
   const theo = await theoCtx.newPage();
+  const theoCsp = watchCsp(theo);
   await theo.goto(releaseHref);
   await expect(theo.getByRole('heading', { name: 'A letter from Mara Whitlock' })).toBeVisible();
 
@@ -91,6 +103,9 @@ test('write a letter, fall silent, witness confirms, recipient opens it once', a
   await theo.reload();
   await expect(theo.getByRole('heading', { name: 'This seal has already been broken' })).toBeVisible();
   await theoCtx.close();
+
+  // The strict CSP never got in the way, for the author or the recipient.
+  expect([...cspViolations, ...theoCsp]).toEqual([]);
 });
 
 test('a check-in during grace cancels everything', async ({ page }) => {

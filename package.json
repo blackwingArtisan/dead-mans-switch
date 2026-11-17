@@ -15,7 +15,7 @@
     "dev:web": "vite",
     "build": "vite build",
     "start": "tsx src/server/node.ts",
-    "demo": "npm run build && npm start",
+    "demo": "npm run build && tsx src/server/node.ts --time-machine",
     "test": "vitest run",
     "test:watch": "vitest",
     "e2e": "playwright test",
