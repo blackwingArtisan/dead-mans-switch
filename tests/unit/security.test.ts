@@ -3,7 +3,7 @@ import { createApp } from '../../src/server/app';
 import { MachineClock } from '../../src/server/adapters/clocks';
 import { OutboxMailer } from '../../src/server/adapters/mailers';
 import { MemoryStore } from '../../src/server/adapters/memory-store';
-import { CONTENT_SECURITY_POLICY } from '../../src/server/security';
+import { CONTENT_SECURITY_POLICY, SECURITY_HEADERS, withSecurityHeaders } from '../../src/server/security';
 import { T0 } from './helpers';
 
 function setup(opts: { limit?: number; dev?: boolean } = {}) {
@@ -78,5 +78,57 @@ describe('demo tools', () => {
     expect((await prod.app.request('/api/dev/clock', { method: 'POST', body: '{"days":3650}' })).status).toBe(404);
     const demo = setup({ dev: true });
     expect((await demo.app.request('/api/dev/clock')).status).toBe(200);
+  });
+});
+
+describe('response hardening headers', () => {
+  const directives = () =>
+    new Map(CONTENT_SECURITY_POLICY.split(';').map((d) => d.trim().split(/\s+/)).map(([name, ...values]) => [name, values] as const));
+
+  it('sends a closed Permissions-Policy and Cross-Origin-Opener-Policy on every kind of response (Req 11.9, 11.10)', async () => {
+    const { app, knock } = setup({ limit: 1 });
+    app.get('/page', (c) => c.html('<!doctype html><p>page</p>'));
+    const responses = [
+      await app.request('/api/health'),
+      await app.request('/page'),
+      await app.request('/api/nowhere'), // 404
+      await app.request('/api/vault'), // 401
+      await knock('203.0.113.9'), // 404: unknown link, inside the limit
+      await knock('203.0.113.9'), // 429
+    ];
+    expect(responses.map((r) => r.status)).toEqual([200, 200, 404, 401, 404, 429]);
+    for (const res of responses) {
+      expect(res.headers.get('Cross-Origin-Opener-Policy')).toBe('same-origin');
+      const policy = res.headers.get('Permissions-Policy')!;
+      expect(policy).toBe('camera=(), microphone=(), geolocation=(), payment=()');
+      // Closed: every feature listed is switched off for everyone.
+      for (const entry of policy.split(',')) expect(entry.trim()).toMatch(/^[a-z-]+=\(\)$/);
+    }
+  });
+
+  it('adds every hardening header to a response from an immutable source (Req 11.1-11.10)', () => {
+    const asset = Response.redirect('https://example.com/', 302); // headers of such responses are immutable
+    const out = withSecurityHeaders(asset);
+    for (const [name, value] of Object.entries(SECURITY_HEADERS)) expect(out.headers.get(name), name).toBe(value);
+    expect(Object.keys(SECURITY_HEADERS).sort()).toEqual(
+      ['Content-Security-Policy', 'Cross-Origin-Opener-Policy', 'Permissions-Policy', 'Referrer-Policy', 'X-Content-Type-Options', 'X-Frame-Options'].sort(),
+    );
+  });
+
+  it('blocks plugins, framing and base-tag hijack by CSP directive (Req 11.4, 11.5)', () => {
+    const d = directives();
+    expect(d.get('object-src')).toEqual(["'none'"]);
+    expect(d.get('frame-ancestors')).toEqual(["'none'"]);
+    expect(d.get('base-uri')).toEqual(["'none'"]);
+  });
+
+  it('limits scripts and network requests to the page origin by CSP directive (Req 11.1, 11.6)', () => {
+    const d = directives();
+    expect(d.get('script-src')).toEqual(["'self'"]);
+    expect(d.get('connect-src')).toEqual(["'self'"]);
+    expect(d.get('default-src')).toEqual(["'self'"]);
+    expect(d.get('form-action')).toEqual(["'self'"]);
+    // No directive names another origin or a wildcard.
+    expect(CONTENT_SECURITY_POLICY).not.toMatch(/https?:|\*/);
   });
 });

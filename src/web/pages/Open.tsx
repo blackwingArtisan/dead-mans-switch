@@ -1,4 +1,3 @@
-import DOMPurify from 'dompurify';
 import { useEffect, useMemo, useRef, useState, type FormEvent, type PointerEvent } from 'react';
 import { keepsakeTagOf, openLetter } from '../../core/crypto';
 import { fromBase32, toBase64Url } from '../../core/encoding';
@@ -8,13 +7,12 @@ import { longDate } from '../lib/format';
 import { useRoom } from '../lib/room';
 import { LinkNotice } from '../components/Lost';
 import { LightACandle } from '../components/CandlesLit';
+import { sanitizeLetterHtml } from '../lib/sanitize';
 import { sound } from '../lib/sound';
 import { tour } from '../lib/tour';
 import { Candle } from '../components/Candle';
 import { Shell } from '../components/Chrome';
 import { WaxSeal } from '../components/WaxSeal';
-
-const ALLOWED_TAGS = ['p', 'br', 'strong', 'b', 'em', 'i', 'u', 'h2', 'h3', 'blockquote', 'ul', 'ol', 'li', 'div', 'span'];
 
 /** Accepts a whole keepsake link, a bare base64url half, or a printed base32 code. */
 export function parseKeepsake(input: string): string | null {
@@ -76,7 +74,7 @@ export function Open({ token, hash }: { token: string; hash: string }) {
   }, [token, fromLink]);
 
   const safeHtml = useMemo(
-    () => (letter ? DOMPurify.sanitize(letter.html, { ALLOWED_TAGS, ALLOWED_ATTR: [] }) : ''),
+    () => (letter ? sanitizeLetterHtml(letter.html) : ''),
     [letter],
   );
 

@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { openLetter, sealLetter } from '../../src/core/crypto';
+import { sha256 } from '../../src/core/encoding';
 import { createApp } from '../../src/server/app';
 import { MachineClock } from '../../src/server/adapters/clocks';
 import { OutboxMailer } from '../../src/server/adapters/mailers';
@@ -33,7 +34,7 @@ function setup() {
     const url = new URL(msg.text.match(/https?:\/\/\S+/)![0]);
     return { path: url.pathname, token: url.pathname.split('/').pop()!, fragment: url.hash.replace(/^#k=/, '') };
   };
-  return { app, call, createVault, outbox, linkFrom };
+  return { app, call, createVault, outbox, linkFrom, store, getOwner: () => owner };
 }
 
 async function sealFor(recipient: { name: string; email: string }, custody: 'keepsake' | 'vault', id: string) {
@@ -295,5 +296,152 @@ describe('API lifecycle', () => {
     it('rejects a made-up token', async () => {
       expect((await t.call('POST', `/api/check-in/${'x'.repeat(43)}`, undefined, false)).status).toBe(404);
     });
+  });
+});
+
+describe('owner token custody and defaults', () => {
+  let t: ReturnType<typeof setup>;
+  beforeEach(() => {
+    t = setup();
+  });
+
+  it('stores only the SHA-256 hash of the owner token and returns the token once (Req 1.4, 1.7)', async () => {
+    const created = await t.createVault();
+    const token = created.body.ownerToken as string;
+    expect(token).toMatch(/^[A-Za-z0-9_-]{43}$/); // 32 random bytes, base64url
+    const id = (await t.store.listIds())[0]!;
+    // Do some work so the token could leak into history or witness records.
+    await t.call('POST', '/api/vault/witnesses', { name: 'Silas Crane', email: 'silas@example.com' });
+    await t.call('POST', '/api/vault/check-in');
+    const raw = (await t.store.get(id))!;
+    expect(raw.ownerTokenHash).toBe(await sha256(token));
+    expect(raw.ownerTokenHash).not.toBe(token);
+    expect(JSON.stringify(raw)).not.toContain(token);
+    expect(JSON.stringify(t.store.snapshot())).not.toContain(token);
+    expect(await t.store.findByToken('owner', await sha256(token))).toBe(id);
+    expect(await t.store.findByToken('owner', token)).toBeNull();
+    // The token is handed over once: later views never repeat it.
+    const view = await t.call('GET', '/api/vault');
+    expect(JSON.stringify(view.body)).not.toContain(token);
+    expect(view.body.ownerToken).toBeUndefined();
+  });
+
+  it('gives a new vigil the default settings and records the first check-in now (Req 1.1, 1.2, 1.6)', async () => {
+    const created = await t.createVault();
+    expect(created.status).toBe(201);
+    expect(created.body.vault.state).toBe('alive');
+    const raw = (await t.store.get((await t.store.listIds())[0]!))!;
+    expect(raw.settings).toEqual({ cadenceDays: 30, graceDays: 7, reminderLeadDays: 3, witnessesRequired: 1, silenceReleaseDays: 14 });
+    expect(raw.state).toBe('alive');
+    expect(raw.lastCheckInAt).toBe(T0);
+  });
+
+  it('keeps explicit settings and fills the rest with defaults (Req 1.2)', async () => {
+    await t.createVault({ cadenceDays: 10 });
+    const raw = (await t.store.get((await t.store.listIds())[0]!))!;
+    expect(raw.settings).toMatchObject({ cadenceDays: 10, graceDays: 7, reminderLeadDays: 3, witnessesRequired: 1, silenceReleaseDays: 14 });
+  });
+
+  it('answers 401 and changes nothing when the owner token is missing or wrong (Req 1.5, 1.8)', async () => {
+    await t.createVault();
+    const witness = await t.call('POST', '/api/vault/witnesses', { name: 'Silas Crane', email: 'silas@example.com' });
+    const letterId = 'letter-auth-01';
+    const sealed = await sealFor({ name: 'Theo Whitlock', email: 'theo@example.com' }, 'keepsake', letterId);
+    await t.call('POST', '/api/vault/letters', sealed.body);
+    const before = JSON.stringify(t.store.snapshot());
+    const mailBefore = t.outbox.list().length;
+    const witnessId = witness.body.witnesses[0].id;
+
+    const attempts: [string, string, unknown?][] = [
+      ['GET', '/api/vault'],
+      ['POST', '/api/vault/check-in'],
+      ['POST', '/api/vault/pause'],
+      ['POST', '/api/vault/resume'],
+      ['PATCH', '/api/vault/settings', { cadenceDays: 5 }],
+      ['POST', '/api/vault/witnesses', { name: 'Ada Penhallow', email: 'ada@example.com' }],
+      ['DELETE', `/api/vault/witnesses/${witnessId}`],
+      ['POST', '/api/vault/letters', { ...sealed.body, id: 'letter-auth-02' }],
+      ['DELETE', `/api/vault/letters/${letterId}`],
+      ['GET', '/api/vault/export'],
+    ];
+    for (const headers of [{} as Record<string, string>, { Authorization: 'Bearer not-a-real-token' }]) {
+      for (const [method, path, body] of attempts) {
+        const res = await t.app.request(path, {
+          method,
+          headers: { 'Content-Type': 'application/json', ...headers },
+          body: body === undefined ? undefined : JSON.stringify(body),
+        });
+        expect(res.status, `${method} ${path}`).toBe(401);
+      }
+    }
+    expect(JSON.stringify(t.store.snapshot())).toBe(before);
+    expect(t.outbox.list()).toHaveLength(mailBefore);
+  });
+
+  it('creates nothing when vigil creation is rejected (Req 1.3, 1.8)', async () => {
+    const bad = await t.call('POST', '/api/vaults', { author: { name: 'Mara', email: 'mara@example.com' }, settings: { cadenceDays: 400 } }, false);
+    expect(bad.status).toBe(400);
+    expect(bad.body.error).toMatch(/cadence.*1 to 365/);
+    expect(await t.store.listIds()).toEqual([]);
+  });
+});
+
+describe('release emails and the released vigil', () => {
+  async function release(t: ReturnType<typeof setup>) {
+    await t.createVault({ cadenceDays: 30, graceDays: 7 });
+    await t.call('POST', '/api/vault/witnesses', { name: 'Silas Crane', email: 'silas@example.com' });
+    const keep = await sealFor({ name: 'Theo Whitlock', email: 'theo@example.com' }, 'keepsake', 'letter-rel-01');
+    const vaulted = await sealFor({ name: 'June Okafor', email: 'june@example.com' }, 'vault', 'letter-rel-02');
+    await t.call('POST', '/api/vault/letters', keep.body);
+    await t.call('POST', '/api/vault/letters', vaulted.body);
+    await t.call('POST', '/api/dev/clock', { days: 38 });
+    const w = t.linkFrom('witness-ask', 'silas@example.com');
+    const done = await t.call('POST', `/api/witness/${w.token}`, { response: 'confirm' }, false);
+    expect(done.body.state).toBe('released');
+    return { keep, vaulted };
+  }
+
+  it('never puts the keepsake half in a keepsake-custody release email, but does in vault custody (Req 7.11, 7.12, 7.9)', async () => {
+    const t = setup();
+    const { keep, vaulted } = await release(t);
+    const releases = t.outbox.list().filter((m) => m.kind === 'release');
+    expect(releases.map((m) => m.to.email).sort()).toEqual(['june@example.com', 'theo@example.com']);
+    const theo = releases.find((m) => m.to.email === 'theo@example.com')!;
+    for (const part of [theo.subject, theo.text, theo.html]) expect(part).not.toContain(keep.keepsakeHalf);
+    expect(theo.text).toMatch(/\/open\/[A-Za-z0-9_-]{43}(\s|$)/);
+    expect(theo.text).not.toContain('#k=');
+    expect(theo.html).not.toContain('#k=');
+    // No email of any kind, to anyone, carries the keepsake half.
+    for (const m of t.outbox.list()) {
+      expect(JSON.stringify(m)).not.toContain(keep.keepsakeHalf);
+    }
+    // Vault custody: the half rides in the link fragment, as the requirement says.
+    const june = releases.find((m) => m.to.email === 'june@example.com')!;
+    expect(june.text).toContain(`#k=${vaulted.keepsakeHalf}`);
+  });
+
+  it('refuses settings, witness and letter changes once released, and changes nothing (Req 7.9, 7.12)', async () => {
+    const t = setup();
+    const { keep } = await release(t);
+    const before = JSON.stringify(t.store.snapshot());
+    const witnessId = (await t.call('GET', '/api/vault')).body.witnesses[0].id;
+    const fresh = await sealFor({ name: 'Rowan Ashby', email: 'rowan@example.com' }, 'keepsake', 'letter-rel-03');
+    const attempts: [string, string, unknown?][] = [
+      ['PATCH', '/api/vault/settings', { cadenceDays: 5 }],
+      ['POST', '/api/vault/witnesses', { name: 'Ada Penhallow', email: 'ada@example.com' }],
+      ['DELETE', `/api/vault/witnesses/${witnessId}`],
+      ['POST', '/api/vault/letters', fresh.body],
+      ['DELETE', '/api/vault/letters/letter-rel-01'],
+      ['POST', '/api/vault/check-in'],
+      ['POST', '/api/vault/pause'],
+      ['POST', '/api/vault/resume'],
+    ];
+    for (const [method, path, body] of attempts) {
+      const r = await t.call(method, path, body);
+      expect(r.status, `${method} ${path}`).toBe(409);
+      expect(r.body.error).toMatch(/released/i);
+    }
+    expect(JSON.stringify(t.store.snapshot())).toBe(before);
+    expect(keep.keepsakeHalf).toBeTruthy();
   });
 });

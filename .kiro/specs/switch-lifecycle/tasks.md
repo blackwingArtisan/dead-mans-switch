@@ -59,9 +59,9 @@
   - [x] 8.6 Rate limiter swap point: a `RateLimiter` port with an in-memory default and a Cloudflare Workers Rate Limiting binding adapter, chosen in the Worker only when the binding is present (Req 11.3, 11.13-11.15)
 
 - [ ] 9. Test and spec gaps found in the second review
-  - [ ] 9.1 Test that only the SHA-256 hash of the owner token is stored and the raw token is never in the vault (Req 1.4, 1.7)
-  - [ ] 9.2 Test the default settings of a new vigil and that a failed request changes nothing (Req 1.2, 1.8)
-  - [ ] 9.3 Move the letter sanitiser out of `src/web/pages/Open.tsx` into a module and unit test that scripts, event handlers and unknown tags are stripped (Req 7.7)
+  - [x] 9.1 Test that only the SHA-256 hash of the owner token is stored and the raw token is never in the vault (Req 1.4, 1.7)
+  - [x] 9.2 Test the default settings of a new vigil and that a failed request changes nothing (Req 1.2, 1.8)
+  - [x] 9.3 Move the letter sanitiser out of `src/web/pages/Open.tsx` into a module and unit test that scripts, event handlers and unknown tags are stripped (Req 7.7)
   - [ ] 9.4 E2E: download and print the opened letter (Req 7.8, 7.16)
   - [ ] 9.5 E2E: reduced-motion media query disables animation; 360 px layout for the writing desk and vigil (Req 10.3, 10.5)
   - [ ] 9.6 E2E: the keepsake page remembers A in the browser, shows the printable code and makes no request carrying A (Req 3.6, 3.8, 3.9)
@@ -69,5 +69,5 @@
   - [ ] 9.8 E2E: pause, resume and burn a letter from the dashboard (Req 2.6, 8.1, 8.3)
   - [ ] 9.9 Test the five-step stage track, the relative deadline and the screen-reader announcement after check-in (Req 4.3, 4.4, 4.7, 10.8)
   - [ ] 9.10 Test the warning shown when the silence window is off and no witness is named, and the vault-custody warning before choosing it (Req 6.8, 3.3)
-  - [ ] 9.11 Test that no release email in keepsake custody contains A, and that a released vigil rejects settings, witness and letter changes (Req 7.9, 7.12)
-  - [ ] 9.12 Test that every Permissions-Policy and Cross-Origin-Opener-Policy header is sent, and that CSP blocks plugins and connect to other origins by directive (Req 11.4-11.10)
+  - [x] 9.11 Test that no release email in keepsake custody contains A, and that a released vigil rejects settings, witness and letter changes (Req 7.9, 7.12)
+  - [x] 9.12 Test that every Permissions-Policy and Cross-Origin-Opener-Policy header is sent, and that CSP blocks plugins and connect to other origins by directive (Req 11.4-11.10)
