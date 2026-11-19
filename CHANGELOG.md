@@ -14,6 +14,10 @@ Notable changes to Dead Man's Switch. Work done with Kiro is recorded call by ca
 - **The story ends in full light.** Play the whole story finishes on the whole letter, lit and signed, instead of a dark page.
 - **The seal is pressed on screen.** Sealing scrolls back to the top so the fold and the seal play in view, and focus moves to the heading.
 
+### For judges and reviewers
+- **A cleaner demo path.** A new demo vigil starts with an empty outbox; mail sent in the same moment is listed in the order it was sent, so Silas, whom the guide names, comes first; the Time machine drawer steps aside after each jump and leaves its note by the button; and opening a letter ends the demo guide with "The story is complete".
+- **Presenter mode.** `?presenter=1` hides the demo guide and the outbox badge and fades the Time machine button, for clean recordings.
+
 ## 2026-11-18: the second round
 
 ### For the people using it

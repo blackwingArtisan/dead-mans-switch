@@ -35,6 +35,25 @@ function Linkified({ text }: { text: string }) {
   );
 }
 
+/** Mail sent less than this far apart belongs to one moment (one tick sends its mail within milliseconds). */
+const MOMENT_MS = 1000;
+
+/**
+ * Newest moment first, but mail sent in the same moment keeps the order it was sent in, so the
+ * first witness named is the first "Witness asked" in the list.
+ */
+export function newestFirst(messages: OutboxMessage[]): OutboxMessage[] {
+  const sent = [...messages].sort((a, b) => a.id - b.id);
+  const moments: OutboxMessage[][] = [];
+  for (const m of sent) {
+    const last = moments[moments.length - 1];
+    const prev = last?.[last.length - 1];
+    if (last && prev && Math.abs(m.sentAt - prev.sentAt) < MOMENT_MS) last.push(m);
+    else moments.push([m]);
+  }
+  return moments.reverse().flat();
+}
+
 /**
  * Local demo only: moves the server clock forward and shows the mail that would have
  * been sent. It does not render at all when the server has no dev tools.
@@ -48,6 +67,7 @@ export function TimeMachine() {
   const [note, setNote] = useState('');
   const [expanded, setExpanded] = useState<number | null>(null);
   const panelRef = useRef<HTMLDivElement>(null);
+  const toggleRef = useRef<HTMLButtonElement>(null);
   const guide = useTour();
 
   // Polls and post-travel reloads can overlap; only the newest response is shown, so a slow,
@@ -59,7 +79,7 @@ export function TimeMachine() {
       const [c, o] = await Promise.all([api.dev.clock(), api.dev.outbox()]);
       if (seq !== latest.current) return;
       setClock(c);
-      setMail(o.messages);
+      setMail(newestFirst(o.messages));
       setAvailable(true);
     } catch {
       if (seq === latest.current) setAvailable(false);
@@ -85,6 +105,13 @@ export function TimeMachine() {
     return () => window.removeEventListener('keydown', onKey);
   }, [open]);
 
+  // The note by the button fades after a while; the clock in the drawer keeps the full story.
+  useEffect(() => {
+    if (!note || open) return;
+    const t = window.setTimeout(() => setNote(''), 8000);
+    return () => window.clearTimeout(t);
+  }, [note, open]);
+
   if (!available) return null;
 
   const travel = async (body: Parameters<typeof api.dev.travel>[0], label: string) => {
@@ -96,6 +123,9 @@ export function TimeMachine() {
       setNote(`${label}. It is now ${longDate(r.now)}. ${sent ? `${sent} new email${sent === 1 ? '' : 's'} in the outbox.` : 'No new mail.'}`);
       requestRefresh();
       await load();
+      // Step out of the way so the room's change is what you see; the note stays by the button.
+      setOpen(false);
+      toggleRef.current?.focus();
     } catch (err) {
       setNote(err instanceof Error ? err.message : 'The time machine jammed.');
     } finally {
@@ -108,7 +138,11 @@ export function TimeMachine() {
 
   return (
     <>
+      <p className={open || !note ? 'sr-only' : 'tm-toast'} role="status" aria-live="polite" data-testid="tm-toast">
+        {note}
+      </p>
       <button
+        ref={toggleRef}
         type="button"
         className={`tm-toggle ${guide.on && !guide.opened ? 'tm-toggle--pulse' : ''}`}
         aria-expanded={open}
@@ -168,7 +202,7 @@ export function TimeMachine() {
             Skip to the next event
           </button>
         </div>
-        <p className="tm__note" role="status" aria-live="polite">
+        <p className="tm__note">
           {note}
         </p>
 

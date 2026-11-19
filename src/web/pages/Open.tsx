@@ -6,6 +6,7 @@ import type { LetterContent } from '../../core/types';
 import { api, keepsakes, type OpenInfo } from '../lib/api';
 import { longDate } from '../lib/format';
 import { useRoom } from '../lib/room';
+import { tour } from '../lib/tour';
 import { Shell } from '../components/Chrome';
 import { WaxSeal } from '../components/WaxSeal';
 
@@ -209,6 +210,11 @@ function OpenedLetter({ info, letter, safeHtml }: { info: OpenInfo; letter: Lett
   const [signed, setSigned] = useState(!dark);
   const pageRef = useRef<HTMLDivElement>(null);
   const signRef = useRef<HTMLParagraphElement>(null);
+  // A letter opened during the demo guide is the end of the story; the guide closes here.
+  const [storyDone] = useState(() => tour.isOn());
+  useEffect(() => {
+    if (storyDone) tour.end();
+  }, [storyDone]);
   useRoom('released');
 
   const follow = (e: PointerEvent<HTMLDivElement>) => {
@@ -264,6 +270,11 @@ function OpenedLetter({ info, letter, safeHtml }: { info: OpenInfo; letter: Lett
               </button>
             </p>
           ) : null}
+          {storyDone && (
+            <p className="story-done" data-testid="story-done">
+              The story is complete. That is the whole vigil, from a lit candle to a letter read.
+            </p>
+          )}
           <p className="hint">This link opened once. The vault has now forgotten its copy, so keep your own.</p>
           <div className="letter__actions">
             <button type="button" className="btn btn--wax" onClick={() => download(letter, info, safeHtml)}>

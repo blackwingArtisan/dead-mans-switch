@@ -9,6 +9,9 @@ import '@fontsource/im-fell-english/400.css';
 import '@fontsource/im-fell-english/400-italic.css';
 import './styles/app.css';
 import { App } from './App';
+import { initPresenter } from './lib/presenter';
+
+initPresenter();
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

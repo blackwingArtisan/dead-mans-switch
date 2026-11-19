@@ -17,8 +17,8 @@ Built for Kiroween 2026, Costume Contest category.
 > ### Judge's 60-second path
 >
 > 1. `npm install && npm run demo`, open http://localhost:3140 and press **Try a demo vigil**. You are Mara, with two sealed letters and two witnesses.
-> 2. Open the **Time machine** (hourglass, bottom right) and press **+30 days**. The flame gutters and the grace email lands in the outbox.
-> 3. Press **+7 days**. The candle goes out and the witnesses are asked. In the outbox, open **Witness asked** and confirm as Silas.
+> 2. Open the **Time machine** (hourglass, bottom right) and press **+30 days**. The drawer steps aside, the flame gutters and the grace email lands in the outbox.
+> 3. Open it again and press **+7 days**. The candle goes out and the witnesses are asked. In the outbox, open the first **Witness asked** and confirm as Silas.
 > 4. Open **Letter released** for June and break the seal. The letter decrypts in that browser tab, once. Move your cursor over the dark page to read it by candlelight.
 >
 > Or press **▶ Play the whole story** on the landing page: a captioned, hands-off run of all four steps in about 40 seconds.
@@ -110,6 +110,8 @@ For development with hot reload: `npm run dev` (web on :3141, API on :3140, time
 `npm start` runs the same server the way a deployment would: system clock, no time machine, no demo routes. The time machine is opt-in (`--time-machine` or `DMS_CLOCK=machine`) and the server refuses to start it for anything but a localhost origin.
 
 Local data lives in `./data` (`vaults.json`, `outbox.json`, `clock.json`). Delete the folder or use **Reset the whole demo** to start over.
+
+For a screen recording, add `?presenter=1` to the address: the demo guide and the outbox badge disappear and the Time machine button fades until you hover or tab to it (`?presenter=0` brings them back).
 
 To refresh the README media, start `npm run demo` and run `node scripts/capture-media.mjs` (the GIF needs ffmpeg).
 

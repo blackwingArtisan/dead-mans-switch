@@ -21,6 +21,13 @@ async function openTimeMachine(page: Page) {
   return panel;
 }
 
+/** Presses one Time machine button. The drawer closes itself after each jump, so open it first. */
+async function travel(page: Page, label: string) {
+  const panel = await openTimeMachine(page);
+  await panel.getByRole('button', { name: label }).click();
+  await expect(panel).toBeHidden();
+}
+
 async function outboxLink(page: Page, kind: string, recipient: string): Promise<string> {
   const panel = await openTimeMachine(page);
   const item = panel.locator(`.outbox__item[data-kind="${kind}"]`).filter({ hasText: `to ${recipient}` }).first();
@@ -74,10 +81,9 @@ test('write a letter, fall silent, witness confirms, recipient opens it once', a
   await expect(page.getByTestId('envelope')).toHaveCount(1);
 
   // The time machine: a month passes with no check-in, then the grace period.
-  const tm = await openTimeMachine(page);
-  await tm.getByRole('button', { name: '+30 days' }).click();
+  await travel(page, '+30 days');
   await expect(page.getByTestId('state-title')).toHaveText('The flame gutters');
-  await tm.getByRole('button', { name: '+7 days' }).click();
+  await travel(page, '+7 days');
   await expect(page.getByTestId('state-title')).toHaveText('The candle has gone out');
 
   // The witness, in their own browser, confirms.
@@ -134,10 +140,8 @@ test('a check-in during grace cancels everything', async ({ page }) => {
   await page.goto('/');
   await page.getByRole('button', { name: 'Try a demo vigil' }).click();
   await expect(page.getByTestId('envelope')).toHaveCount(2);
-  const tm = await openTimeMachine(page);
-  await tm.getByRole('button', { name: '+30 days' }).click();
+  await travel(page, '+30 days');
   await expect(page.getByTestId('state-title')).toHaveText('The flame gutters');
-  await page.getByRole('button', { name: /close the time machine/i }).click();
   await page.getByTestId('check-in').click();
   await expect(page.getByTestId('state-title')).toHaveText('The candle burns');
   await expect(page.locator('.ledger')).toContainText('Checked in.');
@@ -147,8 +151,7 @@ test('the grace email checks in with one tap on another device, once, without op
   await page.goto('/');
   await page.getByRole('button', { name: 'Try a demo vigil' }).click();
   await expect(page.getByTestId('envelope')).toHaveCount(2);
-  const tm = await openTimeMachine(page);
-  await tm.getByRole('button', { name: '+30 days' }).click();
+  await travel(page, '+30 days');
   await expect(page.getByTestId('state-title')).toHaveText('The flame gutters');
   const link = await outboxLink(page, 'grace', 'Mara Whitlock');
   expect(link).toMatch(/\/check-in\/[\w-]{43}$/);
@@ -176,12 +179,11 @@ test('a vault-custody letter opens from its link alone', async ({ page, browser 
   await page.goto('/');
   await page.getByRole('button', { name: 'Try a demo vigil' }).click();
   await expect(page.getByTestId('envelope')).toHaveCount(2);
-  const tm = await openTimeMachine(page);
-  await tm.getByRole('button', { name: 'Skip to the next event' }).click(); // reminder
+  await travel(page, 'Skip to the next event'); // reminder
   await expect(page.getByTestId('state-title')).toHaveText('The candle burns low');
-  await tm.getByRole('button', { name: '+30 days' }).click(); // past grace: witnesses asked
+  await travel(page, '+30 days'); // past grace: witnesses asked
   await expect(page.getByTestId('state-title')).toHaveText('The candle has gone out');
-  await tm.getByRole('button', { name: '+30 days' }).click(); // silence window passes
+  await travel(page, '+30 days'); // silence window passes
   await expect(page.getByTestId('state-title')).toHaveText('The letters are delivered');
 
   const href = await outboxLink(page, 'release', 'June Okafor');
@@ -222,17 +224,22 @@ test('the demo guide says what to try next, and the room dies and relights with 
   await expect(page.locator('body')).toHaveAttribute('data-room', 'alive');
   await expect(page.locator('.tm-toggle')).toHaveClass(/tm-toggle--pulse/);
 
-  const tm = await openTimeMachine(page);
+  await openTimeMachine(page);
   await expect(page.locator('.tm-toggle')).not.toHaveClass(/tm-toggle--pulse/);
-  await tm.getByRole('button', { name: '+30 days' }).click();
+  await travel(page, '+30 days');
   await expect(page.locator('body')).toHaveAttribute('data-room', 'grace');
+  // The drawer steps aside after a jump, and its note waits by the button.
+  await expect(page.getByTestId('tm-toast')).toContainText('A month passed');
   await expect(guide).toContainText('Press +7 days');
-  await tm.getByRole('button', { name: '+7 days' }).click();
+  await travel(page, '+7 days');
   await expect(page.locator('body')).toHaveAttribute('data-room', 'confirm');
   await expect(page.getByRole('status').filter({ hasText: 'The room has gone dark' })).toBeAttached();
   await expect(guide).toContainText('Witness asked');
-
+  // The guide names Silas, so his is the first "Witness asked" in the outbox.
+  const panel = await openTimeMachine(page);
+  await expect(panel.locator('.outbox__item[data-kind="witness-ask"]').first()).toContainText('to Silas Crane');
   await page.getByRole('button', { name: /close the time machine/i }).click();
+
   await page.getByTestId('check-in').click();
   await expect(page.locator('body')).toHaveAttribute('data-room', 'alive');
   await expect(page.getByRole('status').filter({ hasText: 'the room is warm again' })).toBeAttached();
@@ -250,9 +257,8 @@ test("a founder's demo vigil seals Priya's letters and names her own witness in 
   await expect(page.getByTestId('envelope')).toHaveCount(2);
   await expect(page.getByText('The vigil of Priya Raman')).toBeVisible();
   await expect(page.getByTestId('envelope').filter({ hasText: 'For Tomás Rivera' })).toContainText('Vault custody');
-  const tm = await openTimeMachine(page);
-  await tm.getByRole('button', { name: '+30 days' }).click();
-  await tm.getByRole('button', { name: '+7 days' }).click();
+  await travel(page, '+30 days');
+  await travel(page, '+7 days');
   await expect(page.getByTestId('guide')).toContainText('“Witness asked” for Noor Haddad');
 });
 
@@ -273,4 +279,31 @@ test('"Play the whole story" runs the lifecycle hands-off, with captions, to an 
   await expect(page.locator('.letter__from')).toHaveClass(/letter__from--signed/);
   await caption.getByRole('button', { name: 'Close' }).click();
   await expect(caption).toHaveCount(0);
+});
+
+test('a second demo vigil starts with an empty outbox, and presenter mode hides the demo chrome', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Try a demo vigil' }).click();
+  await travel(page, '+30 days');
+  await expect(page.locator('.tm-toggle__count')).toBeVisible();
+
+  // Starting the demo again clears the earlier run's mail.
+  await page.evaluate(() => window.localStorage.clear());
+  await page.goto('/?presenter=1');
+  await page.getByRole('button', { name: 'Try a demo vigil' }).click();
+  await expect(page.getByTestId('state-title')).toHaveText('The candle burns');
+  const panel = await openTimeMachine(page);
+  await expect(panel.locator('.outbox__item[data-kind="grace"]')).toHaveCount(0);
+  await page.getByRole('button', { name: /close the time machine/i }).click();
+
+  // Presenter mode: no guide, no badge, and the button fades until it is hovered or focused.
+  await expect(page.getByTestId('guide')).toBeHidden();
+  await expect(page.locator('.tm-toggle__count')).toBeHidden();
+  await page.mouse.move(10, 10);
+  await expect.poll(() => page.locator('.tm-toggle').evaluate((el) => getComputedStyle(el).opacity)).toBe('0');
+  // It lasts for the tab, across in-app navigation, until ?presenter=0.
+  await page.goto('/how-it-works');
+  await expect(page.locator('html')).toHaveAttribute('data-presenter', '');
+  await page.goto('/?presenter=0');
+  await expect(page.locator('html')).not.toHaveAttribute('data-presenter', /.*/);
 });

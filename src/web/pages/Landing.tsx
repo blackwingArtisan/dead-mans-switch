@@ -46,6 +46,9 @@ export function Landing() {
     setBusy(label);
     setError('');
     try {
+      // A fresh demo starts with an empty outbox, so an earlier run's mail never sits above this one's.
+      // Without the time machine (a real deployment) there is no outbox route, and nothing to clear.
+      await api.dev.clearOutbox().catch(() => undefined);
       const r = await api.createVault(which.author, { cadenceDays: 30, graceDays: 7, reminderLeadDays: 3, witnessesRequired: 1 });
       session.save(r.ownerToken);
       for (const w of which.witnesses) await api.addWitness(w);

@@ -34,6 +34,7 @@ export const tour = {
     write(OPENED_KEY, null);
   },
   end: () => write(TOUR_KEY, null),
+  isOn: () => read(TOUR_KEY) === 'on',
   markOpened: () => write(OPENED_KEY, '1'),
 };
 

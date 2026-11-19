@@ -26,6 +26,11 @@ test('vigil, writing desk and time machine have no WCAG AA violations', async ({
   await page.getByRole('button', { name: /time machine/i }).click();
   await page.getByRole('button', { name: '+30 days' }).click();
   await expect(page.getByTestId('state-title')).toHaveText('The flame gutters');
+  // The drawer closes after a jump and leaves its note by the button; audit both.
+  await expect(page.getByTestId('tm-toast')).toContainText('A month passed');
+  await audit(page);
+  await page.getByRole('button', { name: /time machine/i }).click();
+  await expect(page.getByRole('complementary', { name: /time machine/i })).toBeVisible();
   await audit(page);
 
   await page.getByRole('button', { name: /close the time machine/i }).click();
@@ -76,5 +81,8 @@ test('witness, recipient and opened-letter pages have no WCAG AA violations', as
   await page.goto(await linkFor('release', 'June Okafor'));
   await page.getByTestId('break-seal').click();
   await expect(page.getByTestId('opened-letter')).toBeVisible();
+  // Opening a letter ends the demo guide.
+  await expect(page.getByTestId('story-done')).toContainText('The story is complete');
   await audit(page);
+  expect(await page.evaluate(() => window.localStorage.getItem('dms.tour'))).toBeNull();
 });

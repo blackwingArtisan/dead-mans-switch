@@ -163,6 +163,7 @@ export const api = {
     travel: (body: { days?: number; hours?: number; to?: 'next'; reset?: boolean }) =>
       request<ClockInfo & { tick: { vaults: number; emails: number } }>('POST', '/api/dev/clock', body),
     outbox: () => request<{ messages: OutboxMessage[] }>('GET', '/api/dev/outbox'),
+    clearOutbox: () => request<{ ok: boolean }>('DELETE', '/api/dev/outbox'),
     reset: () => request<{ ok: boolean }>('POST', '/api/dev/reset', {}),
   },
 };
