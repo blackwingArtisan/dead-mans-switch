@@ -8,6 +8,7 @@ import { keepsakeLinkFor } from '../lib/seal';
 import { nextStep, tour, useTour } from '../lib/tour';
 import { useFieldErrors, type FieldMessages } from '../lib/validate';
 import { Candle } from '../components/Candle';
+import { CandlesLit } from '../components/CandlesLit';
 import { checkInCalendar, downloadCalendar } from '../lib/calendar';
 import { Flourish, Shell } from '../components/Chrome';
 import { FieldError } from '../components/FieldError';
@@ -602,6 +603,13 @@ function Epitaph({ vault }: { vault: VaultView }) {
         {delivered === 1 ? 'One letter' : `${delivered} letters`} delivered · {opened === 0 ? 'none opened yet' : `${opened} opened`}
       </p>
       <p className="epitaph__line">Your witnesses confirmed, and each recipient received a one-time link.</p>
+      <CandlesLit
+        testId="epitaph-candles"
+        candles={vault.letters
+          .filter((l) => l.candle)
+          .map((l) => ({ from: l.recipient.name, line: l.candle!.line, at: l.candle!.at }))
+          .sort((a, b) => a.at - b.at)}
+      />
     </div>
   );
 }

@@ -15,6 +15,7 @@ const KIND_LABEL: Record<string, string> = {
   'stand-down': 'Stand down',
   denied: 'Release stopped',
   release: 'Letter released',
+  'candle-lit': 'A candle lit back',
 };
 
 /** Splits plain text into text and link parts so outbox links are clickable. */

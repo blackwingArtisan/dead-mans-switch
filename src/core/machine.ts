@@ -27,6 +27,7 @@ export type EmailEffect =
   | { template: 'stand-down'; to: Person; authorName: string }
   | { template: 'denied'; to: Person; witnessName: string; graceEndsAt: number }
   | { template: 'witness-named'; to: Person; authorName: string; witnessesRequired: number }
+  | { template: 'candle-lit'; to: Person; authorName: string; from: string; line: string }
   | {
       template: 'release';
       to: Person;

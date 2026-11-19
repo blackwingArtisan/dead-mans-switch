@@ -183,6 +183,52 @@ describe('API lifecycle', () => {
     expect((await openLetter(vault.id, vault, vault.keepsakeHalf)).html).toContain('blue jar');
   });
 
+  it('a recipient who has read their letter can light one candle back, seen by the witnesses and the others', async () => {
+    await t.createVault({ cadenceDays: 30, graceDays: 7 });
+    await t.call('POST', '/api/vault/witnesses', { name: 'Silas Crane', email: 'silas@example.com' });
+    const theo = await sealFor({ name: 'Theo Whitlock', email: 'theo@example.com' }, 'keepsake', 'letter-theo-03');
+    const june = await sealFor({ name: 'June Okafor', email: 'june@example.com' }, 'vault', 'letter-june-03');
+    await t.call('POST', '/api/vault/letters', theo.body);
+    await t.call('POST', '/api/vault/letters', june.body);
+    await t.call('POST', '/api/dev/clock', { days: 38 });
+    const witness = t.linkFrom('witness-ask', 'silas@example.com');
+    await t.call('POST', `/api/witness/${witness.token}`, { response: 'confirm' }, false);
+    const theoLink = t.linkFrom('release', 'theo@example.com').token;
+    const juneLink = t.linkFrom('release', 'june@example.com').token;
+
+    // Not before reading.
+    const early = await t.call('POST', `/api/open/${theoLink}/candle`, { line: 'Thank you, Mum.' }, false);
+    expect(early.status).toBe(409);
+    expect((await t.call('GET', `/api/open/${theoLink}`, undefined, false)).body.candles).toEqual([]);
+
+    await t.call('POST', `/api/open/${theoLink}/break`, undefined, false);
+    expect((await t.call('POST', `/api/open/${theoLink}/candle`, { line: '   ' }, false)).status).toBe(400);
+    expect((await t.call('POST', `/api/open/${theoLink}/candle`, { line: 'x'.repeat(141) }, false)).status).toBe(400);
+    const lit = await t.call('POST', `/api/open/${theoLink}/candle`, { line: '  I found the\n blue tin.  ' }, false);
+    expect(lit.status).toBe(201);
+    expect(lit.body.candle.line).toBe('I found the blue tin.');
+    // Once only.
+    expect((await t.call('POST', `/api/open/${theoLink}/candle`, { line: 'Again.' }, false)).status).toBe(409);
+
+    // June sees Theo's candle only after she has read her own letter.
+    expect((await t.call('GET', `/api/open/${juneLink}`, undefined, false)).body.candles).toEqual([]);
+    await t.call('POST', `/api/open/${juneLink}/break`, undefined, false);
+    const juneInfo = (await t.call('GET', `/api/open/${juneLink}`, undefined, false)).body;
+    expect(juneInfo.candle).toBeNull();
+    expect(juneInfo.candles).toEqual([{ from: 'Theo Whitlock', line: 'I found the blue tin.', at: expect.any(Number) }]);
+
+    // The witness and June hear of it by email (their links are spent by then); Theo is not mailed his own line.
+    const told = t.outbox.list().filter((m) => m.kind === 'candle-lit');
+    expect(told.map((m) => m.to.email).sort()).toEqual(['june@example.com', 'silas@example.com']);
+    expect(told[0]!.subject).toBe('Theo Whitlock lit a candle for Mara Whitlock');
+    expect(told[0]!.text).toContain('"I found the blue tin."');
+    // And the author's released vigil shows it on the headstone.
+
+    const vigil = (await t.call('GET', '/api/vault')).body;
+    expect(vigil.letters.find((l: { id: string }) => l.id === 'letter-theo-03').candle.line).toBe('I found the blue tin.');
+    expect(vigil.history.some((h: { kind: string }) => h.kind === 'candle-lit')).toBe(true);
+  });
+
   it('burns a letter so it can never be released', async () => {
     await t.createVault();
     const keep = await sealFor({ name: 'Theo', email: 'theo@example.com' }, 'keepsake', 'letter-burn-01');

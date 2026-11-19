@@ -1766,6 +1766,81 @@ fieldset {
   padding: 0;
   list-style: none;
 }
+/* "A candle lit back": one line from each reader, each beside a small flame. */
+.candle-back {
+  margin: 26px auto 8px;
+  max-width: 40rem;
+  text-align: left;
+}
+.candle-back__form label {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--text);
+}
+.candle-back__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.candle-back__row input {
+  flex: 1 1 16rem;
+  min-width: 0;
+}
+.candle-back__mine {
+  font-family: var(--font-hand);
+  font-style: italic;
+  font-size: 1.15rem;
+  color: var(--flame);
+}
+.candles-lit {
+  list-style: none;
+  margin: 16px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+  text-align: left;
+}
+.candles-lit__item {
+  display: grid;
+  grid-template-columns: 18px 1fr;
+  column-gap: 12px;
+  align-items: start;
+}
+.candles-lit__flame {
+  grid-row: span 2;
+  width: 10px;
+  height: 16px;
+  margin: 6px 0 0 4px;
+  border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+  background: radial-gradient(circle at 50% 70%, #fff4c8 0%, #ffcf7a 35%, #ff8a3d 70%, rgba(255, 138, 61, 0) 72%);
+  box-shadow: 0 0 14px 4px rgba(255, 170, 80, 0.35);
+  animation: candle-lit-sway 2.6s ease-in-out infinite alternate;
+  transform-origin: 50% 100%;
+}
+@keyframes candle-lit-sway {
+  from { transform: rotate(-4deg) scaleY(0.96); }
+  to { transform: rotate(4deg) scaleY(1.04); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .candles-lit__flame { animation: none; }
+}
+.candles-lit__line {
+  font-family: var(--font-hand);
+  font-style: italic;
+  font-size: 1.2rem;
+  color: var(--parchment);
+}
+.candles-lit__from {
+  font-size: 0.92rem;
+  color: var(--muted);
+}
+.epitaph .candles-lit {
+  max-width: 26rem;
+  margin: 16px auto 0;
+}
+.epitaph .candles-lit__line {
+  text-shadow: none;
+}
 .letters__keep {
   margin-top: 18px;
   padding-top: 14px;

@@ -1,5 +1,6 @@
 /** Thin client for the API, plus the few things this browser remembers. */
 import type { SealedExport } from '../../core/export';
+import type { CandleBack, CandleLine } from '../../core/types';
 import type { VaultView } from '../../core/vault';
 import type { SealedLetter, Settings } from '../../core/types';
 
@@ -111,6 +112,8 @@ export interface OpenInfo {
   openedAt: number | null;
   opened: boolean;
   keepsakeTag: string | null;
+  candle: CandleLine | null;
+  candles: CandleBack[];
 }
 
 export interface ClockInfo {
@@ -160,6 +163,8 @@ export const api = {
       `/api/open/${encodeURIComponent(token)}/break`,
       {},
     ),
+  lightCandle: (token: string, line: string) =>
+    request<{ candle: CandleLine; candles: CandleBack[] }>('POST', `/api/open/${encodeURIComponent(token)}/candle`, { line }),
   dev: {
     clock: () => request<ClockInfo>('GET', '/api/dev/clock'),
     travel: (body: { days?: number; hours?: number; to?: 'next'; reset?: boolean }) =>

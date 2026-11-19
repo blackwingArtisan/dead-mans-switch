@@ -114,6 +114,10 @@ export function createApp(deps: AppDeps) {
 
   app.get('/api/open/:token', async (c) => c.json(await service.openInfo(c.req.param('token'))));
   app.post('/api/open/:token/break', async (c) => c.json(await service.breakSeal(c.req.param('token'))));
+  app.post('/api/open/:token/candle', async (c) => {
+    const body = await json(c);
+    return c.json(await service.lightCandle(c.req.param('token'), body.line), 201);
+  });
 
   // ── local-only demo tools ───────────────────────────────
   const dev = deps.dev;

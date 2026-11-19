@@ -224,6 +224,17 @@ test('a vault-custody letter opens from its link alone', async ({ page, browser 
   await expect(june.locator('.letter__flame')).toBeHidden();
   await expect(sheet).toHaveClass(/letter__page--lit/);
   await expect(june.locator('.letter__from')).toHaveClass(/letter__from--signed/);
+  // A candle lit back: one line, once, and the author's headstone carries it.
+  await june.getByLabel(/Leave one line for the others who loved Mara/).fill('I found the password sheet. Biscuit is fed.');
+  await june.getByTestId('light-candle').click();
+  await expect(june.getByTestId('candle-mine')).toContainText('Your candle is lit.');
+  await expect(june.getByTestId('candles-lit')).toContainText('I found the password sheet. Biscuit is fed.');
+  await expect(june.getByLabel(/Leave one line/)).toHaveCount(0);
+  await page.reload();
+  await expect(page.getByTestId('epitaph-candles')).toContainText('June Okafor');
+  // The witnesses and Theo are told by email, since their links are spent by now.
+  const panel = await openTimeMachine(page);
+  await expect(panel.locator('.outbox__item[data-kind="candle-lit"]')).toHaveCount(3);
   // With motion allowed the page chars from its edges before it turns to ash.
   await june.getByTestId('let-it-go').click();
   await expect(sheet).toHaveClass(/letter__page--burning/);

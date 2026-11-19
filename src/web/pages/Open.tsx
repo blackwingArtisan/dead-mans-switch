@@ -7,6 +7,7 @@ import { api, keepsakes, type OpenInfo } from '../lib/api';
 import { longDate } from '../lib/format';
 import { useRoom } from '../lib/room';
 import { LinkNotice } from '../components/Lost';
+import { LightACandle } from '../components/CandlesLit';
 import { sound } from '../lib/sound';
 import { tour } from '../lib/tour';
 import { Shell } from '../components/Chrome';
@@ -132,7 +133,7 @@ export function Open({ token, hash }: { token: string; hash: string }) {
     );
   }
 
-  if (stage === 'open' && letter) return <OpenedLetter info={info} letter={letter} safeHtml={safeHtml} />;
+  if (stage === 'open' && letter) return <OpenedLetter token={token} info={info} letter={letter} safeHtml={safeHtml} />;
 
   if (info.opened) {
     return (
@@ -145,6 +146,7 @@ export function Open({ token, hash }: { token: string; hash: string }) {
             once, and the vault forgot its copy afterwards. If you saved or printed it then, that copy is the letter.
           </p>
         </section>
+        <LightACandle token={token} authorName={info.authorName} />
       </Shell>
     );
   }
@@ -218,7 +220,7 @@ export function Open({ token, hash }: { token: string; hash: string }) {
 /** How long the letter takes to burn when motion is allowed. */
 const BURN_MS = 3400;
 
-function OpenedLetter({ info, letter, safeHtml }: { info: OpenInfo; letter: LetterContent; safeHtml: string }) {
+function OpenedLetter({ token, info, letter, safeHtml }: { token: string; info: OpenInfo; letter: LetterContent; safeHtml: string }) {
   const [dark, setDark] = useState(() => !matchMedia('(prefers-reduced-motion: reduce)').matches);
   // "Let it go": the parchment chars from the edges and the words fade to ash, then only a notice is left.
   const [fate, setFate] = useState<'kept' | 'burning' | 'ash'>('kept');
@@ -327,6 +329,7 @@ function OpenedLetter({ info, letter, safeHtml }: { info: OpenInfo; letter: Lett
               Print
             </button>
           </div>
+          <LightACandle token={token} authorName={info.authorName} />
           <p className="hint letter__release">
             Kept a copy? Then, if you wish, let this one go.{' '}
             <button type="button" className="btn btn--ghost btn--small" onClick={letItGo} disabled={fate !== 'kept'} data-testid="let-it-go">

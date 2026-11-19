@@ -60,6 +60,18 @@ export interface Letter {
   openTokenHash: string | null;
   releasedAt: number | null;
   openedAt: number | null;
+  /** "A candle lit back": one line the recipient may leave after reading. Absent on older vaults. */
+  candle?: CandleLine | null;
+}
+
+export interface CandleLine {
+  line: string;
+  at: number;
+}
+
+/** A candle as the other recipients and the witnesses see it. */
+export interface CandleBack extends CandleLine {
+  from: string;
 }
 
 export type HistoryKind =
@@ -77,6 +89,7 @@ export type HistoryKind =
   | 'letter-sealed'
   | 'letter-burned'
   | 'letter-opened'
+  | 'candle-lit'
   | 'witness-added'
   | 'witness-removed'
   | 'settings'

@@ -23,6 +23,7 @@ Notable changes to Dead Man's Switch. Work done with Kiro is recorded call by ca
 - **Sourced stakes.** The landing page and the honest page cite the CDC's 3,072,666 U.S. deaths in 2024 beside Gallup's 46% will rate, the SBA's 29.8 million U.S. businesses with no employees, and the published prices of Everplans, Trustworthy and GoodTrust, each checked at its source.
 - **A shorter landing comparison** that links to the full table on the honest page, and a third persona: Ruth, a hospice social worker.
 
+- **A candle lit back.** After reading, a recipient can leave one line, once, plain text. The witnesses and the other recipients get an email, the other recipients see it beside their own letters, and the released vigil's headstone carries every candle.
 - **If this service ends before you do.** A stated sunset policy (90 days' notice, a sealed export for every author, nothing deleted silently), **Export the sealed letters** on the vigil, and `offline-open.html`, a single saved page that opens a letter from the export and its keepsake with no server and no network.
 - **Plans, stated plainly.** Free for one vigil; Keepsake at $39 once with the printed kit; Teams at $4 a seat a month for founders and ops leads. Both paid plans come after Kiroween, and the landing page says so.
 - **Lost addresses and spent links lead somewhere.** An unknown address shows an unlit candle and "No vigil is kept here"; a bad letter, witness or check-in link says what to check and offers "Return to the threshold" and "How the seal works", without repeating its heading.

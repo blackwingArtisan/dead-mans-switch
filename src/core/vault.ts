@@ -1,5 +1,5 @@
 /** Vault construction, validation and the public view the author sees. */
-import type { Custody, HistoryEntry, Letter, Person, Schedule, Settings, SwitchState, Vault, Witness } from './types';
+import type { CandleBack, CandleLine, Custody, HistoryEntry, Letter, Person, Schedule, Settings, SwitchState, Vault, Witness } from './types';
 import { DEFAULT_SETTINGS } from './types';
 import { confirmations, requiredConfirmations } from './machine';
 import { nextEventAt, scheduleOf } from './time';
@@ -73,6 +73,24 @@ export function newVault(args: {
 }
 
 export const MAX_LETTERS = 50;
+export const MAX_CANDLE_LINE = 140;
+
+/** One line, plain text, at most MAX_CANDLE_LINE characters once whitespace is collapsed. */
+export function cleanCandleLine(input: unknown): string {
+  if (typeof input !== 'string') throw new ValidationError('Write one line to leave with your candle.');
+  const line = input.replace(/\s+/g, ' ').trim();
+  if (!line) throw new ValidationError('Write one line to leave with your candle.');
+  if (line.length > MAX_CANDLE_LINE) throw new ValidationError(`Keep it to one line of up to ${MAX_CANDLE_LINE} characters.`);
+  return line;
+}
+
+/** Every candle left so far, oldest first. */
+export function candlesOf(vault: Vault): CandleBack[] {
+  return vault.letters
+    .filter((l) => l.candle)
+    .map((l) => ({ from: l.recipient.name, line: l.candle!.line, at: l.candle!.at }))
+    .sort((a, b) => a.at - b.at);
+}
 export const MAX_WITNESSES = 10;
 export const MAX_CIPHERTEXT = 400_000;
 
@@ -95,6 +113,7 @@ export interface LetterView {
   sealedAt: number;
   releasedAt: number | null;
   openedAt: number | null;
+  candle: CandleLine | null;
 }
 
 export interface VaultView {
@@ -142,6 +161,7 @@ export function viewOf(vault: Vault, now: number): VaultView {
       sealedAt: l.sealedAt,
       releasedAt: l.releasedAt,
       openedAt: l.openedAt,
+      candle: l.candle ?? null,
     })),
     history: vault.history.slice(-60).reverse(),
     releasedAt: vault.releasedAt,

@@ -6,6 +6,8 @@ import { EXPORT_FORMAT, type ExportedLetter, type SealedExport } from '../core/e
 import { nextEventAt } from '../core/time';
 import type { Custody, Letter, Person, SealedLetter, Vault } from '../core/types';
 import {
+  candlesOf,
+  cleanCandleLine,
   cleanPerson,
   cleanSettings,
   MAX_CIPHERTEXT,
@@ -279,7 +281,39 @@ export class SwitchService {
       openedAt: l.openedAt,
       opened: l.sealed === null,
       keepsakeTag: l.sealed?.keepsakeTag ?? null,
+      // Only someone who has read their letter sees the candles the others left.
+      candle: l.candle ?? null,
+      candles: l.openedAt !== null ? candlesOf(vault) : [],
     };
+  }
+
+  /** "A candle lit back": once their letter is read, a recipient may leave one line, once. */
+  async lightCandle(token: string, input: unknown) {
+    const line = cleanCandleLine(input);
+    const { vaultId, hash } = await this.lookup('open', token, 'This letter link is not valid.');
+    return this.transact(vaultId, (vault, ctx) => {
+      const l = vault.letters.find((x) => x.openTokenHash === hash);
+      if (!l) throw new HttpError(404, 'This letter link is not valid.');
+      if (l.openedAt === null) throw new HttpError(409, 'Read the letter first; then you can light a candle back.');
+      if (l.candle) throw new HttpError(409, 'You have already lit your candle. It stays lit.');
+      l.candle = { line, at: ctx.now };
+      vault.history.push({ at: ctx.now, kind: 'candle-lit', note: `${l.recipient.name} lit a candle back.` });
+      // The witnesses and the other recipients hear of it by email: their links are spent by now.
+      const to = [
+        ...vault.witnesses.map((w) => ({ name: w.name, email: w.email })),
+        ...vault.letters.filter((x) => x !== l && x.releasedAt !== null).map((x) => x.recipient),
+      ].filter((p, i, all) => p.email !== l.recipient.email && all.findIndex((q) => q.email === p.email) === i);
+      const effects: Effect[] = to.map((p) => ({
+        type: 'email',
+        vaultId: vault.id,
+        template: 'candle-lit',
+        to: p,
+        authorName: vault.author.name,
+        from: l.recipient.name,
+        line,
+      }));
+      return { vault, effects, result: { candle: l.candle, candles: candlesOf(vault) } };
+    });
   }
 
   /** Hands over the sealed copy exactly once, then forgets it. */

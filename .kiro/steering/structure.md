@@ -23,7 +23,8 @@ src/
   web/         React app
     pages/         one file per route (Landing, Vigil, Write, Witness, Keepsake, Open, HowItWorks)
     components/    Candle, WaxSeal, Chrome (shell and room atmosphere), Editor, TimeMachine (with the outbox),
-                   Comparison, FieldError, SoundToggle, Lost (the 404 page and spent-link notices)
+                   Comparison, FieldError, SoundToggle, Lost (the 404 page and spent-link notices),
+                   CandlesLit (a candle lit back after reading)
     lib/           api client, router, seal (browser-side sealing), format, room (body data-room),
                    tour (demo guide), validate (in-theme form errors), sound (generated Web Audio,
                    off by default), presenter (?presenter=1 for recordings), calendar (.ics reminder)

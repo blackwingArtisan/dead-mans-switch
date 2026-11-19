@@ -106,6 +106,7 @@ A vigil can outlast a web service, so it is built not to depend on one:
 - Reminder, grace, last-call, witness, stand-down, denial and release emails (plain text and HTML).
 - Witness page with a two-step confirm and a one-tap "they still live" that stops the release.
 - Recipient page: keepsake check before spending the link, the seal cracks, the letter unfolds; download and print; the server forgets its copy.
+- **A candle lit back**: after reading, a recipient can leave one line ("I found the blue tin"). The witnesses and the other recipients are told by email, the others see it beside their own letters, and the author's headstone carries it.
 - **One-tap check-in from email**: reminder and grace emails carry a link that checks in from any device, even one that has never opened the vigil. The page asks for a press first (mail scanners that follow links change nothing), the link can do nothing but check in, and a check-in spends every link from that cycle. Only a SHA-256 hash of each link is stored.
 - **Time machine** (local only): move the clock forward a day, a week, a month or to the next event, and read every email in the outbox. The whole lifecycle runs in about a minute.
 - **Play the whole story** (local only): a captioned, hands-off run from a lit candle to a letter read by candlelight.

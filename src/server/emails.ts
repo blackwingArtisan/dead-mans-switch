@@ -101,6 +101,15 @@ function draft(effect: EmailEffect, baseUrl: string, checkInToken?: string): Dra
           'You cannot read their letters, and neither can we.',
         ],
       };
+    case 'candle-lit':
+      return {
+        subject: `${effect.from} lit a candle for ${effect.authorName}`,
+        lines: [
+          `${effect.from} read the letter ${effect.authorName} left them, and lit a candle back:`,
+          `"${effect.line}"`,
+          'Nothing is needed from you. We thought you would want to know.',
+        ],
+      };
     case 'release': {
       const fragment = effect.keepsakeHalf ? `#k=${effect.keepsakeHalf}` : '';
       return {
