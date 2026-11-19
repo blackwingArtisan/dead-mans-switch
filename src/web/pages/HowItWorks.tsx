@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { Shell } from '../components/Chrome';
 import { Comparison, Stakes } from '../components/Comparison';
-import { WaxSeal } from '../components/WaxSeal';
+import { KeyDiagram } from '../components/KeyDiagram';
 
 export function HowItWorks() {
   // The landing teaser links to the table by its anchor; the page renders after load, so scroll once it exists.
@@ -18,13 +18,7 @@ export function HowItWorks() {
         </h1>
         <Stakes />
 
-        <div className="halves" aria-hidden="true">
-          <WaxSeal size={84} mark="A" tone="gold" />
-          <span className="halves__op">⊕</span>
-          <WaxSeal size={84} mark="B" tone="oxblood" />
-          <span className="halves__op">=</span>
-          <WaxSeal size={84} mark="K" tone="ink" />
-        </div>
+        <KeyDiagram />
 
         <h2>Two halves of one key</h2>
         <p>

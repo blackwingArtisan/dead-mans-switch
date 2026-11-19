@@ -25,6 +25,11 @@ test('the honest page explains the custody limits', async ({ page }) => {
   await page.goto('/how-it-works');
   await expect(page.getByRole('heading', { name: 'How the seal works' })).toBeVisible();
   await expect(page.getByText('Vault custody is a convenience, not a secret.')).toBeVisible();
+  // One drawing of the key's journey, with what the vault can and cannot see in text beneath it.
+  const diagram = page.getByTestId('key-diagram');
+  await expect(diagram).toBeVisible();
+  await expect(diagram.locator('figcaption')).toContainText('Only the recipient’s browser ever holds both.');
+  await expect(diagram.getByText('The vault never sees')).toBeVisible();
   // The full comparison, with the paid tools people already use and their published prices.
   await expect(page.getByRole('region', { name: 'Comparison table' })).toBeVisible();
   await expect(page.getByTestId('paid-comparables')).toContainText('Everplans Premium');

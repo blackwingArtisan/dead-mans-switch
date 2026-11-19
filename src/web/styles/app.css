@@ -2887,16 +2887,148 @@ fieldset {
 .prose li {
   margin-bottom: 10px;
 }
-.halves {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: clamp(8px, 3vw, 22px);
-  margin: 26px 0 10px;
+/* How the seal works, drawn: stations, the paths the halves travel, and what the vault can see. */
+.keymap {
+  margin: 26px auto 18px;
+  max-width: 560px;
 }
-.halves__op {
-  font-size: 2rem;
-  color: var(--brass);
+.keymap svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.keymap__station rect {
+  fill: rgba(22, 16, 11, 0.92);
+  stroke: var(--brass-deep);
+  stroke-width: 1.2;
+}
+.keymap__station--gold rect {
+  stroke: var(--brass);
+}
+.keymap__station--wax rect {
+  stroke: var(--wax-hi);
+}
+.keymap text {
+  text-anchor: middle;
+  font-family: var(--font-body);
+}
+.keymap__title {
+  font-family: var(--font-heading);
+  font-size: 15px;
+  fill: var(--parchment);
+}
+.keymap__line {
+  font-size: 14px;
+  fill: var(--muted);
+}
+.keymap__path {
+  fill: none;
+  stroke-width: 2;
+  stroke-dasharray: 5 5;
+}
+.keymap__path--a {
+  stroke: var(--brass);
+}
+.keymap__path--b {
+  stroke: var(--wax-hi);
+}
+.keymap__tag {
+  font-family: var(--font-heading);
+  font-size: 18px;
+}
+.keymap__tag--a {
+  fill: var(--flame);
+}
+.keymap__tag--b {
+  fill: var(--danger);
+}
+.keymap__note {
+  font-size: 13px;
+  font-style: italic;
+  fill: var(--muted);
+}
+.keymap__dot {
+  display: none;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .keymap__dot {
+    display: block;
+    offset-distance: 0%;
+    offset-rotate: 0deg;
+    animation: keymap-travel 6s ease-in-out infinite;
+  }
+  .keymap__dot--late {
+    animation-name: keymap-travel-late;
+  }
+}
+.keymap__dot--a {
+  fill: var(--flame);
+}
+.keymap__dot--b {
+  fill: var(--wax-hi);
+}
+@keyframes keymap-travel {
+  0% {
+    offset-distance: 0%;
+    opacity: 0;
+  }
+  8% {
+    opacity: 1;
+  }
+  40%,
+  100% {
+    offset-distance: 100%;
+    opacity: 0;
+  }
+}
+@keyframes keymap-travel-late {
+  0%,
+  50% {
+    offset-distance: 0%;
+    opacity: 0;
+  }
+  58% {
+    opacity: 1;
+  }
+  92%,
+  100% {
+    offset-distance: 100%;
+    opacity: 0;
+  }
+}
+.keymap figcaption {
+  margin-top: 10px;
+  text-align: center;
+  font-family: var(--font-hand);
+  color: var(--text);
+}
+.keymap__strip {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-top: 14px;
+}
+.keymap__strip > div {
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--panel);
+}
+.keymap__strip p.keymap__head {
+  margin: 0 0 4px;
+  font-family: var(--font-heading);
+  font-size: 1rem;
+  color: var(--parchment);
+}
+.keymap__strip p {
+  margin: 0;
+  font-size: 1rem;
+  color: var(--muted);
+}
+@media (max-width: 520px) {
+  .keymap__strip {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* ── demo guide ─────────────────────────────── */
