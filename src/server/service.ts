@@ -42,6 +42,9 @@ const B64U = /^[A-Za-z0-9_-]+$/;
 const LETTER_ID = /^[A-Za-z0-9_-]{8,32}$/;
 
 export class SwitchService {
+  /** The tail of each vault's queue of changes; see `exclusive`. */
+  private readonly queues = new Map<string, Promise<unknown>>();
+
   constructor(private readonly deps: ServiceDeps) {}
 
   now(): number {
@@ -297,7 +300,32 @@ export class SwitchService {
     return (await this.run(vaultId, mutate)).result;
   }
 
+  /**
+   * Runs one change to a vault at a time, in arrival order. Without this, the background tick could
+   * load a vault, yield while it hashes tokens, and save its older copy over a letter or witness
+   * that a request added in between. The queue is per process: the Node server has one, and the
+   * Worker's scheduled tick runs in its own invocation.
+   */
+  private async exclusive<T>(vaultId: string, work: () => Promise<T>): Promise<T> {
+    const before = this.queues.get(vaultId) ?? Promise.resolve();
+    const mine = before.then(work, work);
+    const tail = mine.then(
+      () => undefined,
+      () => undefined,
+    );
+    this.queues.set(vaultId, tail);
+    try {
+      return await mine;
+    } finally {
+      if (this.queues.get(vaultId) === tail) this.queues.delete(vaultId);
+    }
+  }
+
   private async run<T>(vaultId: string, mutate: Mutation<T>): Promise<{ result: T; effects: Effect[] }> {
+    return this.exclusive(vaultId, () => this.runNow(vaultId, mutate));
+  }
+
+  private async runNow<T>(vaultId: string, mutate: Mutation<T>): Promise<{ result: T; effects: Effect[] }> {
     const loaded = await this.mustGet(vaultId);
     const ctx: MachineContext = { now: this.now(), mint: await tokenPool(loaded.witnesses.length + loaded.letters.length + 4) };
     const ticked = step(loaded, { type: 'tick' }, ctx);
