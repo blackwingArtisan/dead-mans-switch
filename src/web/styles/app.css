@@ -1936,6 +1936,46 @@ fieldset {
   }
 }
 
+/* ── story captions ─────────────────────────── */
+
+.story {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  z-index: 60;
+  transform: translateX(-50%);
+  width: min(calc(100% - 96px), 760px);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 14px 14px 22px;
+  border: 1px solid var(--brass-deep);
+  border-radius: var(--radius);
+  background: rgba(10, 7, 5, 0.92);
+  box-shadow: 0 16px 50px rgba(0, 0, 0, 0.7);
+}
+.story__caption {
+  margin: 0;
+  flex: 1;
+  font-family: var(--font-hand);
+  font-size: clamp(1.1rem, 2.4vw, 1.4rem);
+  color: var(--parchment);
+  line-height: 1.4;
+}
+.story__step {
+  display: block;
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--brass);
+}
+@media print {
+  .story {
+    display: none !important;
+  }
+}
+
 /* ── time machine ───────────────────────────── */
 
 .tm-toggle {

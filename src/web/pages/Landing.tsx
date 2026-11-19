@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react';
 import { api, session } from '../lib/api';
 import { navigate } from '../lib/router';
 import { DEMO, FOUNDER_DEMO, sealAndStore } from '../lib/seal';
+import { playStory, useStoryAvailable } from '../lib/story';
 import { tour } from '../lib/tour';
 import { useFieldErrors, type FieldMessages } from '../lib/validate';
 import { Candle } from '../components/Candle';
@@ -22,6 +23,7 @@ export function Landing() {
   const [cadence, setCadence] = useState(30);
   const [grace, setGrace] = useState(7);
   const [error, setError] = useState('');
+  const storyAvailable = useStoryAvailable();
   const [busy, setBusy] = useState<'' | 'create' | 'demo' | 'founder'>('');
 
   const begin = async (e: FormEvent<HTMLFormElement>) => {
@@ -81,6 +83,11 @@ export function Landing() {
             <button type="button" className="btn btn--link" onClick={() => demo(FOUNDER_DEMO, 'founder')} disabled={busy !== ''}>
               {busy === 'founder' ? 'Summoning…' : 'or a founder’s vigil'}
             </button>
+            {storyAvailable && (
+              <button type="button" className="btn btn--link" onClick={() => void playStory()} disabled={busy !== ''} data-testid="play-story">
+                ▶ Play the whole story (40 s)
+              </button>
+            )}
           </div>
           {error && busy === '' && (
             <p className="form-error" role="alert">

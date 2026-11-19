@@ -202,3 +202,19 @@ test("a founder's demo vigil seals Priya's letters and names her own witness in 
   await tm.getByRole('button', { name: '+7 days' }).click();
   await expect(page.getByTestId('guide')).toContainText('“Witness asked” for Noor Haddad');
 });
+
+test('"Play the whole story" runs the lifecycle hands-off, with captions, to an opened letter', async ({ page }) => {
+  // A fifth of the real pace: about eight seconds, slow enough that every caption is seen.
+  await page.goto('/?story-pace=0.2');
+  await page.getByTestId('play-story').click();
+  const caption = page.getByTestId('story');
+  await expect(caption).toContainText('Mara keeps a vigil');
+  await expect(caption).toContainText('Silas, her witness, confirms', { timeout: 20_000 });
+  await expect(caption).toContainText('She reads it by her last candle', { timeout: 20_000 });
+  await expect(page.getByTestId('opened-letter')).toContainText('Biscuit eats twice a day');
+  // The last caption stays as an end card until it is closed.
+  await expect(caption).toContainText('Some words should wait', { timeout: 20_000 });
+  await expect(caption).not.toContainText('of 7');
+  await caption.getByRole('button', { name: 'Close' }).click();
+  await expect(caption).toHaveCount(0);
+});

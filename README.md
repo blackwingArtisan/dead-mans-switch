@@ -2,6 +2,8 @@
 
 **Write letters for the people you love, sealed until you can no longer check in.**
 
+![The whole story in eight seconds: the candle burns, gutters in grace and goes out as the room dies with it; the witness confirms; the recipient breaks the seal and reads by candlelight.](docs/media/story.gif)
+
 [Judge's 60-second path](#judges-60-second-path) · [Why not Google or Apple?](#why-not-the-tools-you-already-have) · [How the seal works](#the-seal) · [Built with Kiro](#built-with-kiro) · [Kiro log](KIRO-LOG.md) · [Spec](.kiro/specs/switch-lifecycle)
 
 **[46% of U.S. adults have a will](https://news.gallup.com/poll/351500/how-many-americans-have-will.aspx)** (Gallup, 2021). Not one of those wills tells your sister where the password sheet is.
@@ -15,7 +17,9 @@ Built for Kiroween 2026, Costume Contest category.
 > 1. `npm install && npm run demo`, open http://localhost:3140 and press **Try a demo vigil**. You are Mara, with two sealed letters and two witnesses.
 > 2. Open the **Time machine** (hourglass, bottom right) and press **+30 days**. The flame gutters and the grace email lands in the outbox.
 > 3. Press **+7 days**. The candle goes out and the witnesses are asked. In the outbox, open **Witness asked** and confirm as Silas.
-> 4. Open **Letter released** for June and break the seal. The letter decrypts in that browser tab, once.
+> 4. Open **Letter released** for June and break the seal. The letter decrypts in that browser tab, once. Move your cursor over the dark page to read it by candlelight.
+>
+> Or press **▶ Play the whole story** on the landing page: a captioned, hands-off run of all four steps in about 40 seconds.
 
 ## Who it is for
 
@@ -37,17 +41,27 @@ The big platforms hand over accounts. This hands over the words, and even we can
 
 ## The costume
 
-The app wears its own state. The candle is the state machine, drawn:
+| | |
+|---|---|
+| ![Landing page: a lit candle beside "Some words should wait."](docs/media/landing.jpg) | ![Grace: the flame gutters and the room dims](docs/media/grace.jpg) |
+| ![Witnesses asked: the candle is out, the room is dark and smoky](docs/media/candle-out.jpg) | ![The recipient reads by candlelight](docs/media/letter-by-candlelight.jpg) |
+
+<img src="docs/media/phone-grace.jpg" alt="On a phone: the vigil in grace, with the check-in seal above the fold" width="260" align="right">
+
+The app wears its own state. The candle is the state machine, drawn, and the whole room follows it:
 
 | Stage | What you see | What it means |
 |---|---|---|
 | Alive | A full candle, a steady flame, warm embers drifting | You checked in; nothing will be sent |
 | Reminder | The wax burns down with the days left | Your check-in is due soon |
-| Grace | The flame gutters | You missed it; reminders keep coming |
-| Witnesses asked | The candle is out and smoking | The people you trust are asked to confirm |
-| Released | A cracked wax seal and a letter that unfolds | Each recipient opens their letter once |
+| Grace | The flame gutters, the glow halves, the brass tarnishes, the embers slow | You missed it; reminders keep coming |
+| Witnesses asked | The candle is out and smoking; the room goes near black, cold and smoky | The people you trust are asked to confirm |
+| Check-in | A match strike: the wick flares, the wax grows back, sparks leave the seal, the warmth returns | Everything is cancelled and the witnesses stand down |
+| Released | A cracked seal, a moonlit room, and a letter read by the light of one candle | Each recipient opens their letter once |
 
-Wax seals carry each recipient's initial, the check-in is a seal you press, and the recipient breaks a seal to read. Every one of these facts is also stated in text beside the candle, announced to screen readers, and calm under reduced motion.
+Wax seals carry each recipient's initial, the check-in is a seal you press, and the recipient breaks a seal to read. Every one of these facts is also stated in text beside the candle and announced to screen readers; under reduced motion each change is instant and the letter opens fully lit.
+
+<br clear="right">
 
 ## Beyond Kiroween
 
@@ -70,6 +84,11 @@ Wax seals carry each recipient's initial, the check-in is a seal you press, and 
 - Witness page with a two-step confirm and a one-tap "they still live" that stops the release.
 - Recipient page: keepsake check before spending the link, the seal cracks, the letter unfolds; download and print; the server forgets its copy.
 - **Time machine** (local only): move the clock forward a day, a week, a month or to the next event, and read every email in the outbox. The whole lifecycle runs in about a minute.
+- **Play the whole story** (local only): a captioned, hands-off run from a lit candle to a letter read by candlelight.
+- **The room follows the candle**: glow, embers, smoke, moonlight and palette change with the state, and a check-in relights it.
+- **Read by their last candle**: the opened letter starts dark and a circle of light follows the reader's pointer or finger.
+- **Two demo vigils**: Mara writing to her family, and Priya, a founder, writing to her co-founder about the accounts only she holds.
+- A demo guide that says what to try next at each stage.
 - An honest "How the seal works" page.
 
 ## Run it
@@ -88,6 +107,8 @@ For development with hot reload: `npm run dev` (web on :3141, API on :3140, time
 `npm start` runs the same server the way a deployment would: system clock, no time machine, no demo routes. The time machine is opt-in (`--time-machine` or `DMS_CLOCK=machine`) and the server refuses to start it for anything but a localhost origin.
 
 Local data lives in `./data` (`vaults.json`, `outbox.json`, `clock.json`). Delete the folder or use **Reset the whole demo** to start over.
+
+To refresh the README media, start `npm run demo` and run `node scripts/capture-media.mjs` (the GIF needs ffmpeg).
 
 ## Test it
 
