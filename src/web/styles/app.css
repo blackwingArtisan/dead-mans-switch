@@ -1786,6 +1786,61 @@ fieldset {
   text-align: right;
   margin: 28px 0 0;
 }
+/* Read by their last candle: darkness over the page with a circle of light at the pointer. */
+.letter__page > .letter__shade {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  border-radius: inherit;
+  background: radial-gradient(
+    circle 210px at var(--x, 50%) var(--y, 150px),
+    rgba(255, 186, 96, 0.05) 0%,
+    rgba(20, 12, 6, 0) 46%,
+    rgba(9, 6, 3, 0.97) 70%,
+    rgb(6, 4, 2) 100%
+  );
+  animation: candlelight 2.8s ease-in-out infinite;
+  transition: opacity 1.4s ease;
+}
+.letter__page--lit > .letter__shade {
+  opacity: 0;
+  animation: none;
+}
+.letter__page--dark {
+  cursor: none;
+  touch-action: pan-y;
+}
+@keyframes candlelight {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  40% {
+    opacity: 0.985;
+  }
+  55% {
+    opacity: 1;
+  }
+  70% {
+    opacity: 0.975;
+  }
+}
+.letter__from {
+  clip-path: inset(0 100% 0 0);
+}
+.letter__from--signed {
+  clip-path: inset(0 0 0 0);
+  animation: ink 2.6s steps(26, end);
+}
+@keyframes ink {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
 .letter__after {
   text-align: center;
   margin-top: 26px;
@@ -2153,5 +2208,11 @@ fieldset {
   .parchment {
     box-shadow: none;
     background: #fff;
+  }
+  .letter__page > .letter__shade {
+    display: none;
+  }
+  .letter__from {
+    clip-path: none !important;
   }
 }

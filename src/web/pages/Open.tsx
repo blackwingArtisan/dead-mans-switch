@@ -1,10 +1,11 @@
 import DOMPurify from 'dompurify';
-import { useEffect, useMemo, useState, type FormEvent } from 'react';
+import { useEffect, useMemo, useRef, useState, type FormEvent, type PointerEvent } from 'react';
 import { keepsakeTagOf, openLetter } from '../../core/crypto';
 import { fromBase32, toBase64Url } from '../../core/encoding';
 import type { LetterContent } from '../../core/types';
 import { api, keepsakes, type OpenInfo } from '../lib/api';
 import { longDate } from '../lib/format';
+import { useRoom } from '../lib/room';
 import { Shell } from '../components/Chrome';
 import { WaxSeal } from '../components/WaxSeal';
 
@@ -120,38 +121,7 @@ export function Open({ token, hash }: { token: string; hash: string }) {
     );
   }
 
-  if (stage === 'open' && letter) {
-    return (
-      <Shell>
-        <article className="letter" aria-labelledby="letter-title" data-testid="opened-letter">
-          <div className="letter__seal-halves" aria-hidden="true">
-            <WaxSeal size={84} cracked mark={info.authorName.trim()[0]} />
-          </div>
-          <div className="letter__page parchment">
-            <p className="letter__eyebrow">
-              From {info.authorName} · sealed {longDate(info.sealedAt)}
-            </p>
-            <h1 id="letter-title" className="letter__title">
-              {letter.title || `For ${info.recipientName}`}
-            </h1>
-            <div className="letter__body" dangerouslySetInnerHTML={{ __html: safeHtml }} />
-            {letter.from && <p className="letter__from">{letter.from}</p>}
-          </div>
-          <div className="letter__after">
-            <p className="hint">This link opened once. The vault has now forgotten its copy, so keep your own.</p>
-            <div className="letter__actions">
-              <button type="button" className="btn btn--wax" onClick={() => download(letter, info, safeHtml)}>
-                Keep this letter (download)
-              </button>
-              <button type="button" className="btn btn--ghost" onClick={() => window.print()}>
-                Print
-              </button>
-            </div>
-          </div>
-        </article>
-      </Shell>
-    );
-  }
+  if (stage === 'open' && letter) return <OpenedLetter info={info} letter={letter} safeHtml={safeHtml} />;
 
   if (info.opened) {
     return (
@@ -224,6 +194,86 @@ export function Open({ token, hash }: { token: string; hash: string }) {
           <p className="hint">The link opens once. When the letter appears, save a copy.</p>
         </form>
       </section>
+    </Shell>
+  );
+}
+
+/**
+ * "Read by their last candle": the opened letter starts in darkness and a circle of candlelight
+ * follows the pointer or finger to reveal it; the signature writes itself in ink once the light
+ * reaches it. The text is always in the page for assistive technology, "Light the room" shows it
+ * all at once, and under reduced motion the letter simply opens fully lit.
+ */
+function OpenedLetter({ info, letter, safeHtml }: { info: OpenInfo; letter: LetterContent; safeHtml: string }) {
+  const [dark, setDark] = useState(() => !matchMedia('(prefers-reduced-motion: reduce)').matches);
+  const [signed, setSigned] = useState(!dark);
+  const pageRef = useRef<HTMLDivElement>(null);
+  const signRef = useRef<HTMLParagraphElement>(null);
+  useRoom('released');
+
+  const follow = (e: PointerEvent<HTMLDivElement>) => {
+    if (!dark) return;
+    const page = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - page.left;
+    const y = e.clientY - page.top;
+    e.currentTarget.style.setProperty('--x', `${Math.round(x)}px`);
+    e.currentTarget.style.setProperty('--y', `${Math.round(y)}px`);
+    const sign = signRef.current?.getBoundingClientRect();
+    if (!signed && sign && e.clientY > sign.top - 120) setSigned(true);
+  };
+
+  const lightRoom = () => {
+    setDark(false);
+    setSigned(true);
+  };
+
+  return (
+    <Shell>
+      <article className="letter" aria-labelledby="letter-title" data-testid="opened-letter">
+        <div className="letter__seal-halves" aria-hidden="true">
+          <WaxSeal size={84} cracked mark={info.authorName.trim()[0]} />
+        </div>
+        <div
+          ref={pageRef}
+          className={`letter__page parchment ${dark ? 'letter__page--dark' : 'letter__page--lit'}`}
+          onPointerMove={follow}
+          onPointerDown={follow}
+          data-testid="letter-page"
+        >
+          <p className="letter__eyebrow">
+            From {info.authorName} · sealed {longDate(info.sealedAt)}
+          </p>
+          <h1 id="letter-title" className="letter__title">
+            {letter.title || `For ${info.recipientName}`}
+          </h1>
+          <div className="letter__body" dangerouslySetInnerHTML={{ __html: safeHtml }} />
+          {letter.from && (
+            <p ref={signRef} className={`letter__from ${signed ? 'letter__from--signed' : ''}`}>
+              {letter.from}
+            </p>
+          )}
+          <div className="letter__shade" aria-hidden="true" />
+        </div>
+        <div className="letter__after">
+          {dark ? (
+            <p className="hint" data-testid="candle-hint">
+              Read by their last candle: move your cursor or finger over the page.{' '}
+              <button type="button" className="btn btn--ghost btn--small" onClick={lightRoom}>
+                Light the room
+              </button>
+            </p>
+          ) : null}
+          <p className="hint">This link opened once. The vault has now forgotten its copy, so keep your own.</p>
+          <div className="letter__actions">
+            <button type="button" className="btn btn--wax" onClick={() => download(letter, info, safeHtml)}>
+              Keep this letter (download)
+            </button>
+            <button type="button" className="btn btn--ghost" onClick={() => window.print()}>
+              Print
+            </button>
+          </div>
+        </div>
+      </article>
     </Shell>
   );
 }

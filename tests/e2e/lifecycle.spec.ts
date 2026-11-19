@@ -98,6 +98,9 @@ test('write a letter, fall silent, witness confirms, recipient opens it once', a
   const letter = theo.getByTestId('opened-letter');
   await expect(letter).toContainText('For Theo, when the lights go out');
   await expect(letter).toContainText('The spare key is under the third stone by the gate.');
+  // Under reduced motion the letter opens fully lit, with no candlelight reveal.
+  await expect(theo.getByTestId('letter-page')).toHaveClass(/letter__page--lit/);
+  await expect(theo.getByTestId('candle-hint')).toHaveCount(0);
 
   // One time only.
   await theo.reload();
@@ -135,12 +138,26 @@ test('a vault-custody letter opens from its link alone', async ({ page, browser 
 
   const href = await outboxLink(page, 'release', 'June Okafor');
   expect(href).toContain('#k=');
-  const ctx = await browser.newContext({ reducedMotion: 'reduce' });
+  // With motion allowed, June reads by candlelight: the page starts dark, the light follows her pointer,
+  // and "Light the room" shows it all. The text is in the page throughout for assistive technology.
+  const ctx = await browser.newContext({ reducedMotion: 'no-preference' });
   const june = await ctx.newPage();
   await june.goto(href);
   await expect(june.getByTestId('keepsake-ready')).toContainText('carries its own key');
   await june.getByTestId('break-seal').click();
   await expect(june.getByTestId('opened-letter')).toContainText('Biscuit eats twice a day');
+  const sheet = june.getByTestId('letter-page');
+  await expect(sheet).toHaveClass(/letter__page--dark/);
+  await expect(june.locator('body')).toHaveAttribute('data-room', 'released');
+  await june.waitForTimeout(1200); // let the page finish unfolding
+  const box = (await sheet.boundingBox())!;
+  await june.mouse.move(box.x + 120, box.y + 160);
+  await expect
+    .poll(async () => Math.abs(parseFloat(await sheet.evaluate((el) => (el as HTMLElement).style.getPropertyValue('--x'))) - 120))
+    .toBeLessThanOrEqual(2);
+  await june.getByRole('button', { name: 'Light the room' }).click();
+  await expect(sheet).toHaveClass(/letter__page--lit/);
+  await expect(june.locator('.letter__from')).toHaveClass(/letter__from--signed/);
   await ctx.close();
 });
 
