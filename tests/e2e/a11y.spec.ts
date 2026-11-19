@@ -32,6 +32,14 @@ test('vigil, writing desk and time machine have no WCAG AA violations', async ({
   await page.getByTestId('write-letter').click();
   await expect(page.getByRole('heading', { name: 'Write a letter' })).toBeVisible();
   await audit(page);
+
+  await page.getByLabel('For', { exact: true }).fill('Theo Whitlock');
+  await page.getByLabel('Their email').fill('theo@example.com');
+  await page.getByRole('textbox', { name: 'Your letter' }).click();
+  await page.keyboard.type('The spare key is under the third stone.');
+  await page.getByTestId('seal-letter').click();
+  await expect(page.getByTestId('keepsake-card')).toBeVisible();
+  await audit(page);
 });
 
 test('honest page has no WCAG AA violations', async ({ page }) => {

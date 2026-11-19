@@ -1657,6 +1657,121 @@ fieldset {
   color: var(--ink);
   border-color: rgba(43, 29, 18, 0.4);
 }
+.keepsake-card__body {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  text-align: left;
+}
+.keepsake-card__body .keepsake-card__code {
+  margin-bottom: 8px;
+}
+.keepsake-card__body .keepsake-card__note {
+  margin: 0;
+  font-size: 0.95rem;
+}
+.keepsake-qr {
+  flex: none;
+  border: 1px solid #b89a66;
+  border-radius: 4px;
+}
+@media (max-width: 520px) {
+  .keepsake-card__body {
+    flex-direction: column;
+    text-align: center;
+  }
+}
+
+/* ── the key split ──────────────────────────── */
+
+.split {
+  margin: 10px 0 6px;
+  width: min(100%, 560px);
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 8px 22px;
+  align-items: center;
+}
+.split__seal {
+  overflow: visible;
+}
+.split__piece path {
+  stroke: rgba(0, 0, 0, 0.45);
+  stroke-width: 1;
+}
+.split__piece--a {
+  transform: translateX(-9px);
+}
+.split__piece--a path {
+  fill: var(--wax);
+}
+.split__piece--b {
+  transform: translateX(9px);
+}
+.split__piece--b path {
+  fill: var(--brass-deep);
+}
+.split__piece text {
+  font-family: var(--font-display);
+  font-size: 26px;
+  font-variant-ligatures: none;
+  text-anchor: middle;
+  fill: rgba(255, 236, 205, 0.85);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .split__piece {
+    transition: transform 900ms cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .split__piece--a {
+    animation: split-a 1100ms 300ms cubic-bezier(0.2, 0.7, 0.2, 1) backwards;
+  }
+  .split__piece--b {
+    animation: split-b 1100ms 300ms cubic-bezier(0.2, 0.7, 0.2, 1) backwards;
+  }
+}
+@keyframes split-a {
+  from {
+    transform: translateX(0);
+  }
+}
+@keyframes split-b {
+  from {
+    transform: translateX(0);
+  }
+}
+.split__labels {
+  margin: 0;
+  display: grid;
+  gap: 10px;
+  text-align: left;
+}
+.split__label dt {
+  font-family: var(--font-display);
+  font-variant-ligatures: none;
+  font-kerning: none;
+  font-size: 0.85rem;
+  letter-spacing: 0.06em;
+  color: var(--brass);
+}
+.split__label--a dt {
+  color: #e7a08a;
+}
+.split__label dd {
+  margin: 2px 0 0;
+  color: var(--parchment);
+}
+.split__caption {
+  grid-column: 1 / -1;
+  text-align: left;
+  font-size: 0.98rem;
+  color: var(--muted, #bfae8f);
+}
+@media (max-width: 520px) {
+  .split {
+    grid-template-columns: 1fr;
+    justify-items: center;
+  }
+}
 
 /* ── witness ────────────────────────────────── */
 
@@ -2270,5 +2385,19 @@ fieldset {
   }
   .letter__from {
     clip-path: none !important;
+  }
+  /* The sealed page prints as the keepsake card alone, ready to fold into an envelope. */
+  .sealed > :not(.keepsake-card) {
+    display: none !important;
+  }
+  .keepsake-card {
+    border: 1.5px solid #000;
+    border-radius: 6px;
+    margin: 0 auto;
+    padding: 28px;
+    break-inside: avoid;
+  }
+  .keepsake-card__link {
+    display: none;
   }
 }

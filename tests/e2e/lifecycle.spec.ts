@@ -57,6 +57,13 @@ test('write a letter, fall silent, witness confirms, recipient opens it once', a
   await expect(page.getByTestId('sealed-title')).toBeVisible();
   const keepsakeLink = await page.getByTestId('keepsake-link').inputValue();
   expect(keepsakeLink).toMatch(/\/keepsake\/L[\w-]+#k=[\w-]{43}/);
+  await expect(page.getByTestId('key-split')).toContainText('Goes to Theo, on the card below');
+  await expect(page.getByRole('img', { name: 'QR code of the keepsake link for Theo Whitlock' })).toBeVisible();
+  await page.emulateMedia({ media: 'print' });
+  await expect(page.getByTestId('keepsake-card')).toBeVisible();
+  await expect(page.getByTestId('key-split')).toBeHidden();
+  await expect(page.getByTestId('sealed-title')).toBeHidden();
+  await page.emulateMedia({ media: 'screen' });
   await page.getByTestId('back-to-vigil').click();
   await expect(page.getByTestId('envelope')).toHaveCount(1);
 

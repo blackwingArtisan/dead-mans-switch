@@ -79,7 +79,7 @@ Wax seals carry each recipient's initial, the check-in is a seal you press, and 
 - Begin a vigil with your own cadence, grace period, reminder lead, witnesses-required (k of n) and an optional silence window.
 - Write rich-text letters on parchment; seal them with AES-GCM-256 in the browser.
 - Two custody modes per letter:
-  - **Keepsake** (default): the recipient holds half the key, handed over by you as a link or printed code. The server can never read the letter.
+  - **Keepsake** (default): the recipient holds half the key, handed over by you as a link or a printed card with a QR code. The server can never read the letter. Sealing shows the split: half A goes on the card, half B stays in the vault, and neither opens anything alone.
   - **Vault**: the server holds both halves, so there is nothing to hand over. The UI says plainly that the operator could read it.
 - One-tap check-in, pause and resume.
 - Reminder, grace, last-call, witness, stand-down, denial and release emails (plain text and HTML).

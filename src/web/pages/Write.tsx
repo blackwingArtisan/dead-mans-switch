@@ -9,6 +9,8 @@ import { useFieldErrors, type FieldMessages } from '../lib/validate';
 import { Shell } from '../components/Chrome';
 import { Editor } from '../components/Editor';
 import { FieldError } from '../components/FieldError';
+import { KeepsakeQr } from '../components/KeepsakeQr';
+import { KeySplit } from '../components/KeySplit';
 import { WaxSeal } from '../components/WaxSeal';
 
 const LETTER_MESSAGES: Record<string, FieldMessages> = {
@@ -67,7 +69,7 @@ export function Write() {
     }
   };
 
-  if (result) return <Sealed result={result} custody={custody} recipient={recipientName} />;
+  if (result) return <Sealed result={result} custody={custody} recipient={recipientName} author={vault?.author.name ?? ''} />;
 
   return (
     <Shell wide>
@@ -161,7 +163,8 @@ export function Write() {
   );
 }
 
-function Sealed({ result, custody, recipient }: { result: SealedResult; custody: Custody; recipient: string }) {
+function Sealed({ result, custody, recipient, author }: { result: SealedResult; custody: Custody; recipient: string; author: string }) {
+  const authorFirst = author.trim().split(/\s+/)[0] || 'the writer';
   const [copied, setCopied] = useState(false);
   const code = groupCode(toBase32(fromBase64Url(result.keepsakeHalf)));
   const mailto = `mailto:?subject=${encodeURIComponent('A keepsake to hold for me')}&body=${encodeURIComponent(
@@ -180,11 +183,21 @@ function Sealed({ result, custody, recipient }: { result: SealedResult; custody:
             <p className="lede">
               Now give {recipient} their keepsake. Without it, this letter cannot be opened by anyone, including us.
             </p>
+            <KeySplit recipient={recipient} custody="keepsake" />
             <div className="keepsake-card parchment" data-testid="keepsake-card">
               <p className="keepsake-card__eyebrow">A keepsake for {recipient}</p>
-              <p className="keepsake-card__code" aria-label="Keepsake code">
-                {code}
-              </p>
+              <div className="keepsake-card__body">
+                <KeepsakeQr value={result.keepsakeLink} label={`QR code of the keepsake link for ${recipient}`} />
+                <div>
+                  <p className="keepsake-card__code" aria-label="Keepsake code">
+                    {code}
+                  </p>
+                  <p className="keepsake-card__note">
+                    Keep this card somewhere safe. It opens nothing today. If {authorFirst} ever stops checking in, you will receive a
+                    letter; scan this or type the code to open it.
+                  </p>
+                </div>
+              </div>
               <label className="sr-only" htmlFor="keepsake-link">
                 Keepsake link
               </label>
@@ -217,7 +230,10 @@ function Sealed({ result, custody, recipient }: { result: SealedResult; custody:
             </p>
           </>
         ) : (
-          <p className="lede">The vault holds both halves. If your candle goes out and your witnesses confirm, {recipient} gets a link that opens it.</p>
+          <>
+            <p className="lede">The vault holds both halves. If your candle goes out and your witnesses confirm, {recipient} gets a link that opens it.</p>
+            <KeySplit recipient={recipient} custody="vault" />
+          </>
         )}
         <div className="sealed__actions">
           <a className="btn btn--ghost" href="/write">
