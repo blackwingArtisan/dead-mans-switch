@@ -1873,14 +1873,17 @@ fieldset {
   align-items: center;
   gap: 22px;
   flex-wrap: wrap;
-  /* The unpressed stamp is drawn at 1.6x. Clip it sideways so it cannot widen the page on a 360 px screen. */
-  overflow-x: clip;
 }
 .desk__stamp {
+  /* The unpressed stamp is drawn at 1.6x. Clip only the stamp's own box sideways so it cannot widen the page
+     on a 360 px screen. The row and the button must not clip, or the button's glow gets a hard edge. */
+  overflow-x: clip;
+}
+.desk__stamp > * {
   opacity: 0;
   transform: translateY(-120px) scale(1.6) rotate(-20deg);
 }
-.desk__form--sealing .desk__stamp {
+.desk__form--sealing .desk__stamp > * {
   animation: press 0.9s cubic-bezier(0.3, 1.4, 0.4, 1) forwards;
 }
 @keyframes press {

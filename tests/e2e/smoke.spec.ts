@@ -185,3 +185,28 @@ test('the writing desk and the vigil fit a 360 px screen without sideways scroll
   await expect(page.getByTestId('keepsake-card')).toBeVisible();
   expect(await overflow()).toBeLessThanOrEqual(0);
 });
+
+test('no ancestor clips the glow of the "Seal the letter" button, and the page still does not widen at 360 px (Req 10.5)', async ({ page }) => {
+  await page.setViewportSize({ width: 360, height: 740 });
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Try a demo vigil' }).click();
+  await expect(page.getByTestId('envelope')).toHaveCount(2);
+  await page.getByTestId('write-letter').click();
+  const seal = page.getByRole('button', { name: 'Seal the letter' });
+  await expect(seal).toBeVisible();
+
+  // The glow is a box-shadow, so any ancestor that clips or hides overflow between the button and <main> cuts it off.
+  const glow = await seal.evaluate((button) => {
+    const clippers: string[] = [];
+    for (let el = button.parentElement; el && el.tagName !== 'MAIN'; el = el.parentElement) {
+      const overflowX = getComputedStyle(el).overflowX;
+      if (overflowX === 'clip' || overflowX === 'hidden') clippers.push(`${el.tagName.toLowerCase()}.${el.className} (${overflowX})`);
+    }
+    return { shadow: getComputedStyle(button).boxShadow, clippers };
+  });
+  expect(glow.shadow).not.toBe('none');
+  expect(glow.clippers).toEqual([]);
+
+  // Keeping the stamp from widening the page is still true, with the unpressed stamp in place.
+  expect(await page.evaluate(() => document.documentElement.scrollWidth - 360)).toBeLessThanOrEqual(0);
+});
