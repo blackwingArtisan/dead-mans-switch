@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { api, REFRESH_EVENT, requestRefresh, type ClockInfo, type OutboxMessage } from '../lib/api';
 import { longDate, relative, shortDate } from '../lib/format';
+import { tour, useTour } from '../lib/tour';
 
 const DAY = 86_400_000;
 
@@ -47,6 +48,7 @@ export function TimeMachine() {
   const [note, setNote] = useState('');
   const [expanded, setExpanded] = useState<number | null>(null);
   const panelRef = useRef<HTMLDivElement>(null);
+  const guide = useTour();
 
   const load = useCallback(async () => {
     try {
@@ -71,6 +73,7 @@ export function TimeMachine() {
 
   useEffect(() => {
     if (!open) return;
+    tour.markOpened();
     panelRef.current?.focus();
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setOpen(false);
     window.addEventListener('keydown', onKey);
@@ -102,7 +105,7 @@ export function TimeMachine() {
     <>
       <button
         type="button"
-        className="tm-toggle"
+        className={`tm-toggle ${guide.on && !guide.opened ? 'tm-toggle--pulse' : ''}`}
         aria-expanded={open}
         aria-controls="time-machine"
         title="Time machine (demo only)"
@@ -200,7 +203,11 @@ export function TimeMachine() {
             onClick={async () => {
               if (!window.confirm('Reset the demo? This erases every vault, the outbox and the clock offset.')) return;
               await api.dev.reset();
-              window.localStorage.clear();
+              try {
+                window.localStorage.clear();
+              } catch {
+                // Storage may be blocked; the reset on the server is what matters.
+              }
               window.location.href = '/';
             }}
           >

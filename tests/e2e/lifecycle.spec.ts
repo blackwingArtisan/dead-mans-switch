@@ -143,3 +143,33 @@ test('a vault-custody letter opens from its link alone', async ({ page, browser 
   await expect(june.getByTestId('opened-letter')).toContainText('Biscuit eats twice a day');
   await ctx.close();
 });
+
+test('the demo guide says what to try next, and the room dies and relights with the candle', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Try a demo vigil' }).click();
+  const guide = page.getByTestId('guide');
+  await expect(guide).toContainText('Next: Open the Time machine');
+  await expect(page.locator('body')).toHaveAttribute('data-room', 'alive');
+  await expect(page.locator('.tm-toggle')).toHaveClass(/tm-toggle--pulse/);
+
+  const tm = await openTimeMachine(page);
+  await expect(page.locator('.tm-toggle')).not.toHaveClass(/tm-toggle--pulse/);
+  await tm.getByRole('button', { name: '+30 days' }).click();
+  await expect(page.locator('body')).toHaveAttribute('data-room', 'grace');
+  await expect(guide).toContainText('Press +7 days');
+  await tm.getByRole('button', { name: '+7 days' }).click();
+  await expect(page.locator('body')).toHaveAttribute('data-room', 'confirm');
+  await expect(page.getByRole('status').filter({ hasText: 'The room has gone dark' })).toBeAttached();
+  await expect(guide).toContainText('Witness asked');
+
+  await page.getByRole('button', { name: /close the time machine/i }).click();
+  await page.getByTestId('check-in').click();
+  await expect(page.locator('body')).toHaveAttribute('data-room', 'alive');
+  await expect(page.getByRole('status').filter({ hasText: 'the room is warm again' })).toBeAttached();
+
+  await page.getByRole('button', { name: 'Dismiss the demo guide' }).click();
+  await expect(guide).toHaveCount(0);
+  await page.getByRole('link', { name: 'How the seal works' }).click();
+  await expect(page.getByRole('heading', { name: 'How the seal works' })).toBeVisible();
+  await expect(page.locator('body')).not.toHaveAttribute('data-room', /.+/);
+});

@@ -133,6 +133,136 @@ a:hover {
   inset: 0;
   background: radial-gradient(ellipse at center, transparent 45%, rgba(0, 0, 0, 0.7) 100%);
 }
+
+/* The room follows the candle: body[data-room] is set by the vigil (lib/room.ts). */
+.atmosphere__warm,
+.atmosphere__night,
+.atmosphere__moon,
+.atmosphere__smoke,
+.atmosphere__cold,
+.atmosphere__flare {
+  position: absolute;
+  inset: 0;
+  transition: opacity 1.2s ease, filter 1.2s ease;
+}
+.atmosphere__night {
+  background: #040303;
+  opacity: 0;
+}
+.atmosphere__moon {
+  opacity: 0;
+  background: radial-gradient(900px 640px at 78% -12%, rgba(178, 196, 222, 0.2), transparent 70%),
+    linear-gradient(180deg, rgba(120, 136, 160, 0.08), transparent 60%);
+}
+.atmosphere__smoke {
+  inset: -20%;
+  opacity: 0;
+  background: radial-gradient(420px 260px at 20% 70%, rgba(150, 150, 160, 0.22), transparent 70%),
+    radial-gradient(520px 300px at 70% 40%, rgba(130, 132, 145, 0.18), transparent 70%),
+    radial-gradient(380px 240px at 40% 20%, rgba(160, 160, 170, 0.1), transparent 70%);
+  animation: drift 26s ease-in-out infinite alternate;
+}
+.atmosphere__cold {
+  opacity: 0;
+  background: radial-gradient(ellipse at center, transparent 30%, rgba(14, 20, 32, 0.85) 100%);
+}
+.atmosphere__flare {
+  opacity: 0;
+  transition: none;
+  background: radial-gradient(520px 420px at 22% 34%, rgba(255, 206, 128, 0.42), rgba(255, 138, 61, 0.12) 45%, transparent 72%);
+}
+@keyframes drift {
+  from {
+    transform: translate(-3%, 2%) scale(1);
+  }
+  to {
+    transform: translate(4%, -3%) scale(1.08);
+  }
+}
+
+body[data-room='reminder'] .atmosphere__warm {
+  opacity: 0.8;
+}
+body[data-room='grace'] .atmosphere__warm {
+  opacity: 0.5;
+  filter: saturate(0.55);
+}
+body[data-room='grace'] .ember {
+  animation-duration: calc(24s + var(--i) * 1.6s);
+}
+body[data-room='grace'] .atmosphere__night {
+  opacity: 0.25;
+}
+body[data-room='grace'] .atmosphere__cold {
+  opacity: 0.45;
+}
+body[data-room='confirm'] .atmosphere__warm,
+body[data-room='released'] .atmosphere__warm {
+  opacity: 0;
+}
+body[data-room='confirm'] .atmosphere__night {
+  opacity: 0.72;
+}
+body[data-room='confirm'] .atmosphere__cold {
+  opacity: 1;
+}
+body[data-room='confirm'] .atmosphere__smoke {
+  opacity: 1;
+}
+body[data-room='released'] .atmosphere__night {
+  opacity: 0.35;
+}
+body[data-room='released'] .atmosphere__moon {
+  opacity: 1;
+}
+body[data-room='released'] .atmosphere__cold {
+  opacity: 0.6;
+}
+body[data-room='paused'] .atmosphere__warm {
+  opacity: 0.55;
+}
+body[data-room='paused'] .atmosphere__moon {
+  opacity: 0.45;
+}
+/* The brass tarnishes in grace and turns to ash once the candle is out. */
+body[data-room='grace'] {
+  --brass: #bfa577;
+  --flame: #f2cf8f;
+}
+body[data-room='confirm'] {
+  --brass: #b3ad9f;
+  --flame: #e3d2b0;
+  --ember: #9c8f80;
+}
+body[data-room='released'] {
+  --brass: #b6bac4;
+  --flame: #dfe4ee;
+  --ember: #9aa3b5;
+  --brass-deep: #5e6370;
+}
+body[data-room='confirm'] .guide,
+body[data-room='released'] .guide {
+  border-color: rgba(182, 186, 196, 0.45);
+  background: linear-gradient(90deg, rgba(120, 136, 160, 0.16), rgba(40, 44, 56, 0.3));
+  box-shadow: none;
+}
+body[data-relight] .atmosphere__flare {
+  animation: flare 0.9s ease-out;
+}
+body[data-relight] .atmosphere__warm {
+  transition-duration: 0.9s;
+}
+@keyframes flare {
+  0% {
+    opacity: 0;
+  }
+  22% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
 .ember {
   position: absolute;
   bottom: -10px;
@@ -758,6 +888,87 @@ fieldset {
   opacity: 0.5;
 }
 
+/* Relight: a match strike on the wick, the flame catching, the wax growing back. */
+.candle--relight .candle__flame-inner {
+  animation: strike 0.9s cubic-bezier(0.2, 0.9, 0.3, 1.2);
+}
+.candle--relight .candle__wax {
+  transform-box: view-box;
+  transform-origin: 100px 300px;
+  animation: regrow 0.9s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.candle__strike {
+  opacity: 0;
+  mix-blend-mode: screen;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: strike-flash 0.9s ease-out;
+}
+@keyframes strike {
+  0% {
+    transform: scale(0.05);
+    opacity: 0;
+  }
+  18% {
+    transform: scale(1.5, 1.7);
+    opacity: 1;
+  }
+  45% {
+    transform: scale(0.85);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+@keyframes regrow {
+  from {
+    transform: scaleY(0.25);
+  }
+}
+@keyframes strike-flash {
+  0% {
+    opacity: 0;
+    transform: scale(0.2);
+  }
+  15% {
+    opacity: 1;
+    transform: scale(1.6);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(2.4);
+  }
+}
+.checkin__sparks {
+  position: absolute;
+  left: 74px;
+  top: 50%;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+.checkin__sparks span {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--flame);
+  box-shadow: 0 0 8px 2px rgba(255, 160, 70, 0.7);
+  opacity: 0;
+  animation: spark 0.9s ease-out forwards;
+  --a: calc(var(--k) * 36deg);
+}
+@keyframes spark {
+  0% {
+    opacity: 1;
+    transform: rotate(var(--a)) translateX(0);
+  }
+  100% {
+    opacity: 0;
+    transform: rotate(var(--a)) translateX(90px);
+  }
+}
 @keyframes flicker {
   0%,
   100% {
@@ -1610,6 +1821,50 @@ fieldset {
   color: var(--brass);
 }
 
+/* ── demo guide ─────────────────────────────── */
+
+.guide {
+  position: relative;
+  margin: 0 0 28px;
+  padding: 14px 52px 14px 20px;
+  border: 1px solid rgba(255, 138, 61, 0.55);
+  border-radius: var(--radius);
+  background: linear-gradient(90deg, rgba(255, 138, 61, 0.16), rgba(142, 27, 27, 0.14));
+  box-shadow: 0 0 30px rgba(255, 138, 61, 0.12);
+}
+.guide p {
+  margin: 0;
+}
+.guide__lead {
+  font-family: var(--font-hand);
+  font-style: italic;
+  color: var(--parchment);
+}
+.guide__next {
+  color: var(--text);
+  font-size: 1.08rem;
+}
+.guide__next strong {
+  color: var(--flame);
+}
+.guide__close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+}
+.tm-toggle--pulse {
+  animation: beckon 1.8s ease-in-out infinite;
+}
+@keyframes beckon {
+  0%,
+  100% {
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), 0 0 0 0 rgba(255, 170, 80, 0.55);
+  }
+  50% {
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), 0 0 0 14px rgba(255, 170, 80, 0);
+  }
+}
+
 /* ── time machine ───────────────────────────── */
 
 .tm-toggle {
@@ -1865,8 +2120,17 @@ fieldset {
     transition-duration: 0.001ms !important;
     scroll-behavior: auto !important;
   }
-  .ember {
+  .ember,
+  .checkin__sparks,
+  .candle__strike {
     display: none;
+  }
+  .atmosphere__warm,
+  .atmosphere__night,
+  .atmosphere__moon,
+  .atmosphere__smoke,
+  .atmosphere__cold {
+    transition: none;
   }
 }
 

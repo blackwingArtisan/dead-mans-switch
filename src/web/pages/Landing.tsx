@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react';
 import { api, session } from '../lib/api';
 import { navigate } from '../lib/router';
 import { DEMO, sealAndStore } from '../lib/seal';
+import { tour } from '../lib/tour';
 import { useFieldErrors, type FieldMessages } from '../lib/validate';
 import { Candle } from '../components/Candle';
 import { Flourish, Shell } from '../components/Chrome';
@@ -47,6 +48,7 @@ export function Landing() {
       session.save(r.ownerToken);
       for (const w of DEMO.witnesses) await api.addWitness(w);
       for (const l of DEMO.letters) await sealAndStore({ ...l, authorName: DEMO.author.name });
+      tour.start();
       navigate('/');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'The demo vigil could not be summoned.');

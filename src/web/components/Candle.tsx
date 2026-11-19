@@ -5,6 +5,8 @@ interface Props {
   remaining: number;
   state: SwitchState;
   size?: number;
+  /** Plays the match-strike relight (flare on the wick, wax growing back). */
+  relighting?: boolean;
 }
 
 /**
@@ -12,7 +14,7 @@ interface Props {
  * grace, and it smokes once witnesses are asked. Purely decorative: the same facts are
  * always given in text beside it.
  */
-export function Candle({ remaining, state, size = 320 }: Props) {
+export function Candle({ remaining, state, size = 320, relighting = false }: Props) {
   const lit = state === 'alive' || state === 'reminder' || state === 'grace' || state === 'paused';
   const wax =
     state === 'grace' ? 0.05 : state === 'confirm' || state === 'released' ? 0.03 : Math.max(0.06, Math.min(1, remaining));
@@ -23,7 +25,7 @@ export function Candle({ remaining, state, size = 320 }: Props) {
 
   return (
     <svg
-      className={`candle candle--${state}`}
+      className={`candle candle--${state}${relighting ? ' candle--relight' : ''}`}
       viewBox="0 0 200 360"
       width={size * (200 / 360)}
       height={size}
@@ -86,6 +88,8 @@ export function Candle({ remaining, state, size = 320 }: Props) {
       {/* wick */}
       <path d={`M100 ${top - 1} q-1 -6 1 -13`} stroke={lit ? '#2a1a10' : '#4a3a2c'} strokeWidth="2.4" fill="none" strokeLinecap="round" />
       {lit && <circle cx="101" cy={top - 14} r="1.6" fill="#ff7a2e" />}
+
+      {relighting && <circle className="candle__strike" cx="100" cy={top - 22} r="46" fill="url(#c-glow)" />}
 
       {lit && (
         <g className="candle__flame" style={{ transformOrigin: `100px ${top - 10}px`, transform: `scale(${flameScale})` }}>

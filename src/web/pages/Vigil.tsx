@@ -3,7 +3,9 @@ import type { VaultView } from '../../core/vault';
 import { api, ApiError, authored, REFRESH_EVENT, session } from '../lib/api';
 import { longDate, relative, shortDate, STAGES, STATE_COPY } from '../lib/format';
 import { Link } from '../lib/router';
+import { relight, RELIGHT_MS, ROOM_LINE, useRoom } from '../lib/room';
 import { keepsakeLinkFor } from '../lib/seal';
+import { NEXT_STEP, tour, useTour } from '../lib/tour';
 import { useFieldErrors, type FieldMessages } from '../lib/validate';
 import { Candle } from '../components/Candle';
 import { Flourish, Shell } from '../components/Chrome';
@@ -18,11 +20,13 @@ export function Vigil({ onLost }: { onLost: () => void }) {
   const [error, setError] = useState('');
   const [announce, setAnnounce] = useState('');
   const [stamping, setStamping] = useState(false);
+  const [relighting, setRelighting] = useState(false);
   const lastState = useRef<string | null>(null);
+  useRoom(vault?.state ?? null);
 
   const apply = useCallback((v: VaultView) => {
     if (lastState.current && lastState.current !== v.state) {
-      setAnnounce(`${STATE_COPY[v.state].title}. ${STATE_COPY[v.state].plain}`);
+      setAnnounce(`${STATE_COPY[v.state].title}. ${STATE_COPY[v.state].plain} ${ROOM_LINE[v.state]}`);
     }
     lastState.current = v.state;
     setVault(v);
@@ -81,7 +85,12 @@ export function Vigil({ onLost }: { onLost: () => void }) {
   const checkIn = async () => {
     setStamping(true);
     window.setTimeout(() => setStamping(false), 1400);
-    await act(api.checkIn, (v) => `Checked in. Your candle is relit. Next check-in due by ${longDate(v.schedule.dueAt)}.`);
+    await act(api.checkIn, (v) => {
+      relight();
+      setRelighting(true);
+      window.setTimeout(() => setRelighting(false), RELIGHT_MS + 100);
+      return `Checked in. Your candle is relit and the room is warm again. Next check-in due by ${longDate(v.schedule.dueAt)}.`;
+    });
   };
 
   return (
@@ -90,9 +99,11 @@ export function Vigil({ onLost }: { onLost: () => void }) {
         {announce}
       </p>
 
+      <Guide state={state} authorName={vault.author.name} />
+
       <section className={`vigil vigil--${state}`} aria-labelledby="vigil-title">
         <div className="vigil__candle">
-          <Candle remaining={remaining} state={state} size={380} />
+          <Candle remaining={remaining} state={state} size={380} relighting={relighting} />
         </div>
         <div className="vigil__status">
           <p className="eyebrow">The vigil of {vault.author.name}</p>
@@ -111,6 +122,13 @@ export function Vigil({ onLost }: { onLost: () => void }) {
               >
                 <WaxSeal size={132} tone={state === 'alive' ? 'oxblood' : 'ember'} />
                 <span className="checkin__label">I still walk among the living</span>
+                {relighting && (
+                  <span className="checkin__sparks" aria-hidden="true">
+                    {Array.from({ length: 10 }, (_, i) => (
+                      <span key={i} style={{ ['--k' as string]: i }} />
+                    ))}
+                  </span>
+                )}
               </button>
               <p className="hint">One tap checks you in and relights the candle.</p>
             </div>
@@ -201,6 +219,24 @@ export function Vigil({ onLost }: { onLost: () => void }) {
         <Ledger vault={vault} />
       </div>
     </Shell>
+  );
+}
+
+function Guide({ state, authorName }: { state: VaultView['state']; authorName: string }) {
+  const { on } = useTour();
+  if (!on) return null;
+  return (
+    <div className="guide" role="note" aria-label="Demo guide" data-testid="guide">
+      <p className="guide__lead">
+        This is {authorName.split(' ')[0]}’s vigil. Skip ahead in time and watch the room die with the candle.
+      </p>
+      <p className="guide__next">
+        <strong>Next:</strong> {NEXT_STEP[state]}
+      </p>
+      <button type="button" className="icon-btn guide__close" aria-label="Dismiss the demo guide" onClick={tour.end}>
+        ×
+      </button>
+    </div>
   );
 }
 

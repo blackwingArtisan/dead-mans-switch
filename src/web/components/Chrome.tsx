@@ -1,15 +1,26 @@
 import type { ReactNode } from 'react';
 import { Link } from '../lib/router';
 
-/** Drifting embers and a vignette. Decorative only, hidden from assistive tech. */
+/**
+ * The room: warm glow, drifting embers, night, smoke, moonlight and a vignette. Which layers
+ * show is driven by `data-room` on <body> (see lib/room.ts), so the whole page dims as the
+ * candle does. Decorative only, hidden from assistive tech.
+ */
 export function Atmosphere() {
   return (
     <div className="atmosphere" aria-hidden="true">
-      <div className="atmosphere__glow" />
+      <div className="atmosphere__warm">
+        <div className="atmosphere__glow" />
+        {Array.from({ length: 14 }, (_, i) => (
+          <span key={i} className="ember" style={{ ['--i' as string]: i }} />
+        ))}
+      </div>
+      <div className="atmosphere__night" />
+      <div className="atmosphere__moon" />
+      <div className="atmosphere__smoke" />
+      <div className="atmosphere__cold" />
       <div className="atmosphere__grain" />
-      {Array.from({ length: 14 }, (_, i) => (
-        <span key={i} className="ember" style={{ ['--i' as string]: i }} />
-      ))}
+      <div className="atmosphere__flare" />
     </div>
   );
 }
