@@ -596,7 +596,8 @@ function Ledger({ vault }: { vault: VaultView }) {
       <h2 id="ledger-title" className="section-title">
         The ledger
       </h2>
-      <ol className="ledger">
+      {/* The list scrolls once it is long, so it takes focus and the keyboard can scroll it. */}
+      <ol className="ledger" tabIndex={0} aria-labelledby="ledger-title">
         {vault.history.map((h, i) => (
           <li key={`${h.at}-${i}`} className={`ledger__row ledger__row--${h.kind}`}>
             <time dateTime={new Date(h.at).toISOString()}>{shortDate(h.at)}</time>

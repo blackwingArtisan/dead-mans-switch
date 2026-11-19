@@ -103,3 +103,52 @@ test('witness, recipient and opened-letter pages have no WCAG AA violations', as
   await audit(page);
   expect(await page.evaluate(() => window.localStorage.getItem('dms.tour'))).toBeNull();
 });
+
+test('the paused, grace, confirm and released vigil rooms have no WCAG AA violations (Req 10.1)', async ({ page, request }) => {
+  // Four rooms, each audited in its own dimmed colours, with the mail drawer open at the end.
+  test.setTimeout(150_000);
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Try a demo vigil' }).click();
+  await expect(page.getByTestId('envelope')).toHaveCount(2);
+
+  // Paused, under the glass.
+  await page.getByRole('button', { name: /Pause the vigil/ }).click();
+  await expect(page.getByTestId('state-title')).toHaveText('Under glass');
+  await expect(page.locator('body')).toHaveAttribute('data-room', 'paused');
+  await audit(page);
+  await page.getByRole('button', { name: 'Lift the glass and resume' }).click();
+  await expect(page.getByTestId('state-title')).toHaveText('The candle burns');
+
+  // Grace, then confirm, moved by the same time machine the e2e lifecycle uses.
+  for (const [days, title, room] of [
+    [30, 'The flame gutters', 'grace'],
+    [7, 'The candle has gone out', 'confirm'],
+  ] as const) {
+    expect((await request.post('/api/dev/clock', { data: { days } })).ok()).toBe(true);
+    await page.reload();
+    await expect(page.getByTestId('state-title')).toHaveText(title);
+    await expect(page.locator('body')).toHaveAttribute('data-room', room);
+    await expect.poll(() => page.evaluate(() => document.getAnimations().filter((a) => a.playState === 'running').length)).toBe(0);
+    await audit(page);
+  }
+
+  // Released: the silence window passes with no denial.
+  expect((await request.post('/api/dev/clock', { data: { days: 15 } })).ok()).toBe(true);
+  await page.reload();
+  await expect(page.getByTestId('state-title')).toHaveText('The letters are delivered');
+  await expect(page.getByTestId('epitaph')).toBeVisible();
+  await audit(page);
+  await page.getByRole('button', { name: /time machine/i }).click();
+  await expect(page.getByRole('complementary', { name: /time machine/i })).toBeVisible();
+  await audit(page);
+});
+
+test('the keepsake page, complete and cut short, has no WCAG AA violations (Req 10.1)', async ({ page }) => {
+  const half = 'A'.repeat(43);
+  await page.goto(`/keepsake/Lexample1#k=${half}&from=Mara%20Whitlock&to=Theo%20Whitlock`);
+  await expect(page.getByTestId('keepsake-code')).toBeVisible();
+  await audit(page);
+  await page.goto('/keepsake/Lexample2#k=tooshort');
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('This keepsake is incomplete');
+  await audit(page);
+});

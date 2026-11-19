@@ -116,3 +116,72 @@ test('the writing desk: the placeholder sits inside the margin rule and the tool
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
   expect(overflow).toBeLessThanOrEqual(0);
 });
+
+test('with reduced motion the room holds still, and with motion allowed it moves (Req 10.3)', async ({ page, request }) => {
+  const running = () =>
+    page.evaluate(() =>
+      document
+        .getAnimations()
+        .filter((a) => a.playState === 'running')
+        .map((a) => {
+          const target = (a.effect as KeyframeEffect | null)?.target as Element | null;
+          return `${target?.tagName.toLowerCase()}.${(target?.getAttribute('class') ?? '').split(' ')[0]} ${(a as CSSAnimation).animationName ?? 'transition'}`;
+        }),
+    );
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Try a demo vigil' }).click();
+  await expect(page.getByTestId('state-title')).toHaveText('The candle burns');
+
+  // Allowed: the flame flickers, so something is running.
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
+  await expect.poll(async () => (await running()).length).toBeGreaterThan(0);
+
+  // Reduced: every animation, in every room, runs out at once and none keeps going (flicker, embers, seal).
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  for (const [days, title] of [
+    [0, 'The candle burns'],
+    [30, 'The flame gutters'],
+    [7, 'The candle has gone out'],
+  ] as const) {
+    if (days) expect((await request.post('/api/dev/clock', { data: { days } })).ok()).toBe(true);
+    await page.reload();
+    await expect(page.getByTestId('state-title')).toHaveText(title);
+    await expect.poll(running).toEqual([]);
+  }
+});
+
+test('the writing desk and the vigil fit a 360 px screen without sideways scrolling (Req 10.5)', async ({ page }) => {
+  await page.setViewportSize({ width: 360, height: 740 });
+  // Measured against 360, not innerWidth: a phone widens its layout viewport to fit overflowing content.
+  const overflow = () => page.evaluate(() => document.documentElement.scrollWidth - 360);
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Try a demo vigil' }).click();
+  await expect(page.getByTestId('envelope')).toHaveCount(2);
+  expect(await overflow()).toBeLessThanOrEqual(0);
+  // The drawer is part of the vigil's screen too.
+  await page.getByRole('button', { name: /time machine/i }).click();
+  await expect(page.getByRole('complementary', { name: /time machine/i })).toBeVisible();
+  expect(await overflow()).toBeLessThanOrEqual(0);
+  await page.getByRole('button', { name: /close the time machine/i }).click();
+
+  await page.getByTestId('write-letter').click();
+  await expect(page.getByRole('heading', { name: 'Write a letter' })).toBeVisible();
+  expect(await overflow()).toBeLessThanOrEqual(0);
+  // Nothing on the desk is cut off at the right edge. The formatting toolbar scrolls inside itself by design.
+  const clipped = await page.evaluate(() =>
+    [...document.querySelectorAll<HTMLElement>('main input, main button, main select, main [contenteditable], main label')]
+      .filter((el) => !el.closest('[role="toolbar"]'))
+      .filter((el) => el.getBoundingClientRect().width > 0 && el.getBoundingClientRect().right > 360.5)
+      .map((el) => el.tagName + '.' + el.className),
+  );
+  expect(clipped).toEqual([]);
+
+  // After sealing, the keepsake card must fit too.
+  await page.getByLabel('For', { exact: true }).fill('Theo Whitlock');
+  await page.getByLabel('Their email').fill('theo@example.com');
+  await page.getByRole('textbox', { name: 'Your letter' }).click();
+  await page.keyboard.type('The spare key is under the third stone.');
+  await page.getByTestId('seal-letter').click();
+  await expect(page.getByTestId('keepsake-card')).toBeVisible();
+  expect(await overflow()).toBeLessThanOrEqual(0);
+});

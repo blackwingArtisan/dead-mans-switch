@@ -251,6 +251,117 @@ test('a vault-custody letter opens from its link alone', async ({ page, browser 
   await ctx.close();
 });
 
+test('an opened letter can be downloaded as a file and printed as the letter alone (Req 7.8, 7.16)', async ({ page, request, browser }) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Try a demo vigil' }).click();
+  await expect(page.getByTestId('envelope')).toHaveCount(2);
+  // Silence, then the silence window with no denial: the letters are released with no witness answering.
+  expect((await request.post('/api/dev/clock', { data: { days: 38 } })).ok()).toBe(true);
+  expect((await request.post('/api/dev/clock', { data: { days: 15 } })).ok()).toBe(true);
+  const { messages } = (await (await request.get('/api/dev/outbox')).json()) as { messages: { kind: string; to: { name: string }; text: string }[] };
+  const release = messages.find((m) => m.kind === 'release' && m.to.name === 'June Okafor');
+  expect(release).toBeTruthy();
+  const href = release!.text.match(/https?:\/\/\S+/)![0];
+
+  const ctx = await browser.newContext({ reducedMotion: 'reduce' });
+  const reader = await ctx.newPage();
+  // The browser's print dialog cannot be driven, so record the call and check what the print layout shows.
+  await reader.addInitScript(() => {
+    (window as unknown as { printCalls: number }).printCalls = 0;
+    window.print = () => {
+      (window as unknown as { printCalls: number }).printCalls += 1;
+    };
+  });
+  await reader.goto(href);
+  await reader.getByTestId('break-seal').click();
+  const letter = reader.getByTestId('opened-letter');
+  await expect(letter).toContainText('Biscuit eats twice a day');
+
+  // Req 7.8: the letter downloads as a standalone page with its title, text and sign-off, and no script.
+  const [file] = await Promise.all([reader.waitForEvent('download'), reader.getByRole('button', { name: 'Keep this letter (download)' }).click()]);
+  expect(file.suggestedFilename()).toBe('letter-from-mara-whitlock.html');
+  const saved = await (await import('node:fs/promises')).readFile((await file.path())!, 'utf8');
+  expect(saved).toContain('<h1>June, the passwords and the cat</h1>');
+  expect(saved).toContain('Biscuit eats twice a day');
+  expect(saved).not.toMatch(/<script/i);
+
+  // Req 7.16: Print asks the browser to print, and the print layout is the letter without the page's controls.
+  expect(await reader.evaluate(() => (window as unknown as { printCalls: number }).printCalls)).toBe(0);
+  await reader.getByRole('button', { name: 'Print', exact: true }).click();
+  expect(await reader.evaluate(() => (window as unknown as { printCalls: number }).printCalls)).toBe(1);
+  await reader.emulateMedia({ media: 'print' });
+  await expect(letter).toContainText('Biscuit eats twice a day');
+  await expect(reader.locator('.letter__after')).toBeHidden();
+  await expect(reader.getByRole('button', { name: 'Print', exact: true })).toBeHidden();
+  await expect(reader.locator('header.masthead')).toBeHidden();
+  await ctx.close();
+});
+
+test('the keepsake page remembers the half in the recipient\u2019s browser, shows the printable code and never sends it (Req 3.6, 3.8, 3.9)', async ({ page, request, browser }) => {
+  // The author seals a letter in keepsake custody for a new recipient.
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Try a demo vigil' }).click();
+  await expect(page.getByTestId('envelope')).toHaveCount(2);
+  await page.getByTestId('write-letter').click();
+  await page.getByLabel('For', { exact: true }).fill('Wren Ashby');
+  await page.getByLabel('Their email').fill('wren@example.com');
+  await page.getByRole('textbox', { name: 'Your letter' }).click();
+  await page.keyboard.type('The ledger is in the bottom drawer of the oak desk.');
+  await page.getByTestId('seal-letter').click();
+  await expect(page.getByTestId('keepsake-card')).toBeVisible();
+  const keepsakeLink = await page.getByTestId('keepsake-link').inputValue();
+  const cardCode = ((await page.getByLabel('Keepsake code').textContent()) ?? '').trim();
+  const [, letterId = '', half = ''] = keepsakeLink.match(/\/keepsake\/(L[\w-]+)#k=([\w-]{43})/) ?? [];
+  expect(half).toHaveLength(43);
+  expect(cardCode).toMatch(/^[0-9A-Z]{4}(-[0-9A-Z]{4})+$/);
+
+  // The recipient, in a fresh browser, follows the keepsake link. Every request the browser makes is recorded.
+  const ctx = await browser.newContext({ reducedMotion: 'reduce' });
+  const wren = await ctx.newPage();
+  const sent: string[] = [];
+  ctx.on('request', (r) => {
+    sent.push(`${r.method()} ${r.url()} ${r.postData() ?? ''} ${JSON.stringify(r.headers())}`);
+  });
+  await wren.goto(keepsakeLink);
+  await expect(wren.getByRole('heading', { level: 1 })).toContainText('Mara Whitlock entrusted you with a keepsake');
+  // Req 3.8: the printable code is on the page, and it is the code on the author's card.
+  await expect(wren.getByTestId('keepsake-code')).toHaveText(cardCode);
+  await expect(wren.getByRole('button', { name: 'Print this keepsake' })).toBeVisible();
+  // Req 3.6: this browser remembers the half, under this letter only.
+  await expect.poll(() => wren.evaluate((id) => localStorage.getItem(`dms.keepsake.${id}`), letterId)).toBe(half);
+  // Req 3.9: nothing carrying the half, in either form, left the browser, and the page called no vault route.
+  const bare = cardCode.replace(/-/g, '');
+  expect(sent.filter((line) => line.includes(half) || line.includes(cardCode) || line.includes(bare))).toEqual([]);
+  // (The local time-machine drawer polls /api/dev/*; that is the demo chrome, not the keepsake page.)
+  expect(sent.filter((line) => /\/api\/(?!dev\/)/.test(line))).toEqual([]);
+
+  // Later the vigil is released. The same browser opens the one-time link with no keepsake to paste.
+  expect((await request.post('/api/dev/clock', { data: { days: 38 } })).ok()).toBe(true);
+  expect((await request.post('/api/dev/clock', { data: { days: 15 } })).ok()).toBe(true);
+  const { messages } = (await (await request.get('/api/dev/outbox')).json()) as { messages: { kind: string; to: { name: string }; text: string; html?: string }[] };
+  const release = messages.find((m) => m.kind === 'release' && m.to.name === 'Wren Ashby')!;
+  expect(release).toBeTruthy();
+  expect(JSON.stringify(release)).not.toContain(half);
+  const href = release.text.match(/https?:\/\/\S+/)![0];
+  expect(href).not.toContain('#k=');
+  sent.length = 0;
+  await wren.goto(href);
+  await expect(wren.getByTestId('keepsake-ready')).toContainText('Your keepsake was found on this device');
+  await expect(wren.getByLabel('Your keepsake')).toHaveCount(0);
+  await wren.getByTestId('break-seal').click();
+  await expect(wren.getByTestId('opened-letter')).toContainText('The ledger is in the bottom drawer of the oak desk.');
+  // Opening checks the tag and breaks the seal, but still never sends the half.
+  expect(sent.filter((line) => line.includes(half) || line.includes(cardCode) || line.includes(bare))).toEqual([]);
+
+  // A different browser that was never shown the keepsake remembers nothing.
+  const stranger = await browser.newContext({ reducedMotion: 'reduce' });
+  const other = await stranger.newPage();
+  await other.goto('/');
+  expect(await other.evaluate((id) => localStorage.getItem(`dms.keepsake.${id}`), letterId)).toBeNull();
+  await stranger.close();
+  await ctx.close();
+});
+
 test('the demo guide says what to try next, and the room dies and relights with the candle', async ({ page }) => {
   await page.goto('/');
   await page.getByRole('button', { name: 'Try a demo vigil' }).click();

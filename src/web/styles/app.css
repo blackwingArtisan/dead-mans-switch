@@ -1873,6 +1873,8 @@ fieldset {
   align-items: center;
   gap: 22px;
   flex-wrap: wrap;
+  /* The unpressed stamp is drawn at 1.6x. Clip it sideways so it cannot widen the page on a 360 px screen. */
+  overflow-x: clip;
 }
 .desk__stamp {
   opacity: 0;
