@@ -577,6 +577,105 @@ fieldset {
   margin: 0;
 }
 
+/* ── stakes, personas, comparison ───────────── */
+
+.stakes {
+  margin: 0 0 18px;
+  max-width: 38em;
+  color: var(--muted);
+  font-size: 1.08rem;
+}
+.stakes__figure {
+  font-family: var(--font-display);
+  font-variant-ligatures: no-common-ligatures no-discretionary-ligatures;
+  font-size: 1.6rem;
+  color: var(--flame);
+}
+.stakes__source {
+  font-size: 0.95rem;
+}
+.stakes__aside {
+  display: block;
+  font-family: var(--font-hand);
+  font-style: italic;
+  color: var(--text);
+}
+.personas {
+  margin-bottom: 56px;
+}
+.personas__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 22px;
+}
+.persona {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--wax-hi);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  padding: 20px 22px;
+}
+.persona h3 {
+  font-family: var(--font-hand);
+  font-size: 1.35rem;
+  margin: 0 0 6px;
+  color: var(--parchment);
+}
+.persona p {
+  margin: 0;
+  color: var(--muted);
+}
+.compare {
+  margin: 0 0 56px;
+}
+.compare__scroll {
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--panel);
+}
+.compare__table {
+  width: 100%;
+  min-width: 720px;
+  border-collapse: collapse;
+  font-size: 1rem;
+  line-height: 1.4;
+}
+.compare__table th,
+.compare__table td {
+  text-align: left;
+  vertical-align: top;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--line);
+}
+.compare__table thead th {
+  color: var(--brass);
+  font-weight: 600;
+  font-size: 0.92rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.compare__table tbody th {
+  color: var(--parchment);
+  font-weight: 600;
+}
+.compare__table td {
+  color: var(--muted);
+}
+.compare__ours th,
+.compare__ours td {
+  background: rgba(142, 27, 27, 0.18);
+  color: var(--text);
+  border-bottom: 0;
+}
+.compare__close {
+  font-family: var(--font-hand);
+  font-style: italic;
+  font-size: 1.2rem;
+  color: var(--text);
+  margin: 14px 0 0;
+}
+
 /* ── candle ─────────────────────────────────── */
 
 .candle {

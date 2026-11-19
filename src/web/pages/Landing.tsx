@@ -4,6 +4,7 @@ import { navigate } from '../lib/router';
 import { DEMO, sealAndStore } from '../lib/seal';
 import { Candle } from '../components/Candle';
 import { Flourish, Shell } from '../components/Chrome';
+import { Comparison, Stakes } from '../components/Comparison';
 import { WaxSeal } from '../components/WaxSeal';
 
 export function Landing() {
@@ -58,6 +59,7 @@ export function Landing() {
             Write letters for the people you love, sealed until you can no longer check in. Keep a candle lit with one
             tap a month. If it ever goes out, your witnesses are asked first, and only then are your letters delivered.
           </p>
+          <Stakes />
           <div className="hero__actions">
             <a className="btn btn--wax" href="#begin">
               Begin your vigil
@@ -98,6 +100,30 @@ export function Landing() {
           </li>
         </ol>
       </section>
+
+      <section className="personas" aria-labelledby="personas-title">
+        <h2 id="personas-title" className="section-title">
+          Two people keeping a vigil
+        </h2>
+        <div className="personas__grid">
+          <article className="persona">
+            <h3>Mara, 58</h3>
+            <p>
+              Mara writes to her son Theo about the deed in the blue tin, and to her best friend June about the cat and the
+              password sheet. She checks in once a month from her phone. If she ever stops, her neighbour Ada is asked first.
+            </p>
+          </article>
+          <article className="persona">
+            <h3>Priya, solo founder</h3>
+            <p>
+              Priya is the only person who holds the cloud root account, the domain registrar and the payroll login. Her letter
+              to her co-founder says where each recovery code lives. If she goes quiet for two weeks, the company keeps running.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <Comparison headingId="compare-title" />
 
       <section id="begin" className="panel panel--form" aria-labelledby="begin-title">
         <h2 id="begin-title" className="section-title">

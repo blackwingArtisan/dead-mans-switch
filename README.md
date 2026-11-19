@@ -2,15 +2,61 @@
 
 **Write letters for the people you love, sealed until you can no longer check in.**
 
+[Judge's 60-second path](#judges-60-second-path) · [Why not Google or Apple?](#why-not-the-tools-you-already-have) · [How the seal works](#the-seal) · [Built with Kiro](#built-with-kiro) · [Kiro log](KIRO-LOG.md) · [Spec](.kiro/specs/switch-lifecycle)
+
+**[46% of U.S. adults have a will](https://news.gallup.com/poll/351500/how-many-americans-have-will.aspx)** (Gallup, 2021). Not one of those wills tells your sister where the password sheet is.
+
 A candle-lit vigil for your last words. Letters are encrypted in your browser. You keep a candle lit with one tap ("I still walk among the living"). If it ever goes out, you get reminders and a grace period; then the people you trust are asked to confirm; only then does each recipient get a one-time link that decrypts their letter in their own browser.
 
 Built for Kiroween 2026, Costume Contest category.
 
+> ### Judge's 60-second path
+>
+> 1. `npm install && npm run demo`, open http://localhost:3140 and press **Try a demo vigil**. You are Mara, with two sealed letters and two witnesses.
+> 2. Open the **Time machine** (hourglass, bottom right) and press **+30 days**. The flame gutters and the grace email lands in the outbox.
+> 3. Press **+7 days**. The candle goes out and the witnesses are asked. In the outbox, open **Witness asked** and confirm as Silas.
+> 4. Open **Letter released** for June and break the seal. The letter decrypts in that browser tab, once.
+
 ## Who it is for
 
-- Anyone who wants the passwords-to-the-shoebox, the apology, or the "I'm proud of you" to reach the right person, without handing it over today.
-- Sole account holders and solo founders who need an "if I go quiet, tell these people" switch.
-- Families planning ahead: a parent writing to children, a caregiver leaving instructions.
+**Mara, 58.** Mara wants her son Theo to know the deed is in the blue tin and that she was proud of him, and her best friend June to know where the password sheet is and that Biscuit lies about being fed. She will not hand those letters over today. She checks in once a month from her phone; if she ever stops, her witnesses are asked first, and only then do Theo and June each get their own letter.
+
+**Priya, a solo founder.** Priya is the only person holding the cloud root account, the domain registrar and the payroll login. A will does not cover that, and a shared password vault would hand everything over today. Her sealed letter tells her co-founder where each recovery code lives, released only if she goes quiet and her accountant, her named witness, confirms it.
+
+## Why not the tools you already have?
+
+| Tool | What it hands over | Who can read it first | Who checks before it goes | Works for |
+|---|---|---|---|---|
+| Google Inactive Account Manager | Google account data, plus one notice email | Google holds the data | No one: an inactivity timer decides | Google accounts only |
+| Apple Legacy Contact | Apple account data | Apple holds the data | Apple, after a death certificate | Apple accounts only |
+| Bitwarden Emergency Access | The whole password vault | No one (end-to-end encrypted) | Only you, by rejecting within a wait time | Bitwarden Premium users |
+| deadmansswitch.net | Pre-written emails | Not stated on its site | No one: missed reminders release them | Any email address |
+| **Dead Man's Switch** | **A sealed letter for each person, in your words** | **No one in keepsake custody: the recipient holds half the key** | **Witnesses you name; any one of them can stop it** | **Any browser, any email** |
+
+The big platforms hand over accounts. This hands over the words, and even we cannot read them.
+
+## The costume
+
+The app wears its own state. The candle is the state machine, drawn:
+
+| Stage | What you see | What it means |
+|---|---|---|
+| Alive | A full candle, a steady flame, warm embers drifting | You checked in; nothing will be sent |
+| Reminder | The wax burns down with the days left | Your check-in is due soon |
+| Grace | The flame gutters | You missed it; reminders keep coming |
+| Witnesses asked | The candle is out and smoking | The people you trust are asked to confirm |
+| Released | A cracked wax seal and a letter that unfolds | Each recipient opens their letter once |
+
+Wax seals carry each recipient's initial, the check-in is a seal you press, and the recipient breaks a seal to read. Every one of these facts is also stated in text beside the candle, announced to screen readers, and calm under reduced motion.
+
+## Beyond Kiroween
+
+- **Free** for one vigil with a few letters, because everyone should be able to leave words behind.
+- **Paid** at about $3 a month or $39 once, for more letters, more witnesses and a printed keepsake kit.
+- **Referrers:** estate attorneys and hospice social workers already have this conversation every week and need something to hand over.
+- **Teams:** a bus-factor plan for small companies, where the letter is the runbook for the accounts only one person holds.
+- **Why now:** passkeys and account sprawl mean more of a life sits behind logins nobody else can open, and the free first-party tools hand over accounts, not words.
+- **Next:** signed one-tap check-in links in every reminder, an AWS runtime (DynamoDB, SES, EventBridge) behind the same ports, and an optional Shamir split of the vault half across witnesses.
 
 ## What works today
 
@@ -35,11 +81,7 @@ npm install
 npm run demo          # builds the web app and serves everything on http://localhost:3140, time machine on
 ```
 
-Open http://localhost:3140, choose **Try a demo vigil**, then open the **Time machine** (bottom right):
-1. **+30 days**: the flame gutters (grace).
-2. **+7 days**: the candle goes out and the witnesses are asked.
-3. In the outbox, open **Witness asked** and confirm as the witness.
-4. Open **Letter released** for June (vault custody) and break the seal.
+Then follow the [judge's 60-second path](#judges-60-second-path) above.
 
 For development with hot reload: `npm run dev` (web on :3141, API on :3140, time machine on).
 
@@ -51,7 +93,7 @@ Local data lives in `./data` (`vaults.json`, `outbox.json`, `clock.json`). Delet
 
 ```bash
 npm test              # Vitest: state machine, crypto, full API lifecycle, security headers and rate limit, production adapters and Worker (with fakes), Node entry as a CLI
-npm run e2e           # Playwright: builds and starts a fresh server on :3142, drives real browsers
+npm run e2e           # Playwright: builds and starts a fresh server on :3142 (or E2E_PORT), drives real browsers
 npm run typecheck     # web + server, and the Cloudflare Worker against Workers types
 npm run check         # all of the above plus a production build
 ```

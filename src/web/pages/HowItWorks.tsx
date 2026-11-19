@@ -1,4 +1,5 @@
 import { Shell } from '../components/Chrome';
+import { Comparison, Stakes } from '../components/Comparison';
 import { WaxSeal } from '../components/WaxSeal';
 
 export function HowItWorks() {
@@ -9,6 +10,7 @@ export function HowItWorks() {
         <h1 id="how-title" className="display display--md">
           How the seal works
         </h1>
+        <Stakes />
 
         <div className="halves" aria-hidden="true">
           <WaxSeal size={84} mark="A" tone="gold" />
@@ -71,6 +73,8 @@ export function HowItWorks() {
             Each link opens once. If a recipient loses the letter after opening it, there is no second copy.
           </li>
         </ul>
+
+        <Comparison headingId="how-compare-title" />
 
         <h2>False alarms</h2>
         <p>
