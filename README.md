@@ -81,7 +81,7 @@ Wax seals carry each recipient's initial, the check-in is a seal you press, and 
 
 ## Run and test it
 
-Node 20 or newer. `npm install && npm run demo` serves everything on http://localhost:3140 with the time machine on; `npm run check` runs the typecheck, the unit suite, a production build and Playwright. Current suite: <!-- test-counts -->120 unit tests in 19 files, all passing, and 31 end-to-end runs (desktop and phone) in 4 Playwright files.<!-- /test-counts -->
+Node 20 or newer. `npm install && npm run demo` serves everything on http://localhost:3140 with the time machine on; `npm run check` runs the typecheck, the unit suite, a production build and Playwright. Current suite: <!-- test-counts -->136 unit tests in 20 files, all passing, and 47 end-to-end runs (desktop and phone) in 6 Playwright files.<!-- /test-counts -->
 
 The end-to-end suite seals a letter, lets the candle go out, confirms as a witness and opens the letter once in a fresh browser, and runs an axe WCAG 2.2 AA audit of every page and state. More in [docs/RUNNING.md](docs/RUNNING.md).
 
@@ -91,10 +91,11 @@ React and Vite in the browser, a Hono API, and a pure state machine shared by bo
 
 ## Built with Kiro
 
-The initial build and the security hardening were done with Claude Code, working from the Kiro steering files and a spec written in Kiro's format. Kiro then reviewed the spec against the code, rewrote every criterion in EARS form, and built two tasks itself. Every call is in **[KIRO-LOG.md](KIRO-LOG.md)** with its prompt, duration, credits, files and test results.
+The initial build and the security hardening were done with Claude Code, working from the Kiro steering files and a spec written in Kiro's format. Kiro then reviewed the spec against the code, rewrote every criterion in EARS form and found 12 untested behaviors. **Kiro then built all of them itself**, plus two tasks it added on the way, in three kiro-cli sessions: 830 lines of tests and fixes, 16 new unit tests and 16 new end-to-end runs, and two real app defects caught and fixed (a 360 px overflow and a ledger the keyboard could not reach). Every task in the spec's test groups is now ticked. Every call is in **[KIRO-LOG.md](KIRO-LOG.md)** with its prompt, duration, credits, files and test results, and Kiro's own output is in [docs/kiro-sessions/](docs/kiro-sessions).
 
 | Kiro feature | Where | What it produced | Tests right after that pass |
 |---|---|---|---|
+| Spec-driven build (sessions 3 to 5) | [`.kiro/specs/switch-lifecycle/tasks.md`](.kiro/specs/switch-lifecycle/tasks.md) group 9 | 14 test tasks built and ticked by Kiro under the custom agent, 2 app defects fixed | Vitest 136 of 136, Playwright 47 of 47, 0 axe violations in every room |
 | Spec review (Pass 2) | [`.kiro/specs/switch-lifecycle`](.kiro/specs/switch-lifecycle) | EARS criteria for Requirements 1 to 11, 12 new gap tasks, tasks checked only where a test exists | Vitest 79 of 79, Playwright 11 of 11, 0 axe violations |
 | Spec-driven tasks (Pass 2) | `tasks.md` 8.6 and 6.11 | The `RateLimiter` port and both adapters; a single-glyph wax seal; three test files | Same run |
 | Steering | [`.kiro/steering`](.kiro/steering) | Five files: product, tech and structure rules every session reads first, plus `crypto.md` and `a11y.md`, which load only when a matching file is in play (added after Pass 2) | n/a |
