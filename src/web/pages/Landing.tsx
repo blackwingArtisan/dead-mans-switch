@@ -178,6 +178,29 @@ export function Landing() {
         </ol>
       </section>
 
+      <section aria-labelledby="rooms-title">
+        <h2 id="rooms-title" className="section-title">
+          One candle, three rooms
+        </h2>
+        <ul className="rooms-strip" data-testid="rooms-strip">
+          <li className="rooms-strip__alive">
+            <Candle remaining={0.8} state="alive" size={150} />
+            <strong>Lit</strong>
+            <span>You checked in. Nothing will be sent.</span>
+          </li>
+          <li className="rooms-strip__grace">
+            <Candle remaining={0.05} state="grace" size={150} />
+            <strong>Guttering</strong>
+            <span>A check-in was missed. Reminders keep coming.</span>
+          </li>
+          <li className="rooms-strip__confirm">
+            <Candle remaining={0} state="confirm" size={150} />
+            <strong>Out</strong>
+            <span>Your witnesses are asked. Any one can stop it.</span>
+          </li>
+        </ul>
+      </section>
+
       <section className="personas" aria-labelledby="personas-title">
         <h2 id="personas-title" className="section-title">
           Who keeps a vigil
@@ -189,6 +212,7 @@ export function Landing() {
               Mara writes to her son Theo about the deed in the blue tin, and to her best friend June about the cat and the
               password sheet. She checks in once a month from her phone. If she ever stops, her neighbour Ada is asked first.
             </p>
+            <p className="persona__plan">Free: one vigil and a few letters.</p>
           </article>
           <article className="persona">
             <h3>Priya, solo founder</h3>
@@ -197,6 +221,7 @@ export function Landing() {
               hospital for three weeks and payroll is due on Friday. Her accountant, her witness, confirms she cannot check in, and her
               co-founder opens the letter that says where each recovery code lives. The company keeps running.
             </p>
+            <p className="persona__plan">Teams plan: $4 a seat a month, bought by the founder or an ops lead.</p>
           </article>
           <article className="persona">
             <h3>Ruth, hospice social worker</h3>
@@ -204,8 +229,10 @@ export function Landing() {
               Ruth has the hardest conversation of a family’s life every week. Now she can hand them something: a printed keepsake kit,
               one card per person, so a mother can seal her last letters before she is too tired to write them.
             </p>
+            <p className="persona__plan">Keepsake plan: $39 once, with the printed kit.</p>
           </article>
         </div>
+        <p className="personas__pricing">The paid plans are planned for after Kiroween; today every vigil is free.</p>
         <p className="personas__market">
           <span className="stakes__figure">{MARKET.figure}</span> {MARKET.text}{' '}
           <a href={MARKET.href} target="_blank" rel="noopener noreferrer" className="stakes__source">

@@ -1,8 +1,14 @@
+import { useEffect } from 'react';
 import { Shell } from '../components/Chrome';
 import { Comparison, Stakes } from '../components/Comparison';
 import { WaxSeal } from '../components/WaxSeal';
 
 export function HowItWorks() {
+  // The landing teaser links to the table by its anchor; the page renders after load, so scroll once it exists.
+  useEffect(() => {
+    const id = window.location.hash.slice(1);
+    if (id) document.getElementById(id)?.scrollIntoView();
+  }, []);
   return (
     <Shell>
       <article className="prose" aria-labelledby="how-title">

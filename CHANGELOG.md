@@ -23,6 +23,10 @@ Notable changes to Dead Man's Switch. Work done with Kiro is recorded call by ca
 - **Sourced stakes.** The landing page and the honest page cite the CDC's 3,072,666 U.S. deaths in 2024 beside Gallup's 46% will rate, the SBA's 29.8 million U.S. businesses with no employees, and the published prices of Everplans, Trustworthy and GoodTrust, each checked at its source.
 - **A shorter landing comparison** that links to the full table on the honest page, and a third persona: Ruth, a hospice social worker.
 
+- **Plans, stated plainly.** Free for one vigil; Keepsake at $39 once with the printed kit; Teams at $4 a seat a month for founders and ops leads. Both paid plans come after Kiroween, and the landing page says so.
+- **Lost addresses and spent links lead somewhere.** An unknown address shows an unlit candle and "No vigil is kept here"; a bad letter, witness or check-in link says what to check and offers "Return to the threshold" and "How the seal works", without repeating its heading.
+- **Polish.** The landing page shows one candle in its three rooms; the writing desk's placeholder sits on the first line inside the margin rule; the formatting toolbar stays on one row on a phone and scrolls sideways; a released vigil's epitaph is an arched headstone with the words cut into it.
+
 ### For judges and reviewers
 - **A README that starts with the point.** The first screen says what it is and is not, shows the three rooms side by side, and leads to the judge's path; the architecture moved to [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md). The story GIF is now 960 px wide and 2.5 MB.
 - **A cleaner demo path.** A new demo vigil starts with an empty outbox; mail sent in the same moment is listed in the order it was sent, so Silas, whom the guide names, comes first; the Time machine drawer steps aside after each jump and leaves its note by the button; and opening a letter ends the demo guide with "The story is complete".

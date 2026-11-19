@@ -61,7 +61,7 @@ export function PaidComparables() {
           {i < PAID.length - 1 ? '; ' : '. '}
         </span>
       ))}
-      Each holds documents an operator can read. Dead Man’s Switch is planned at <strong>$39, once</strong>, and even we cannot read the
+      Those are places to file documents and accounts. Dead Man’s Switch is planned at <strong>$39, once</strong>, and even we cannot read the
       letters.
     </p>
   );

@@ -52,6 +52,15 @@ test('honest page has no WCAG AA violations', async ({ page }) => {
   await audit(page);
 });
 
+test('the lost-address page and a spent link have no WCAG AA violations', async ({ page }) => {
+  await page.goto('/no/such/place');
+  await expect(page.getByTestId('not-found')).toBeVisible();
+  await audit(page);
+  await page.goto('/open/notarealtoken');
+  await expect(page.getByTestId('open-link-error')).toBeVisible();
+  await audit(page);
+});
+
 test('witness, recipient and opened-letter pages have no WCAG AA violations', async ({ page, request }) => {
   await page.goto('/');
   await page.getByRole('button', { name: 'Try a demo vigil' }).click();

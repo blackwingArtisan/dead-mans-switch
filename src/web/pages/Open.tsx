@@ -6,6 +6,7 @@ import type { LetterContent } from '../../core/types';
 import { api, keepsakes, type OpenInfo } from '../lib/api';
 import { longDate } from '../lib/format';
 import { useRoom } from '../lib/room';
+import { LinkNotice } from '../components/Lost';
 import { sound } from '../lib/sound';
 import { tour } from '../lib/tour';
 import { Shell } from '../components/Chrome';
@@ -110,11 +111,18 @@ export function Open({ token, hash }: { token: string; hash: string }) {
     return (
       <Shell>
         {error ? (
-          <section className="notice">
-            <WaxSeal size={96} tone="ink" cracked />
-            <h1 className="display display--md">This link is not valid</h1>
-            <p className="lede">{error}</p>
-          </section>
+          <LinkNotice
+            title="This link is not valid"
+            message={error}
+            cracked
+            testId="open-link-error"
+            detail={
+              <>
+                Check that the whole link was copied, including everything after the # sign. A letter link is made only when a
+                vigil is released, and it opens its letter once.
+              </>
+            }
+          />
         ) : (
           <p className="loading" role="status">
             Fetching the envelope…

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { api, type CheckInLinkInfo, type CheckInLinkResult } from '../lib/api';
 import { longDate } from '../lib/format';
 import { relight, RELIGHT_MS, useRoom } from '../lib/room';
+import { LinkNotice } from '../components/Lost';
 import { Candle } from '../components/Candle';
 import { Shell } from '../components/Chrome';
 import { WaxSeal } from '../components/WaxSeal';
@@ -39,13 +40,12 @@ export function CheckIn({ token }: { token: string }) {
 
   if (error && !info) {
     return (
-      <Shell>
-        <section className="notice" data-testid="checkin-link-error">
-          <WaxSeal size={96} tone="ink" />
-          <h1 className="display display--md">This link is spent</h1>
-          <p className="lede">{error}</p>
-        </section>
-      </Shell>
+      <LinkNotice
+        title="This link is spent"
+        message={error}
+        testId="checkin-link-error"
+        detail="Each check-in link works once, and any check-in spends every link from that reminder. The next reminder brings a fresh one, or check in from the vigil itself."
+      />
     );
   }
   if (!info) {

@@ -1,3 +1,4 @@
+import { LinkNotice } from '../components/Lost';
 import { useEffect, useState } from 'react';
 import { api, type WitnessInfo } from '../lib/api';
 import { longDate } from '../lib/format';
@@ -32,13 +33,12 @@ export function Witness({ token }: { token: string }) {
 
   if (error && !info) {
     return (
-      <Shell>
-        <section className="notice">
-          <WaxSeal size={96} tone="ink" />
-          <h1 className="display display--md">Nothing to answer</h1>
-          <p className="lede">{error}</p>
-        </section>
-      </Shell>
+      <LinkNotice
+        title="Nothing to answer"
+        message={error}
+        testId="witness-link-error"
+        detail="A witness link is needed only while a vigil waits for its witnesses. If the author checked in, or enough witnesses have already answered, there is nothing left to do."
+      />
     );
   }
   if (!info) {

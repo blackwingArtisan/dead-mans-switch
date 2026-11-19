@@ -52,3 +52,49 @@ test('sound is off until asked for, and the choice is remembered', async ({ page
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
   expect(overflow).toBeLessThanOrEqual(0);
 });
+
+test('unknown addresses and bad links lead somewhere, without repeating themselves', async ({ page }) => {
+  await page.goto('/no/such/place');
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('No vigil is kept here');
+  await expect(page.getByTestId('not-found').locator('svg.candle')).toBeVisible();
+  await page.getByRole('link', { name: 'Return to the threshold' }).click();
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Some words should wait.');
+
+  await page.goto('/open/notarealtoken');
+  const notice = page.getByTestId('open-link-error');
+  await expect(notice.getByRole('heading', { level: 1 })).toHaveText('This link is not valid');
+  // The server's "This letter link is not valid." only repeats the heading, so it is left out.
+  await expect(notice.getByText('This letter link is not valid.')).toHaveCount(0);
+  await expect(notice.getByText(/everything after the # sign/)).toBeVisible();
+  await notice.getByRole('link', { name: 'How the seal works' }).click();
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('How the seal works');
+
+  await page.goto('/witness/notarealtoken');
+  await expect(page.getByTestId('witness-link-error').getByRole('heading', { level: 1 })).toHaveText('Nothing to answer');
+});
+
+test('the landing shows the three rooms and its teaser opens the full comparison', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.getByTestId('rooms-strip').locator('li')).toHaveCount(3);
+  await page.getByRole('link', { name: 'Compare them side by side' }).click();
+  await expect(page).toHaveURL(/\/how-it-works#how-compare-title$/);
+  await expect(page.getByRole('heading', { name: 'Why not the tools you already have?' })).toBeInViewport();
+});
+
+test('the writing desk: the placeholder sits inside the margin rule and the toolbar stays on one row', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Try a demo vigil' }).click();
+  await expect(page.getByTestId('state-title')).toBeVisible();
+  await page.goto('/write');
+  const sheet = page.locator('.editor__page');
+  await expect(sheet).toBeVisible();
+  const { placeholderLeft, textLeft } = await sheet.evaluate((el) => ({
+    placeholderLeft: parseFloat(getComputedStyle(el, '::before').left),
+    textLeft: parseFloat(getComputedStyle(el).paddingLeft),
+  }));
+  expect(placeholderLeft).toBeCloseTo(textLeft, 0);
+  const toolbar = await page.getByRole('toolbar', { name: 'Formatting' }).boundingBox();
+  expect(toolbar!.height).toBeLessThan(70);
+  const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+  expect(overflow).toBeLessThanOrEqual(0);
+});

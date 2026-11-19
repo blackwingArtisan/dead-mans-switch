@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { session } from './lib/api';
 import { usePath } from './lib/router';
 import { Atmosphere } from './components/Chrome';
+import { NotFound } from './components/Lost';
 import { SoundToggle } from './components/SoundToggle';
 import { StoryCaptions } from './components/StoryCaptions';
 import { TimeMachine } from './components/TimeMachine';
@@ -25,6 +26,7 @@ function Route({ path, hash }: { path: string; hash: string }) {
   const keepsake = path.match(/^\/keepsake\/([A-Za-z0-9_-]+)$/);
   if (keepsake) return <Keepsake letterId={keepsake[1]!} hash={hash} />;
   if (path === '/how-it-works') return <HowItWorks />;
+  if (path !== '/' && path !== '/write') return <NotFound />;
   if (session.token()) {
     if (path === '/write') return <Write />;
     return <Vigil onLost={() => setLost((n) => n + 1)} />;

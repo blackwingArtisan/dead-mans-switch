@@ -29,7 +29,7 @@ You keep a candle lit with one tap a month: twelve taps a year, and the vigil ca
 
 - **[3,072,666 people died in the U.S. in 2024](https://www.cdc.gov/nchs/fastats/deaths.htm)** (CDC), and **[only 46% of U.S. adults have a will](https://news.gallup.com/poll/351500/how-many-americans-have-will.aspx)** (Gallup, 2021). Not one of those wills tells your sister where the password sheet is.
 - **[29.8 million U.S. small businesses have no employees](https://advocacy.sba.gov/wp-content/uploads/2026/02/FINAL_FAQsAboutSmallBusiness_2026_012826.pdf)** (SBA Office of Advocacy, 2026, from 2022 data). In each one, a single person holds every account.
-- **People already pay for a place to leave things behind:** [Everplans Premium](https://www.everplans.com/pricing) is $99.99 a year, [Trustworthy](https://www.trustworthy.com/pricing) starts at $10 a month billed yearly, and [GoodTrust](https://mygoodtrust.com/pricing) lists $149 for a will or trust. Each holds documents its operator can read. Dead Man's Switch is planned at **$39 once, and even we cannot read the letters.**
+- **People already pay for a place to leave things behind:** [Everplans Premium](https://www.everplans.com/pricing) is $99.99 a year, [Trustworthy](https://www.trustworthy.com/pricing) starts at $10 a month billed yearly, and [GoodTrust](https://mygoodtrust.com/pricing) lists $149 for a will or trust. Those are places to file documents and accounts; Dead Man's Switch is planned at **$39 once, and even we cannot read the letters.**
 
 Figures checked at each linked source on 2026-11-18.
 
@@ -80,9 +80,9 @@ Wax seals carry each recipient's initial, the check-in is a seal you press, and 
 ## Beyond Kiroween
 
 - **Free** for one vigil with a few letters, because everyone should be able to leave words behind.
-- **Paid** at about $3 a month or $39 once, for more letters, more witnesses and a printed keepsake kit.
-- **Referrers:** estate attorneys and hospice social workers already have this conversation every week and need something to hand over.
-- **Teams:** a bus-factor plan for small companies, where the letter is the runbook for the accounts only one person holds.
+- **Keepsake, $39 once:** more letters, more witnesses and a printed keepsake kit, one card per person. Hospice social workers and estate attorneys are the referrers: they have this conversation every week and need something to hand a family.
+- **Teams, $4 a seat a month:** bought by a founder or an ops lead as a bus-factor plan, where the letter is the runbook for the accounts only one person holds. When Priya is in hospital for three weeks and payroll is due on Friday, her accountant confirms and her co-founder opens the runbook.
+- Both paid plans come after Kiroween; today every vigil is free.
 - **Why now:** passkeys and account sprawl mean more of a life sits behind logins nobody else can open, and the free first-party tools hand over accounts, not words.
 - **Next:** an AWS runtime (DynamoDB, SES, EventBridge) behind the same ports, and an optional Shamir split of the vault half across witnesses.
 
