@@ -2,6 +2,8 @@
 
 **Write letters for the people you love, sealed until you can no longer check in.**
 
+[![CI](https://github.com/blackwingArtisan/dead-mans-switch/actions/workflows/ci.yml/badge.svg)](https://github.com/blackwingArtisan/dead-mans-switch/actions/workflows/ci.yml)
+
 ![The whole story in eight seconds: the candle burns, gutters in grace and goes out as the room dies with it; the witness confirms; the recipient breaks the seal and reads by candlelight.](docs/media/story.gif)
 
 [Judge's 60-second path](#judges-60-second-path) · [Why not Google or Apple?](#why-not-the-tools-you-already-have) · [How the seal works](#the-seal) · [Built with Kiro](#built-with-kiro) · [Kiro log](KIRO-LOG.md) · [Spec](.kiro/specs/switch-lifecycle)
@@ -119,7 +121,9 @@ npm run typecheck     # web + server, and the Cloudflare Worker against Workers 
 npm run check         # all of the above plus a production build
 ```
 
-The end-to-end suite writes a letter, fast-forwards past the grace period, confirms as a witness in a separate browser, opens the letter as the recipient in a fresh browser with a pasted keepsake, and checks the link refuses a second opening. It also covers a check-in during grace, a vault-custody link, mobile layout, and an axe WCAG 2.2 AA audit of every page and state.
+The end-to-end suite writes a letter, fast-forwards past the grace period, confirms as a witness in a separate browser, opens the letter as the recipient in a fresh browser with a pasted keepsake, and checks the link refuses a second opening. It also covers a check-in during grace, a vault-custody link, the founder's demo, the hands-off story, in-theme form errors, the room relighting on check-in, mobile layout, and an axe WCAG 2.2 AA audit of every page and state.
+
+GitHub Actions runs `npm run check` on every push and pull request ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)).
 
 ## Architecture
 
