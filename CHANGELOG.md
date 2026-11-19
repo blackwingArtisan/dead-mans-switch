@@ -1,0 +1,36 @@
+# Changelog
+
+Notable changes to Dead Man's Switch. Work done with Kiro is recorded call by call in [KIRO-LOG.md](KIRO-LOG.md).
+
+## 2026-11-18: the second round
+
+### For the people using it
+- **One-tap check-in from email.** Reminder, grace, last-call and witnesses-asked emails carry a link that checks in from any device. Opening it changes nothing; a press checks in. Each link can only check in, works once, and is stored as a hash.
+- **The keepsake made visible.** Sealing shows the key split in two (half A on the recipient's card, half B in the vault), and the keepsake card carries a QR code and prints on its own, ready for an envelope.
+- **A founder's vigil.** A second demo, Priya Raman writing to her co-founder about the accounts only she holds, beside Mara's family letters.
+- **In-theme form errors** beside each field instead of browser bubbles, with focus on the first problem.
+- **Dates in the reader's own time zone.**
+
+### The costume
+- **The room follows the candle.** Glow, embers, moonlight, smoke and palette change with each state; the room dies when the candle goes out, and a check-in relights it with a match strike and sparks.
+- **Read by their last candle.** An opened letter starts dark and a circle of light follows the reader's pointer or finger, until they light the room.
+- **Ceremony.** An inkwell, brass keys and ruled parchment at the writing desk; the letter folds into its envelope under a pressed seal; a witness's answer is pressed in indigo wax and released letters lift away; a released vigil reads like a headstone.
+- **Display type fixed.** Ligatures and kerning are off in the display face, so "THE" no longer renders as "TĦE".
+
+### For judges and reviewers
+- **Play the whole story:** a captioned, hands-off run of the full lifecycle in about 40 seconds.
+- **A demo guide** that says what to try next at each stage, and a pulsing time-machine button until it is first opened.
+- **README first screen:** the stakes, the people it is for, a comparison with Google, Apple, Bitwarden and deadmansswitch.net, a story GIF and screenshots (`scripts/capture-media.mjs` regenerates them), and Open Graph tags.
+- **Kiro log** leads with a feature table; conditional steering files for the crypto and accessibility code.
+
+### Reliability
+- Changes to one vault are applied one at a time, so the background tick can no longer overwrite a letter added at the same moment.
+- The time machine shows only its newest poll, so a slow answer cannot hide new emails.
+- GitHub Actions runs typecheck, unit tests, the production build, the Playwright suite and the axe audit on every push and pull request.
+
+Tests: 89 unit tests and 17 end-to-end tests (desktop and phone), with a WCAG 2.2 AA audit of every page and state.
+
+## 2026-11-16: first build
+- The switch lifecycle (alive, reminder, grace, witnesses asked, released, paused) as a pure state machine, with browser-side AES-GCM sealing, split keys, witness confirmation and one-time release links.
+- Hardened responses (CSP, security headers, rate-limited token routes) and an opt-in time machine for demos.
+- Node and Cloudflare Worker entry points behind ports and adapters.
