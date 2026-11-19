@@ -3,12 +3,25 @@
  * landing page and the honest page so both always say the same thing.
  */
 
+/** Every figure here was checked at its primary source on 2026-11-18; keep the README in step. */
 export const STAKES = {
-  figure: '46%',
-  text: 'of U.S. adults have a will.',
+  figure: '3,072,666',
+  text: 'people died in the U.S. in 2024.',
+  source: 'CDC',
+  href: 'https://www.cdc.gov/nchs/fastats/deaths.htm',
+  willFigure: '46%',
+  willText: 'of U.S. adults have a will',
+  willSource: 'Gallup, 2021',
+  willHref: 'https://news.gallup.com/poll/351500/how-many-americans-have-will.aspx',
   aside: 'Not one of those wills tells your sister where the password sheet is.',
-  source: 'Gallup, 2021',
-  href: 'https://news.gallup.com/poll/351500/how-many-americans-have-will.aspx',
+};
+
+/** For the founder's wedge: small businesses whose owner is the whole company. */
+export const MARKET = {
+  figure: '29.8 million',
+  text: 'U.S. small businesses have no employees, so one person holds every account.',
+  source: 'SBA Office of Advocacy, 2026, 2022 data',
+  href: 'https://advocacy.sba.gov/wp-content/uploads/2026/02/FINAL_FAQsAboutSmallBusiness_2026_012826.pdf',
 };
 
 export function Stakes() {
@@ -18,8 +31,58 @@ export function Stakes() {
       <a href={STAKES.href} target="_blank" rel="noopener noreferrer" className="stakes__source">
         ({STAKES.source})
       </a>{' '}
+      Only {STAKES.willFigure} {STAKES.willText}{' '}
+      <a href={STAKES.willHref} target="_blank" rel="noopener noreferrer" className="stakes__source">
+        ({STAKES.willSource})
+      </a>
+      .{' '}
       <span className="stakes__aside">{STAKES.aside}</span>
     </p>
+  );
+}
+
+/** People already pay for a place to leave things behind. Published prices, checked 2026-11-18. */
+export const PAID = [
+  { name: 'Everplans Premium', price: '$99.99 a year', href: 'https://www.everplans.com/pricing' },
+  { name: 'Trustworthy', price: 'from $10 a month, billed yearly', href: 'https://www.trustworthy.com/pricing' },
+  { name: 'GoodTrust', price: '$149 for a will or trust, with a digital vault', href: 'https://mygoodtrust.com/pricing' },
+];
+
+export function PaidComparables() {
+  return (
+    <p className="compare__paid" data-testid="paid-comparables">
+      People already pay for a place to leave things behind:{' '}
+      {PAID.map((p, i) => (
+        <span key={p.name}>
+          <a href={p.href} target="_blank" rel="noopener noreferrer">
+            {p.name}
+          </a>{' '}
+          {p.price}
+          {i < PAID.length - 1 ? '; ' : '. '}
+        </span>
+      ))}
+      Each holds documents an operator can read. Dead Man’s Switch is planned at <strong>$39, once</strong>, and even we cannot read the
+      letters.
+    </p>
+  );
+}
+
+/** The landing page's short version; the full table lives on the honest page. */
+export function ComparisonTeaser() {
+  return (
+    <section className="compare compare--teaser" aria-labelledby="compare-title">
+      <h2 id="compare-title" className="section-title">
+        Why not the tools you already have?
+      </h2>
+      <p className="compare__lede">
+        Google and Apple hand over accounts. Bitwarden hands over the whole vault. This hands over a letter, in your words, that nobody
+        can open until the people you trust agree you are gone.
+      </p>
+      <PaidComparables />
+      <p>
+        <a href="/how-it-works#how-compare-title">Compare them side by side</a>
+      </p>
+    </section>
   );
 }
 
@@ -103,6 +166,7 @@ export function Comparison({ headingId, headingLevel = 2 }: { headingId: string;
         </table>
       </div>
       <p className="compare__close">The big platforms hand over accounts. This hands over the words, and even we cannot read them.</p>
+      <PaidComparables />
     </section>
   );
 }

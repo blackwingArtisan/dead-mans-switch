@@ -49,6 +49,12 @@ test('write a letter, fall silent, witness confirms, recipient opens it once', a
   await page.getByRole('button', { name: 'Light the candle' }).click();
   await expect(page.getByTestId('state-title')).toHaveText('The candle burns');
 
+  // The monthly tap can go in the author's own calendar, as a repeating event with no secrets in it.
+  const [ics] = await Promise.all([page.waitForEvent('download'), page.getByTestId('add-to-calendar').click()]);
+  expect(ics.suggestedFilename()).toBe('keep-the-candle-lit.ics');
+  const calendar = await (await import('node:fs/promises')).readFile((await ics.path())!, 'utf8');
+  expect(calendar).toContain('RRULE:FREQ=DAILY;INTERVAL=30');
+
   // Names a witness.
   const witnessForm = page.getByRole('form', { name: 'Name a witness' });
   await witnessForm.getByLabel('Name').fill('Silas Crane');

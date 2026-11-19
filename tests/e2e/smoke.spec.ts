@@ -3,6 +3,9 @@ import { expect, test } from '@playwright/test';
 test('landing page renders, is keyboard reachable and fits the screen', async ({ page }) => {
   await page.goto('/');
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Some words should wait.');
+  // The landing keeps the comparison short and links to the full table.
+  await expect(page.getByRole('link', { name: 'Compare them side by side' })).toBeVisible();
+  await expect(page.locator('.stakes')).toContainText('3,072,666');
   await page.keyboard.press('Tab');
   await expect(page.getByRole('link', { name: 'Skip to content' })).toBeFocused();
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
@@ -13,6 +16,10 @@ test('the honest page explains the custody limits', async ({ page }) => {
   await page.goto('/how-it-works');
   await expect(page.getByRole('heading', { name: 'How the seal works' })).toBeVisible();
   await expect(page.getByText('Vault custody is a convenience, not a secret.')).toBeVisible();
+  // The full comparison, with the paid tools people already use and their published prices.
+  await expect(page.getByRole('region', { name: 'Comparison table' })).toBeVisible();
+  await expect(page.getByTestId('paid-comparables')).toContainText('Everplans Premium');
+  await expect(page.getByTestId('paid-comparables')).toContainText('$39, once');
 });
 
 test('an incomplete form shows in-theme errors beside the fields, not browser bubbles', async ({ page }) => {

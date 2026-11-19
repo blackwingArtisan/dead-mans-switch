@@ -8,6 +8,7 @@ import { keepsakeLinkFor } from '../lib/seal';
 import { nextStep, tour, useTour } from '../lib/tour';
 import { useFieldErrors, type FieldMessages } from '../lib/validate';
 import { Candle } from '../components/Candle';
+import { checkInCalendar, downloadCalendar } from '../lib/calendar';
 import { Flourish, Shell } from '../components/Chrome';
 import { FieldError } from '../components/FieldError';
 import { WaxSeal } from '../components/WaxSeal';
@@ -135,7 +136,27 @@ export function Vigil({ onLost }: { onLost: () => void }) {
                   </span>
                 )}
               </button>
-              <p className="hint">One tap checks you in and relights the candle.</p>
+              <p className="hint">
+                One tap checks you in and relights the candle: {Math.round(365 / settings.cadenceDays)} taps a year.{' '}
+                <button
+                  type="button"
+                  className="btn btn--link btn--inline"
+                  data-testid="add-to-calendar"
+                  onClick={() =>
+                    downloadCalendar(
+                      checkInCalendar({
+                        dueAt: schedule.dueAt,
+                        cadenceDays: settings.cadenceDays,
+                        appUrl: `${window.location.origin}/`,
+                        now: Date.now(),
+                        uid: `${vault.id}-check-in@dead-mans-switch`,
+                      }),
+                    )
+                  }
+                >
+                  Add it to your calendar
+                </button>
+              </p>
             </div>
           )}
           <dl className="deadlines" data-testid="deadlines">

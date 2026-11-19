@@ -555,6 +555,14 @@ body[data-relight] .atmosphere__warm {
   padding-left: 6px;
   padding-right: 6px;
 }
+.btn--inline {
+  display: inline;
+  min-height: 0;
+  padding: 0 2px;
+  font-size: inherit;
+  letter-spacing: normal;
+  text-transform: none;
+}
 .btn--link:hover:not(:disabled) {
   border-color: transparent;
   color: #ffe3ad;
@@ -867,6 +875,22 @@ fieldset {
 }
 .compare {
   margin: 0 0 56px;
+}
+.compare--teaser {
+  max-width: 46em;
+}
+.compare__lede {
+  font-family: var(--font-hand);
+  font-size: 1.3rem;
+  color: var(--text);
+}
+.compare__paid {
+  color: var(--muted);
+  font-size: 1.02rem;
+}
+.personas__market {
+  margin: 22px 0 0;
+  color: var(--muted);
 }
 .compare__scroll {
   overflow-x: auto;

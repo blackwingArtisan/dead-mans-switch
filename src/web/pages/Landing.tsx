@@ -7,7 +7,7 @@ import { tour } from '../lib/tour';
 import { useFieldErrors, type FieldMessages } from '../lib/validate';
 import { Candle } from '../components/Candle';
 import { Flourish, Shell } from '../components/Chrome';
-import { Comparison, Stakes } from '../components/Comparison';
+import { ComparisonTeaser, MARKET, Stakes } from '../components/Comparison';
 import { FieldError } from '../components/FieldError';
 import { WaxSeal } from '../components/WaxSeal';
 
@@ -125,8 +125,8 @@ export function Landing() {
           <p className="eyebrow">A vigil for your last words</p>
           <h1 className="display">Some words should wait.</h1>
           <p className="lede">
-            Write letters for the people you love, sealed until you can no longer check in. Keep a candle lit with one
-            tap a month. If it ever goes out, your witnesses are asked first, and only then are your letters delivered.
+            Not an account handover. A letter, in your words, that nobody (not even us) can open until the people you trust
+            agree you are gone. Keep a candle lit with one tap a month; if it ever goes out, your witnesses are asked first.
           </p>
           <Stakes />
           <div className="hero__actions">
@@ -180,7 +180,7 @@ export function Landing() {
 
       <section className="personas" aria-labelledby="personas-title">
         <h2 id="personas-title" className="section-title">
-          Two people keeping a vigil
+          Who keeps a vigil
         </h2>
         <div className="personas__grid">
           <article className="persona">
@@ -193,14 +193,28 @@ export function Landing() {
           <article className="persona">
             <h3>Priya, solo founder</h3>
             <p>
-              Priya is the only person who holds the cloud root account, the domain registrar and the payroll login. Her letter
-              to her co-founder says where each recovery code lives. If she goes quiet for two weeks, the company keeps running.
+              Priya is the only person who holds the cloud root account, the domain registrar and the payroll login. Then she is in
+              hospital for three weeks and payroll is due on Friday. Her accountant, her witness, confirms she cannot check in, and her
+              co-founder opens the letter that says where each recovery code lives. The company keeps running.
+            </p>
+          </article>
+          <article className="persona">
+            <h3>Ruth, hospice social worker</h3>
+            <p>
+              Ruth has the hardest conversation of a family’s life every week. Now she can hand them something: a printed keepsake kit,
+              one card per person, so a mother can seal her last letters before she is too tired to write them.
             </p>
           </article>
         </div>
+        <p className="personas__market">
+          <span className="stakes__figure">{MARKET.figure}</span> {MARKET.text}{' '}
+          <a href={MARKET.href} target="_blank" rel="noopener noreferrer" className="stakes__source">
+            ({MARKET.source})
+          </a>
+        </p>
       </section>
 
-      <Comparison headingId="compare-title" />
+      <ComparisonTeaser />
 
       <section id="begin" className="panel panel--form" aria-labelledby="begin-title">
         <h2 id="begin-title" className="section-title">

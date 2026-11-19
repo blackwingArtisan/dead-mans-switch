@@ -4,15 +4,17 @@
 
 [![CI](https://github.com/blackwingArtisan/dead-mans-switch/actions/workflows/ci.yml/badge.svg)](https://github.com/blackwingArtisan/dead-mans-switch/actions/workflows/ci.yml)
 
-![The whole story in eight seconds: the candle burns, gutters in grace and goes out as the room dies with it; the witness confirms; the recipient breaks the seal and reads by candlelight.](docs/media/story.gif)
+![The whole story in seven seconds: the candle burns, gutters in grace and goes out as the room dies with it; the witness confirms; the recipient breaks the seal and reads by candlelight.](docs/media/story.gif)
 
-[Judge's 60-second path](#judges-60-second-path) · [Why not Google or Apple?](#why-not-the-tools-you-already-have) · [How the seal works](#the-seal) · [Built with Kiro](#built-with-kiro) · [Kiro log](KIRO-LOG.md) · [Changelog](CHANGELOG.md) · [Spec](.kiro/specs/switch-lifecycle)
+**Not an account handover. A letter, in your words, that nobody (not even us) can open until the people you trust agree you are gone.**
 
-**[46% of U.S. adults have a will](https://news.gallup.com/poll/351500/how-many-americans-have-will.aspx)** (Gallup, 2021). Not one of those wills tells your sister where the password sheet is.
+You keep a candle lit with one tap a month: twelve taps a year, and the vigil can put the reminder in your own calendar. If the candle ever goes out, you get reminders and a grace period; then your witnesses are asked to confirm; only then does each recipient get a one-time link that decrypts their letter in their own browser.
 
-A candle-lit vigil for your last words. Letters are encrypted in your browser. You keep a candle lit with one tap ("I still walk among the living"). If it ever goes out, you get reminders and a grace period; then the people you trust are asked to confirm; only then does each recipient get a one-time link that decrypts their letter in their own browser.
+**Costume Contest: the candle is the state machine, and the whole room wears it.** Built for Kiroween 2026.
 
-Built for Kiroween 2026, Costume Contest category.
+![The three rooms side by side: warm and lit while you check in, sickly green in grace, cold blue-black once the candle is out.](docs/media/rooms.jpg)
+
+[Judge's 60-second path](#judges-60-second-path) · [Why not Google or Apple?](#why-not-the-tools-you-already-have) · [The costume](#the-costume) · [Built with Kiro](#built-with-kiro) · [Architecture](docs/ARCHITECTURE.md) · [Kiro log](KIRO-LOG.md) · [Changelog](CHANGELOG.md) · [Spec](.kiro/specs/switch-lifecycle)
 
 > ### Judge's 60-second path
 >
@@ -23,11 +25,21 @@ Built for Kiroween 2026, Costume Contest category.
 >
 > Or press **▶ Play the whole story** on the landing page: a captioned, hands-off run of all four steps in about 40 seconds.
 
+## Why it matters
+
+- **[3,072,666 people died in the U.S. in 2024](https://www.cdc.gov/nchs/fastats/deaths.htm)** (CDC), and **[only 46% of U.S. adults have a will](https://news.gallup.com/poll/351500/how-many-americans-have-will.aspx)** (Gallup, 2021). Not one of those wills tells your sister where the password sheet is.
+- **[29.8 million U.S. small businesses have no employees](https://advocacy.sba.gov/wp-content/uploads/2026/02/FINAL_FAQsAboutSmallBusiness_2026_012826.pdf)** (SBA Office of Advocacy, 2026, from 2022 data). In each one, a single person holds every account.
+- **People already pay for a place to leave things behind:** [Everplans Premium](https://www.everplans.com/pricing) is $99.99 a year, [Trustworthy](https://www.trustworthy.com/pricing) starts at $10 a month billed yearly, and [GoodTrust](https://mygoodtrust.com/pricing) lists $149 for a will or trust. Each holds documents its operator can read. Dead Man's Switch is planned at **$39 once, and even we cannot read the letters.**
+
+Figures checked at each linked source on 2026-11-18.
+
 ## Who it is for
 
 **Mara, 58.** Mara wants her son Theo to know the deed is in the blue tin and that she was proud of him, and her best friend June to know where the password sheet is and that Biscuit lies about being fed. She will not hand those letters over today. She checks in once a month from her phone; if she ever stops, her witnesses are asked first, and only then do Theo and June each get their own letter.
 
-**Priya, a solo founder.** Priya is the only person holding the cloud root account, the domain registrar and the payroll login. A will does not cover that, and a shared password vault would hand everything over today. Her sealed letter tells her co-founder where each recovery code lives, released only if she goes quiet and her accountant, her named witness, confirms it. Press **or a founder's vigil** on the landing page to try hers.
+**Priya, a solo founder.** Priya is the only person holding the cloud root account, the domain registrar and the payroll login. A will does not cover that, and a shared password vault would hand everything over today. Then she is in hospital for three weeks and payroll is due on Friday. Her accountant, her named witness, confirms she cannot check in, and her co-founder opens the letter that says where each recovery code lives. The company keeps running. Press **or a founder's vigil** on the landing page to try hers.
+
+**Ruth, a hospice social worker.** Ruth has the hardest conversation of a family's life every week. A printed keepsake kit, one card per person, lets a mother seal her last letters before she is too tired to write them.
 
 ## Why not the tools you already have?
 
@@ -45,8 +57,8 @@ The big platforms hand over accounts. This hands over the words, and even we can
 
 | | |
 |---|---|
-| ![Landing page: a lit candle beside "Some words should wait."](docs/media/landing.jpg) | ![Grace: the flame gutters and the room dims](docs/media/grace.jpg) |
-| ![Witnesses asked: the candle is out, the room is dark and smoky](docs/media/candle-out.jpg) | ![The recipient reads by candlelight](docs/media/letter-by-candlelight.jpg) |
+| ![Landing page: a lit candle beside "Some words should wait."](docs/media/landing.jpg) | ![Grace: the flame gutters and the room turns sickly green](docs/media/grace.jpg) |
+| ![Witnesses asked: the candle is out, the room is cold blue-black and smoky](docs/media/candle-out.jpg) | ![The recipient reads by candlelight](docs/media/letter-by-candlelight.jpg) |
 
 <img src="docs/media/phone-grace.jpg" alt="On a phone: the vigil in grace, with the check-in seal above the fold" width="260" align="right">
 
@@ -72,7 +84,7 @@ Wax seals carry each recipient's initial, the check-in is a seal you press, and 
 - **Referrers:** estate attorneys and hospice social workers already have this conversation every week and need something to hand over.
 - **Teams:** a bus-factor plan for small companies, where the letter is the runbook for the accounts only one person holds.
 - **Why now:** passkeys and account sprawl mean more of a life sits behind logins nobody else can open, and the free first-party tools hand over accounts, not words.
-- **Next:** signed one-tap check-in links in every reminder, an AWS runtime (DynamoDB, SES, EventBridge) behind the same ports, and an optional Shamir split of the vault half across witnesses.
+- **Next:** an AWS runtime (DynamoDB, SES, EventBridge) behind the same ports, and an optional Shamir split of the vault half across witnesses.
 
 ## What works today
 
@@ -81,7 +93,7 @@ Wax seals carry each recipient's initial, the check-in is a seal you press, and 
 - Two custody modes per letter:
   - **Keepsake** (default): the recipient holds half the key, handed over by you as a link or a printed card with a QR code. The server can never read the letter. Sealing shows the split: half A goes on the card, half B stays in the vault, and neither opens anything alone.
   - **Vault**: the server holds both halves, so there is nothing to hand over. The UI says plainly that the operator could read it.
-- One-tap check-in, pause and resume.
+- One-tap check-in, pause and resume, and an **Add it to your calendar** reminder (a repeating `.ics` event on your cadence, with nothing secret in it).
 - Reminder, grace, last-call, witness, stand-down, denial and release emails (plain text and HTML).
 - Witness page with a two-step confirm and a one-tap "they still live" that stops the release.
 - Recipient page: keepsake check before spending the link, the seal cracks, the letter unfolds; download and print; the server forgets its copy.
@@ -128,38 +140,11 @@ The end-to-end suite writes a letter, fast-forwards past the grace period, confi
 
 GitHub Actions runs `npm run check` on every push and pull request ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)).
 
-## Architecture
+## How it is built
 
-```
-src/core     pure domain: state machine, schedule, crypto, validation (shared everywhere)
-src/server   Hono app (createApp), SwitchService, ports and adapters, email templates, Node entry
-src/worker   Cloudflare Worker entry: fetch + Cron Trigger
-src/web      React app: candle, wax seals, writing desk, witness, keepsake and recipient pages
-tests/unit   Vitest
-tests/e2e    Playwright
-```
+React and Vite in the browser, a Hono API, and a pure state machine shared by both, with every outside service behind a port: the clock, the store and the mailer each have a free local adapter and a real one. It runs on Node locally and is written for the Cloudflare Workers free plan. Layers, the state machine, the seal's key split, the adapters, the deploy target and the security headers are in **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)**.
 
-The state machine is a pure function, `step(vault, event, { now, mint }) -> { vault, effects }`. Effects are emails described as data; the service saves the vault first and then sends them. Ticks are idempotent and cascade, so a scheduler that was down for a month catches up in one run without double-sending.
-
-States: `alive -> reminder -> grace -> confirm -> released`, plus `paused`. Check-in cancels from any live state; a witness denial sends `confirm` back to `grace` with a fresh grace window. Full detail in [`.kiro/specs/switch-lifecycle/design.md`](.kiro/specs/switch-lifecycle/design.md).
-
-### The seal
-
-Each letter gets a random key K. K is split into a keepsake half A (random) and a vault half B = K xor A. The server stores the ciphertext, B and a hash of A. At release the recipient's browser joins A and B and decrypts locally; the ciphertext is bound to the letter id so it cannot be swapped. Limits, stated plainly in the app: vault custody is readable by the operator; a compromised device can read letters as they are written; witnesses who collude can release early; someone reading your email could use a check-in link to keep the candle lit; the server sees names, emails and timing; browser crypto trusts the code it is served.
-
-## Adapters
-
-| Port | Local (default, free) | Real (written and type-checked, not run in tests) | Env |
-|---|---|---|---|
-| Clock | `MachineClock` (time machine, opt-in for demos) | `SystemClock` (default) | `DMS_CLOCK=machine\|system`, or `--time-machine` |
-| Store | `MemoryStore` + JSON file | `KvStore` (Workers KV) | `DMS_STORE=file\|memory` |
-| Mail | `OutboxMailer` (local outbox) | `ResendMailer` (HTTPS) | `DMS_MAILER=outbox\|resend` |
-
-The time machine and outbox routes exist only when both local adapters are active.
-
-## Deploy target (free, not deployed)
-
-Cloudflare Workers free plan: static assets for the web app, one KV namespace, and a Cron Trigger every 15 minutes that ticks every vigil. Mail through Resend's free tier. See `wrangler.toml` and `src/worker/index.ts`. To deploy you would create the KV namespace, set its id in `wrangler.toml`, `wrangler secret put RESEND_API_KEY`, then `npm run build && wrangler deploy`.
+The seal in one line: each letter gets a random key K, split into a keepsake half A that the recipient holds and a vault half B = K xor A that the server holds, so in keepsake custody the server never holds enough to read a letter. The limits are stated plainly on the app's "How the seal works" page.
 
 ## Built with Kiro
 
@@ -174,10 +159,6 @@ The initial build and the security hardening were done with Claude Code, working
 | Custom agent | [`.kiro/agents/dead-mans-switch.json`](.kiro/agents/dead-mans-switch.json) | A builder agent that loads the steering and specs, works one task per session, and lists the open spec tasks when a session starts (`scripts/open-tasks.mjs`) | Same test |
 | MCP | [`.kiro/settings/mcp.json`](.kiro/settings/mcp.json) | AWS Documentation and Context7 servers, so API details are checked against current docs | Same test |
 | Prompts | [`.kiro/prompts`](.kiro/prompts) | The exact prompts, so each call can be re-run | n/a |
-
-## Security headers and limits
-
-Every response, including the Worker's static assets, carries a strict Content-Security-Policy (scripts from the same origin only, no plugins, no framing, same-origin network calls), `X-Frame-Options: DENY`, `nosniff`, `no-referrer` and a closed Permissions-Policy. The end-to-end run checks that the policy never blocks the app. Witness and letter links are rate-limited per client (60 a minute, then 429). The limiter lives in memory per process or isolate; a global limit would use a Durable Object.
 
 ## Accessibility
 

@@ -1,5 +1,6 @@
-// Captures the README media into docs/media: a hero GIF of "Play the whole story", four
-// desktop screenshots of the lifecycle, a phone screenshot and the social preview image.
+// Captures the README media into docs/media: a hero GIF of "Play the whole story", five
+// desktop screenshots of the lifecycle, the three rooms side by side, a phone screenshot and
+// the social preview image.
 //
 // Start a demo server first (`npm run demo`, or any server with the time machine on), then:
 //   node scripts/capture-media.mjs [base-url]      (default http://localhost:3140)
@@ -48,6 +49,8 @@ async function demoVigil(page) {
   await og.close();
 
   await demoVigil(page);
+  await page.waitForTimeout(1500);
+  await page.screenshot({ path: join(OUT, 'alive.jpg'), type: 'jpeg', quality: 82 });
   await post('/api/dev/clock', { days: 30 });
   await page.reload();
   await page.waitForTimeout(2200);
@@ -75,6 +78,21 @@ async function demoVigil(page) {
   await ctx.close();
 }
 
+// 1b. The three rooms side by side (alive, grace, candle out), small enough to read as thumbnails.
+{
+  const strip = spawnSync(
+    'ffmpeg',
+    [
+      '-y', '-loglevel', 'error',
+      '-i', join(OUT, 'alive.jpg'), '-i', join(OUT, 'grace.jpg'), '-i', join(OUT, 'candle-out.jpg'),
+      '-filter_complex', '[0]scale=640:-1[a];[1]scale=640:-1[b];[2]scale=640:-1[c];[a][b][c]hstack=inputs=3',
+      '-q:v', '4', join(OUT, 'rooms.jpg'),
+    ],
+    { stdio: 'inherit' },
+  );
+  if (strip.status !== 0) console.error('ffmpeg is needed for rooms.jpg.');
+}
+
 // 2. Phone: the vigil in grace, check-in above the fold.
 {
   const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
@@ -94,6 +112,8 @@ async function demoVigil(page) {
   const page = await ctx.newPage();
   await post('/api/dev/reset');
   await page.goto(BASE + '/?story-pace=0.3');
+  // The film grain is fresh noise in every frame, which a GIF cannot compress; leave it out of the recording.
+  await page.addStyleTag({ content: '.atmosphere__grain { display: none !important; }' });
   await page.waitForTimeout(800);
   await page.getByTestId('play-story').click();
   await page.getByTestId('story').filter({ hasText: 'Some words should wait' }).waitFor({ timeout: 60_000 });
@@ -105,13 +125,15 @@ async function demoVigil(page) {
     'ffmpeg',
     [
       '-y', '-loglevel', 'error', '-ss', '1.2', '-i', join(TMP, 'story.webm'),
-      '-vf', 'setpts=PTS/1.7,fps=10,scale=640:-1:flags=lanczos,split[a][b];[a]palettegen=max_colors=80:stats_mode=diff[p];[b][p]paletteuse=dither=bayer:bayer_scale=5:diff_mode=rectangle',
+      // 960 px wide and under 3 MB: a faster cut, 6 frames a second and a 48-colour palette without dithering.
+      '-vf', 'setpts=PTS/2.1,fps=6,scale=960:-1:flags=lanczos,split[a][b];[a]palettegen=max_colors=48:stats_mode=diff[p];[b][p]paletteuse=dither=none:diff_mode=rectangle',
       join(OUT, 'story.gif'),
     ],
     { stdio: 'inherit' },
   );
   if (gif.status !== 0) console.error('ffmpeg is needed for the GIF; the stills were captured.');
-  rmSync(TMP, { recursive: true, force: true });
+  // KEEP_VIDEO=1 keeps the raw recording in docs/media/.video for tuning the GIF by hand.
+  if (!process.env.KEEP_VIDEO) rmSync(TMP, { recursive: true, force: true });
 }
 
 await browser.close();
