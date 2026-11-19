@@ -25,6 +25,8 @@
   --focus: #ffcf7a;
 
   --font-display: 'Cinzel Decorative', 'Cormorant Garamond', Georgia, serif;
+  /* Swash capitals are kept for the h1 and the brand; every other heading uses plain Cinzel to stay readable. */
+  --font-heading: 'Cinzel', 'Cormorant Garamond', Georgia, serif;
   --font-body: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
   --font-hand: 'IM Fell English', 'Cormorant Garamond', Georgia, serif;
 
@@ -442,6 +444,8 @@ body[data-relight] .atmosphere__warm {
   letter-spacing: 0.01em;
 }
 .display--md {
+  font-family: var(--font-heading);
+  font-weight: 600;
   font-size: clamp(1.9rem, 4.4vw, 3rem);
 }
 .eyebrow {
@@ -459,7 +463,7 @@ body[data-relight] .atmosphere__warm {
   max-width: 38em;
 }
 .section-title {
-  font-family: var(--font-display);
+  font-family: var(--font-heading);
   font-variant-ligatures: none;
   font-feature-settings: 'liga' 0, 'clig' 0, 'dlig' 0, 'hlig' 0, 'calt' 0;
   font-kerning: none;
@@ -760,6 +764,44 @@ fieldset {
   rotate: var(--lean, 0deg);
   transition: rotate 0.35s ease-out;
 }
+/* The ambient loop: every ten seconds a draught makes the flame gutter, and it rallies. Motion only. */
+@media (prefers-reduced-motion: no-preference) {
+  .hero__candle .candle--alive .candle__flame {
+    animation: hero-draught 10s ease-in-out 4s infinite;
+  }
+  .hero__candle .candle--alive .candle__glow {
+    animation: hero-draught-glow 10s ease-in-out 4s infinite;
+  }
+}
+@keyframes hero-draught {
+  0%,
+  78%,
+  100% {
+    scale: 1;
+    opacity: 1;
+  }
+  84% {
+    scale: 0.4 0.3;
+    opacity: 0.55;
+  }
+  88% {
+    scale: 0.55 0.5;
+    opacity: 0.8;
+  }
+  93% {
+    scale: 1.08 1.12;
+  }
+}
+@keyframes hero-draught-glow {
+  0%,
+  78%,
+  100% {
+    opacity: 1;
+  }
+  84% {
+    opacity: 0.35;
+  }
+}
 .hero__candle::before {
   content: '';
   position: fixed;
@@ -776,31 +818,61 @@ fieldset {
 }
 .rite__steps {
   list-style: none;
-  padding: 0;
   margin: 0;
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
-  gap: 22px;
+  gap: 0;
+  /* One parchment scroll, with a wooden rod at each end. */
+  position: relative;
+  padding: 30px clamp(14px, 3vw, 30px);
+  background: radial-gradient(120% 90% at 50% 0%, #f6ecd5 0%, var(--parchment) 45%, var(--parchment-shade) 100%);
+  color: var(--ink);
+  border-radius: 2px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55), inset 0 0 70px rgba(140, 100, 50, 0.3);
+}
+.rite__steps::before,
+.rite__steps::after {
+  content: '';
+  position: absolute;
+  left: -12px;
+  right: -12px;
+  height: 16px;
+  border-radius: 8px;
+  background: linear-gradient(180deg, #7a5532, #3b2614 70%, #24170c);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+}
+.rite__steps::before {
+  top: -8px;
+}
+.rite__steps::after {
+  bottom: -8px;
 }
 .rite__step {
-  background: var(--panel);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  padding: 22px;
-  box-shadow: var(--shadow);
+  padding: 8px clamp(10px, 2vw, 22px) 6px;
+}
+.rite__step + .rite__step {
+  border-left: 1px solid rgba(106, 82, 56, 0.35);
+}
+@media (max-width: 760px) {
+  .rite__step + .rite__step {
+    border-left: 0;
+    border-top: 1px solid rgba(106, 82, 56, 0.35);
+    padding-top: 18px;
+    margin-top: 12px;
+  }
 }
 .rite__step h3 {
-  font-family: var(--font-display);
+  font-family: var(--font-heading);
   font-variant-ligatures: none;
   font-feature-settings: 'liga' 0, 'clig' 0, 'dlig' 0, 'hlig' 0, 'calt' 0;
   font-kerning: none;
   font-size: 1.15rem;
   margin: 10px 0 6px;
-  color: var(--parchment);
+  color: #2a180c;
 }
 .rite__step p {
   margin: 0;
-  color: var(--muted);
+  color: #4a3626;
 }
 .rite {
   margin-bottom: 56px;
@@ -906,14 +978,51 @@ fieldset {
 .personas__grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 22px;
+  align-items: start;
+  gap: 26px;
 }
+/* Each persona is a sealed envelope: the flap lifts a little on hover or focus. */
 .persona {
-  background: var(--panel);
-  border: 1px solid var(--line);
-  border-left: 3px solid var(--wax-hi);
-  border-radius: 0 var(--radius) var(--radius) 0;
-  padding: 20px 22px;
+  position: relative;
+  padding: 58px 22px 20px;
+  background: linear-gradient(180deg, #2b2119, #1d1610);
+  border: 1px solid #5a4330;
+  border-radius: 3px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
+}
+.persona::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 46px;
+  background: linear-gradient(180deg, #5a4330, #3a2c20);
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+  filter: drop-shadow(0 2px 0 rgba(0, 0, 0, 0.45));
+  transform-origin: top center;
+  transition: transform 0.35s ease;
+}
+.persona::after {
+  content: '';
+  position: absolute;
+  top: 30px;
+  left: 50%;
+  width: 26px;
+  height: 26px;
+  margin-left: -13px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, var(--wax-hi), var(--wax) 60%, var(--wax-deep));
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+  transition: transform 0.35s ease;
+}
+.persona:hover::before,
+.persona:focus-within::before {
+  transform: perspective(300px) rotateX(-28deg);
+}
+.persona:hover::after,
+.persona:focus-within::after {
+  transform: translateY(-6px);
 }
 .persona h3 {
   font-family: var(--font-hand);
@@ -930,7 +1039,6 @@ fieldset {
   flex-direction: column;
 }
 .persona p.persona__plan {
-  margin-top: auto;
   padding-top: 12px;
   font-family: var(--font-hand);
   font-style: italic;
@@ -1318,7 +1426,7 @@ fieldset {
   }
 }
 .checkin__label {
-  font-family: var(--font-display);
+  font-family: var(--font-heading);
   font-variant-ligatures: none;
   font-feature-settings: 'liga' 0, 'clig' 0, 'dlig' 0, 'hlig' 0, 'calt' 0;
   font-kerning: none;
@@ -1943,7 +2051,7 @@ fieldset {
   background: radial-gradient(90% 70% at 50% 35%, rgba(80, 100, 150, 0.2), rgba(6, 8, 16, 0.95));
 }
 .rooms-strip strong {
-  font-family: var(--font-display);
+  font-family: var(--font-heading);
   font-variant-ligatures: none;
   font-kerning: none;
   font-size: 0.92rem;
@@ -2768,7 +2876,7 @@ fieldset {
   margin: 0 auto;
 }
 .prose h2 {
-  font-family: var(--font-display);
+  font-family: var(--font-heading);
   font-variant-ligatures: none;
   font-feature-settings: 'liga' 0, 'clig' 0, 'dlig' 0, 'hlig' 0, 'calt' 0;
   font-kerning: none;
@@ -3026,7 +3134,7 @@ fieldset {
   align-items: flex-start;
 }
 .tm__title {
-  font-family: var(--font-display);
+  font-family: var(--font-heading);
   font-variant-ligatures: none;
   font-feature-settings: 'liga' 0, 'clig' 0, 'dlig' 0, 'hlig' 0, 'calt' 0;
   font-kerning: none;
@@ -3066,7 +3174,7 @@ fieldset {
   font-size: 1rem;
 }
 .tm__subtitle {
-  font-family: var(--font-display);
+  font-family: var(--font-heading);
   font-variant-ligatures: none;
   font-feature-settings: 'liga' 0, 'clig' 0, 'dlig' 0, 'hlig' 0, 'calt' 0;
   font-kerning: none;

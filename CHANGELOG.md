@@ -13,6 +13,9 @@ Notable changes to Dead Man's Switch. Work done with Kiro is recorded call by ca
 - **Phones: nothing floats over an action.** The sound switch and the hourglass join the masthead, the time machine's note and the story caption dock to the top, and the page leaves room at the bottom. A phone-only Playwright file checks that no control overlaps a link, button or field as the page scrolls.
 - **One masthead on a bad letter link.** The notice page no longer sits inside a second page frame.
 - **Play the whole story is the primary button** on the landing page; "Try a demo vigil" is second and "Begin your vigil" is a text link to the form.
+- **A haunted tab.** On the vigil, the favicon is a lit, guttering or unlit candle, and the tab title reads "(!) Your candle gutters" in grace and "The candle is out" once witnesses are asked. A browser warning in grace is opt-in ("let this browser warn you if it gutters"), asked for only by a press, and fires once per missed deadline.
+- **The costume below the fold.** The three rites are one parchment scroll between two rods, the personas are sealed envelopes whose flap lifts on hover or focus (with no equal-height gaps), and every ten seconds a draught makes the landing flame gutter and rally (still under reduced motion).
+- **Readable headings.** Cinzel Decorative's swash capitals are kept for the landing h1 and the brand; section headings and long page titles use plain Cinzel.
 
 ### Kiro workspace
 - **A custom agent** (`.kiro/agents/dead-mans-switch.json`) that loads the steering and specs, builds one spec task per session, and starts each session by listing the open tasks (`scripts/open-tasks.mjs`).

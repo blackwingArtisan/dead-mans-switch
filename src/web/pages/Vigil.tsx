@@ -3,6 +3,7 @@ import type { VaultView } from '../../core/vault';
 import { api, ApiError, authored, REFRESH_EVENT, session } from '../lib/api';
 import { longDate, relative, shortDate, STAGES, STATE_COPY } from '../lib/format';
 import { Link } from '../lib/router';
+import { enableGraceNotice, graceNoticeAvailable, graceNoticeOn, useGraceNotice, useHauntedTab } from '../lib/haunt';
 import { relight, RELIGHT_MS, ROOM_LINE, useRoom } from '../lib/room';
 import { keepsakeLinkFor } from '../lib/seal';
 import { nextStep, tour, useTour } from '../lib/tour';
@@ -25,6 +26,9 @@ export function Vigil({ onLost }: { onLost: () => void }) {
   const [relighting, setRelighting] = useState(false);
   const lastState = useRef<string | null>(null);
   useRoom(vault?.state ?? null);
+  useHauntedTab(vault?.state ?? null);
+  useGraceNotice(vault?.state ?? null, vault?.schedule.dueAt ?? null);
+  const [noticeOn, setNoticeOn] = useState(() => graceNoticeOn());
 
   const apply = useCallback((v: VaultView) => {
     if (lastState.current && lastState.current !== v.state) {
@@ -157,6 +161,21 @@ export function Vigil({ onLost }: { onLost: () => void }) {
                 >
                   Add it to your calendar
                 </button>
+                {!noticeOn && graceNoticeAvailable() && (
+                  <>
+                    {' '}
+                    or{' '}
+                    <button
+                      type="button"
+                      className="btn btn--link btn--inline"
+                      data-testid="grace-notice"
+                      onClick={() => void enableGraceNotice().then(setNoticeOn)}
+                    >
+                      let this browser warn you if it gutters
+                    </button>
+                  </>
+                )}
+                {noticeOn && <span data-testid="grace-notice-on"> This browser will warn you if it gutters.</span>}
               </p>
             </div>
           )}

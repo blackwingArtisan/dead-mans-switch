@@ -158,7 +158,7 @@ npm run check         # all of the above plus a production build
 node scripts/sync-counts.mjs   # refresh the counts below from a real run (--check to verify)
 ```
 
-Current suite: <!-- test-counts -->117 unit tests in 18 files, all passing, and 31 end-to-end runs (desktop and phone) in 4 Playwright files.<!-- /test-counts -->
+Current suite: <!-- test-counts -->120 unit tests in 19 files, all passing, and 31 end-to-end runs (desktop and phone) in 4 Playwright files.<!-- /test-counts -->
 
 The end-to-end suite writes a letter, fast-forwards past the grace period, confirms as a witness in a separate browser, opens the letter as the recipient in a fresh browser with a pasted keepsake, and checks the link refuses a second opening. It also covers a check-in during grace, a one-tap check-in from the grace email on a second device, a vault-custody link, a candle lit back by a recipient, the sealed export opened by the offline page from disk with the network off, the calendar reminder, the founder's demo, the hands-off story, in-theme form errors, broken and unknown links, the room relighting on check-in, mobile layout, and an axe WCAG 2.2 AA audit of every page and state.
 

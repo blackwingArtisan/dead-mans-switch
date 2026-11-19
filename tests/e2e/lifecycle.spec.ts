@@ -258,17 +258,49 @@ test('the demo guide says what to try next, and the room dies and relights with 
   await expect(guide).toContainText('Next: Open the Time machine');
   await expect(page.locator('body')).toHaveAttribute('data-room', 'alive');
   await expect(page.locator('.tm-toggle')).toHaveClass(/tm-toggle--pulse/);
+  // The haunted tab: a lit candle and the plain name while the vigil is kept.
+  await expect(page).toHaveTitle('Dead Man’s Switch');
+  const icon = page.locator('link[rel="icon"]');
+  const litIcon = await icon.getAttribute('href');
+  expect(litIcon).toMatch(/^data:image\/svg\+xml,/);
+  // The grace warning is opt-in, asked for only by a press. Headless Chromium always reports notifications
+  // as denied, so the browser's Notification is stood in for by one that records what it is asked to show.
+  await page.addInitScript(() => {
+    const shown: string[] = [];
+    class FakeNotification {
+      static permission: NotificationPermission = 'default';
+      static async requestPermission() {
+        FakeNotification.permission = 'granted';
+        return 'granted' as const;
+      }
+      constructor(title: string) {
+        shown.push(title);
+      }
+    }
+    Object.assign(window, { Notification: FakeNotification, shownNotices: shown });
+  });
+  await page.reload();
+  await page.getByTestId('grace-notice').click();
+  await expect(page.getByTestId('grace-notice-on')).toContainText('This browser will warn you if it gutters.');
+  expect(await page.evaluate(() => (window as unknown as { shownNotices: string[] }).shownNotices)).toEqual([]);
 
   await openTimeMachine(page);
   await expect(page.locator('.tm-toggle')).not.toHaveClass(/tm-toggle--pulse/);
   await travel(page, '+30 days');
   await expect(page.locator('body')).toHaveAttribute('data-room', 'grace');
+  await expect(page).toHaveTitle('(!) Your candle gutters · Dead Man’s Switch');
+  // In grace, the device that opted in is warned once.
+  await expect
+    .poll(() => page.evaluate(() => (window as unknown as { shownNotices: string[] }).shownNotices))
+    .toEqual(['Your candle gutters']);
+  expect(await icon.getAttribute('href')).not.toBe(litIcon);
   // The drawer steps aside after a jump, and its note waits by the button.
   await expect(page.getByTestId('tm-toast')).toContainText('A month passed');
   await expect(guide).toContainText('Press +7 days');
   await travel(page, '+7 days');
   await expect(page.locator('body')).toHaveAttribute('data-room', 'confirm');
   await expect(page.getByRole('status').filter({ hasText: 'The room has gone dark' })).toBeAttached();
+  await expect(page).toHaveTitle('The candle is out · Dead Man’s Switch');
   await expect(guide).toContainText('Witness asked');
   // The guide names Silas, so his is the first "Witness asked" in the outbox.
   const panel = await openTimeMachine(page);
@@ -284,6 +316,8 @@ test('the demo guide says what to try next, and the room dies and relights with 
   await page.getByRole('link', { name: 'How the seal works' }).click();
   await expect(page.getByRole('heading', { name: 'How the seal works' })).toBeVisible();
   await expect(page.locator('body')).not.toHaveAttribute('data-room', /.+/);
+  await expect(page).toHaveTitle('Dead Man’s Switch');
+  await expect(icon).toHaveAttribute('href', '/favicon.svg');
 });
 
 test("a founder's demo vigil seals Priya's letters and names her own witness in the guide", async ({ page }) => {

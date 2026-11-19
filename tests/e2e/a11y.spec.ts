@@ -18,6 +18,8 @@ test('landing page has no WCAG AA violations', async ({ page }) => {
 });
 
 test('vigil, writing desk and time machine have no WCAG AA violations', async ({ page }) => {
+  // Five full axe audits and a letter sealed in the browser: give it more than the default minute on a busy runner.
+  test.setTimeout(150_000);
   await page.goto('/');
   await page.getByRole('button', { name: 'Try a demo vigil' }).click();
   await expect(page.getByTestId('envelope')).toHaveCount(2);
