@@ -11,6 +11,7 @@ import { Editor } from '../components/Editor';
 import { FieldError } from '../components/FieldError';
 import { KeepsakeQr } from '../components/KeepsakeQr';
 import { KeySplit } from '../components/KeySplit';
+import { SealCeremony } from '../components/SealCeremony';
 import { WaxSeal } from '../components/WaxSeal';
 
 const LETTER_MESSAGES: Record<string, FieldMessages> = {
@@ -174,7 +175,7 @@ function Sealed({ result, custody, recipient, author }: { result: SealedResult; 
   return (
     <Shell>
       <section className="sealed" aria-labelledby="sealed-title">
-        <WaxSeal size={150} mark={recipient.trim()[0]?.toUpperCase()} className="sealed__seal" />
+        <SealCeremony mark={recipient.trim()[0]?.toUpperCase()} />
         <h1 id="sealed-title" className="display display--md" data-testid="sealed-title">
           The letter is sealed
         </h1>

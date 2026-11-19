@@ -86,9 +86,15 @@ test('write a letter, fall silent, witness confirms, recipient opens it once', a
   await witness.getByTestId('witness-confirm').click();
   await witness.getByTestId('witness-confirm-final').click();
   await expect(witness.getByTestId('witness-done')).toContainText('letters have now been delivered');
+  await expect(witness.getByTestId('drifting-envelopes').locator('svg')).toHaveCount(3);
   await witnessCtx.close();
 
   await expect(page.getByTestId('state-title')).toHaveText('The letters are delivered', { timeout: 15_000 });
+  const kept = (await page.getByTestId('epitaph').locator('.epitaph__dates').textContent()) ?? '';
+  const [, from, to] = kept.match(/Kept from (.+) to (.+)/) ?? [];
+  expect(from).toBeTruthy();
+  expect(from).not.toBe(to);
+  await expect(page.getByTestId('epitaph')).toContainText('One letter delivered · none opened yet');
 
   // The recipient, in a fresh browser, opens the one-time link with their keepsake.
   const releaseHref = await outboxLink(page, 'release', 'Theo Whitlock');

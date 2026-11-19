@@ -67,6 +67,7 @@ test('witness, recipient and opened-letter pages have no WCAG AA violations', as
   await page.getByTestId('witness-confirm').click();
   await page.getByTestId('witness-confirm-final').click();
   await expect(page.getByTestId('witness-done')).toBeVisible();
+  await audit(page);
 
   await page.goto(await linkFor('release', 'Theo Whitlock'));
   await expect(page.getByLabel('Your keepsake')).toBeVisible();

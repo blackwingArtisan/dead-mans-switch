@@ -37,6 +37,12 @@ export function Editor({ label, onChange, initialHtml = '' }: Props) {
   return (
     <div className="editor">
       <div className="editor__toolbar" role="toolbar" aria-label="Formatting">
+        <svg className="editor__inkwell" viewBox="0 0 44 44" width="44" height="44" aria-hidden="true">
+          <path className="editor__quill" d="M30 2 C 22 10 19 18 18 27 L 20 27 C 22 19 26 11 33 4 Z" />
+          <ellipse cx="22" cy="40" rx="15" ry="3.5" className="editor__inkwell-base" />
+          <path d="M10 38 L12 27 Q22 23 32 27 L34 38 Z" className="editor__inkwell-glass" />
+          <ellipse cx="22" cy="27" rx="7" ry="2.2" className="editor__inkwell-ink" />
+        </svg>
         {TOOLS.map((t) => (
           <button
             key={t.label}

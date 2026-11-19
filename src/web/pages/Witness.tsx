@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { api, type WitnessInfo } from '../lib/api';
 import { longDate } from '../lib/format';
 import { Shell } from '../components/Chrome';
+import { DriftingEnvelopes } from '../components/SealCeremony';
 import { WaxSeal } from '../components/WaxSeal';
 
 export function Witness({ token }: { token: string }) {
@@ -55,7 +56,16 @@ export function Witness({ token }: { token: string }) {
   return (
     <Shell>
       <section className="witness" aria-labelledby="witness-title">
-        <WaxSeal size={110} tone="ink" mark={info.authorName.trim()[0]} />
+        <div className="witness__seal">
+          <WaxSeal
+            key={done || 'waiting'}
+            size={110}
+            tone={done === 'denied' ? 'verdigris' : 'ink'}
+            mark={info.authorName.trim()[0]}
+            className={done ? 'seal-press' : ''}
+          />
+          {done === 'confirmed' && released && <DriftingEnvelopes />}
+        </div>
         <p className="eyebrow">A summons for {info.witnessName}</p>
         <h1 id="witness-title" className="display display--md">
           {info.authorName} named you a witness

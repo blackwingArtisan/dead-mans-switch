@@ -61,7 +61,7 @@ The app wears its own state. The candle is the state machine, drawn, and the who
 | Check-in | A match strike: the wick flares, the wax grows back, sparks leave the seal, the warmth returns | Everything is cancelled and the witnesses stand down |
 | Released | A cracked seal, a moonlit room, and a letter read by the light of one candle | Each recipient opens their letter once |
 
-Wax seals carry each recipient's initial, the check-in is a seal you press, and the recipient breaks a seal to read. Every one of these facts is also stated in text beside the candle and announced to screen readers; under reduced motion each change is instant and the letter opens fully lit.
+Wax seals carry each recipient's initial, the check-in is a seal you press, and the recipient breaks a seal to read. Letters are written on ruled parchment beside an inkwell and brass keys, and sealing folds the page into its envelope under a pressed seal. A witness's answer is pressed in indigo wax and, when it releases the letters, envelopes lift away into the dark; the author's released vigil reads like a headstone, with the dates it was kept. Every one of these facts is also stated in text beside the candle and announced to screen readers; under reduced motion each change is instant and the letter opens fully lit.
 
 <br clear="right">
 

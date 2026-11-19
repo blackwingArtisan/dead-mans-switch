@@ -112,10 +112,10 @@ export function Vigil({ onLost }: { onLost: () => void }) {
         </div>
         <div className="vigil__status">
           <p className="eyebrow">The vigil of {vault.author.name}</p>
-          <h1 id="vigil-title" className="display display--md" data-testid="state-title">
+          <h1 id="vigil-title" className={`display display--md ${state === 'released' ? 'display--epitaph' : ''}`} data-testid="state-title">
             {copy.title}
           </h1>
-          <p className="lede">{copy.plain}</p>
+          {state === 'released' ? <Epitaph vault={vault} /> : <p className="lede">{copy.plain}</p>}
 
           {live && state !== 'paused' && (
             <div className="checkin">
@@ -534,5 +534,23 @@ function Ledger({ vault }: { vault: VaultView }) {
         ))}
       </ol>
     </section>
+  );
+}
+
+/** A released vigil reads like a stone: the dates it was kept, and what it delivered. */
+function Epitaph({ vault }: { vault: VaultView }) {
+  const began = Math.min(vault.lastCheckInAt, ...vault.history.map((h) => h.at), ...vault.letters.map((l) => l.sealedAt));
+  const delivered = vault.letters.filter((l) => l.releasedAt !== null).length;
+  const opened = vault.letters.filter((l) => l.openedAt !== null).length;
+  return (
+    <div className="epitaph" data-testid="epitaph">
+      <p className="epitaph__dates">
+        Kept from {longDate(began)} to {vault.releasedAt !== null ? longDate(vault.releasedAt) : 'today'}
+      </p>
+      <p className="epitaph__words">
+        {delivered === 1 ? 'One letter' : `${delivered} letters`} delivered · {opened === 0 ? 'none opened yet' : `${opened} opened`}
+      </p>
+      <p className="epitaph__line">Your witnesses confirmed, and each recipient received a one-time link.</p>
+    </div>
   );
 }
