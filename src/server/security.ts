@@ -7,7 +7,7 @@
  * script, load remote content or frame the page.
  */
 import type { Context, MiddlewareHandler } from 'hono';
-import type { Clock } from './ports';
+import type { Clock, RateLimiter } from './ports';
 
 export const CONTENT_SECURITY_POLICY = [
   "default-src 'self'",
@@ -58,27 +58,15 @@ export type ClientKey = (c: Context) => string;
 export const cloudflareClientKey: ClientKey = (c) => c.req.header('cf-connecting-ip') ?? 'anonymous';
 
 /**
- * Fixed-window limiter for the token routes (witness and letter links).
- * Tokens carry 256 bits of entropy, so this is about cost and noise, not the
- * only line of defence. State is per process (per isolate on Workers).
+ * Rate-limits the token routes (witness and letter links) through a `RateLimiter`
+ * port. Tokens carry 256 bits of entropy, so this is about cost and noise, not the
+ * only line of defence.
  */
-export function rateLimit(clock: Clock, opts: RateLimitOptions, keyOf: ClientKey): MiddlewareHandler {
-  const windows = new Map<string, { start: number; count: number }>();
+export function rateLimit(clock: Clock, limiter: RateLimiter, keyOf: ClientKey): MiddlewareHandler {
   return async (c, next) => {
-    const now = clock.now();
-    const key = keyOf(c);
-    let w = windows.get(key);
-    if (!w || now - w.start >= opts.windowMs) {
-      w = { start: now, count: 0 };
-      windows.set(key, w);
-    }
-    w.count += 1;
-    if (windows.size > 10_000) {
-      for (const [k, v] of windows) if (now - v.start >= opts.windowMs) windows.delete(k);
-    }
-    if (w.count > opts.limit) {
-      const retry = Math.max(1, Math.ceil((w.start + opts.windowMs - now) / 1000));
-      c.header('Retry-After', String(retry));
+    const decision = await limiter.hit(keyOf(c), clock.now());
+    if (!decision.allowed) {
+      c.header('Retry-After', String(Math.max(1, Math.ceil(decision.retryAfterSec))));
       return c.json({ error: 'Too many knocks at the crypt door. Please wait a moment and try again.' }, 429);
     }
     await next();

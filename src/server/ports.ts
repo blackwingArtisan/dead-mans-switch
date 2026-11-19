@@ -45,3 +45,18 @@ export function tokenKeys(vault: Vault): { kind: TokenKind; hash: string }[] {
   for (const l of vault.letters) if (l.openTokenHash) keys.push({ kind: 'open', hash: l.openTokenHash });
   return keys;
 }
+
+export interface RateLimitDecision {
+  allowed: boolean;
+  /** Seconds the client should wait before trying again. Meaningful when `allowed` is false. */
+  retryAfterSec: number;
+}
+
+/**
+ * Counts requests per client key for the token routes. The default adapter keeps
+ * the counts in memory; the Worker can swap in Cloudflare's rate-limiting binding
+ * so the counts survive restarts and are shared between isolates.
+ */
+export interface RateLimiter {
+  hit(key: string, now: number): Promise<RateLimitDecision>;
+}

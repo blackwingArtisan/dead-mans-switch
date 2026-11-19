@@ -15,8 +15,9 @@ inclusion: always
 | `Clock` | `MachineClock` with a time-machine offset | `SystemClock` |
 | `VaultStore` | `MemoryStore`, optionally persisted to a JSON file | `KvStore` on Workers KV |
 | `Mailer` | `OutboxMailer` writing to a local outbox | `ResendMailer` over HTTPS |
+| `RateLimiter` | `MemoryRateLimiter` (fixed window, per process) | `CloudflareRateLimiter` over the Workers Rate Limiting binding, used only when the `DMS_RATE_LIMITER` binding is configured |
 
-Selection is by env var: `DMS_CLOCK`, `DMS_STORE`, `DMS_MAILER`. Store and mail default to the free local implementations. The clock defaults to the system clock; the time machine is opt-in (`--time-machine`) because its routes act on every vault. Tests never call a paid or networked service.
+Selection is by env var (the Worker picks `RateLimiter` by the presence of its binding): `DMS_CLOCK`, `DMS_STORE`, `DMS_MAILER`. Store and mail default to the free local implementations. The clock defaults to the system clock; the time machine is opt-in (`--time-machine`) because its routes act on every vault. Tests never call a paid or networked service.
 
 ## Rules
 - The switch state machine is a **pure function**: `(vault, event, now) -> { vault, effects }`. No I/O inside it. Effects (emails) are performed by the caller.

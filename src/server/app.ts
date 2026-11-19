@@ -4,7 +4,8 @@ import { SwitchError } from '../core/machine';
 import { DAY, HOUR } from '../core/time';
 import { ValidationError } from '../core/vault';
 import type { OutboxMailer } from './adapters/mailers';
-import type { AdjustableClock } from './ports';
+import { MemoryRateLimiter } from './adapters/memory-rate-limiter';
+import type { AdjustableClock, RateLimiter } from './ports';
 import {
   DEFAULT_TOKEN_RATE_LIMIT,
   cloudflareClientKey,
@@ -27,6 +28,8 @@ export interface AppDeps extends ServiceDeps {
   dev?: DevTools;
   /** Limits on the witness and letter-link routes. `false` turns them off. */
   tokenRateLimit?: RateLimitOptions | false;
+  /** Counts token-route requests. Defaults to an in-memory fixed window built from `tokenRateLimit`. */
+  rateLimiter?: RateLimiter;
   /** How to identify a client for rate limiting. Defaults to Cloudflare's connecting IP. */
   clientKey?: ClientKey;
 }
@@ -53,7 +56,7 @@ export function createApp(deps: AppDeps) {
 
   const limits = deps.tokenRateLimit ?? DEFAULT_TOKEN_RATE_LIMIT;
   if (limits) {
-    const limiter = rateLimit(deps.clock, limits, deps.clientKey ?? cloudflareClientKey);
+    const limiter = rateLimit(deps.clock, deps.rateLimiter ?? new MemoryRateLimiter(limits), deps.clientKey ?? cloudflareClientKey);
     app.use('/api/witness/*', limiter);
     app.use('/api/open/*', limiter);
   }

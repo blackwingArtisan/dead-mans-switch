@@ -14,8 +14,8 @@ src/
   server/      HTTP API and adapters
     app.ts         createApp(deps): every route
     service.ts     use-cases: load vault, apply event, perform effects, save
-    ports.ts       Clock, VaultStore, Mailer interfaces
-    adapters/      local and real implementations of each port
+    ports.ts       Clock, VaultStore, Mailer, RateLimiter interfaces
+    adapters/      local and real implementations of each port (memory-rate-limiter.ts, cloudflare-rate-limiter.ts for RateLimiter)
     emails.ts      email templates (plain text + HTML)
     node.ts        local Node entry (serves the built web app too)
   worker/      Cloudflare Worker entry (fetch + scheduled)

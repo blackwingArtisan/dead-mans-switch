@@ -5,7 +5,9 @@ import { DEFAULT_SETTINGS } from '../../src/core/types';
 import { KvStore, type KvLike } from '../../src/server/adapters/kv-store';
 import { ResendMailer } from '../../src/server/adapters/mailers';
 import { renderEmail } from '../../src/server/emails';
-import worker, { type Env } from '../../src/worker/index';
+import { CloudflareRateLimiter } from '../../src/server/adapters/cloudflare-rate-limiter';
+import { MemoryRateLimiter } from '../../src/server/adapters/memory-rate-limiter';
+import worker, { selectRateLimiter, type Env } from '../../src/worker/index';
 import { T0 } from './helpers';
 
 /** A Map-backed stand-in for a Workers KV namespace. */
@@ -147,5 +149,14 @@ describe('Cloudflare Worker entry', () => {
     await worker.scheduled({} as ScheduledController, env, { waitUntil: (p: Promise<unknown>) => waits.push(p) } as unknown as ExecutionContext);
     await Promise.all(waits);
     expect(sent).toEqual(['Your candle burns low: please check in']);
+  });
+});
+
+describe('Worker rate limiter selection', () => {
+  it('uses the Cloudflare binding when present and memory when absent', () => {
+    const base = {} as unknown as Env;
+    expect(selectRateLimiter(base)).toBeInstanceOf(MemoryRateLimiter);
+    const withBinding = { DMS_RATE_LIMITER: { limit: async () => ({ success: true }) } } as unknown as Env;
+    expect(selectRateLimiter(withBinding)).toBeInstanceOf(CloudflareRateLimiter);
   });
 });

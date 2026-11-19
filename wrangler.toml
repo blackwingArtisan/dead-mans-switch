@@ -19,3 +19,19 @@ crons = ["*/15 * * * *"]
 DMS_BASE_URL = "https://dead-mans-switch.example.workers.dev"
 DMS_MAIL_FROM = "Dead Man's Switch <switch@example.com>"
 # RESEND_API_KEY is a secret: wrangler secret put RESEND_API_KEY
+
+# Optional: a rate limit on witness and letter links that survives restarts and is
+# shared across Worker isolates. Nothing changes until you remove the leading "#"
+# characters below. Without this binding the Worker keeps its in-memory limiter,
+# which resets on every restart or new isolate.
+#
+# `limit` is requests per `period` seconds for one client key, and `period` must be
+# 10 or 60. The Worker answers 429 with Retry-After set to the period of 60 seconds.
+# Keep `limit = 60` and `period = 60` to match the default of 60 requests a minute.
+# `namespace_id` is any positive integer you choose, unique within your account.
+#
+# [[unsafe.bindings]]
+# name = "DMS_RATE_LIMITER"
+# type = "ratelimit"
+# namespace_id = "1001"
+# simple = { limit = 60, period = 60 }

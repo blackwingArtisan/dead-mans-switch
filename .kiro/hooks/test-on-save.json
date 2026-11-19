@@ -5,9 +5,10 @@
       "name": "Run unit tests on save",
       "description": "Keeps the state machine, crypto and API green while editing source or tests.",
       "trigger": "PostFileSave",
-      "matcher": "^(src|tests/unit)/.*\\.(ts|tsx)$",
+      "matcher": "(^|/)(src|tests/unit)/.*\\.tsx?$",
       "action": { "type": "command", "command": "npm test --silent" },
-      "timeout": 120
+      "timeout": 120,
+      "enabled": true
     }
   ]
 }

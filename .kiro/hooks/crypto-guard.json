@@ -1,0 +1,17 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Security review of crypto changes",
+      "description": "Reminds the agent of the key-custody rules whenever the letter crypto changes.",
+      "trigger": "PostFileSave",
+      "matcher": "(^|/)src/core/crypto\\.ts$",
+      "action": {
+        "type": "agent",
+        "prompt": "You just edited the letter crypto. Re-check: AES-GCM 256 only, a fresh random 96-bit IV per encryption, the full letter key never leaves the browser, key halves are never logged, and tests/unit/crypto.test.ts still covers round-trip, tamper and wrong-half cases."
+      },
+      "timeout": 120,
+      "enabled": true
+    }
+  ]
+}

@@ -5,7 +5,7 @@
 One TypeScript codebase, three layers:
 
 1. **Core** (`src/core`): pure domain code shared by every runtime. The state machine, schedule maths, crypto and validation. No I/O.
-2. **Server** (`src/server`): a Hono app built by `createApp(deps)`, a `SwitchService` that orchestrates use-cases, and adapters behind three ports.
+2. **Server** (`src/server`): a Hono app built by `createApp(deps)`, a `SwitchService` that orchestrates use-cases, and adapters behind four ports (`Clock`, `VaultStore`, `Mailer`, `RateLimiter`).
 3. **Web** (`src/web`): a React app that seals and opens letters with WebCrypto and talks to the API.
 
 The same `createApp` runs on Node for local use and on a Cloudflare Worker in production.
@@ -28,8 +28,9 @@ flowchart LR
 | `Clock` | `MachineClock`: wall time plus a forward-only offset (the time machine) | `SystemClock` |
 | `VaultStore` | `MemoryStore`, optionally persisted to `data/vaults.json` | `KvStore` on Workers KV |
 | `Mailer` | `OutboxMailer`: an in-memory list persisted to `data/outbox.json` | `ResendMailer` over HTTPS |
+| `RateLimiter` | `MemoryRateLimiter`: fixed window in a `Map`, per process or isolate | `CloudflareRateLimiter` wrapping the Workers Rate Limiting binding (optional) |
 
-Selection is by env var in `src/server/node.ts` (`DMS_CLOCK`, `DMS_STORE`, `DMS_MAILER`). The Worker in `src/worker/index.ts` always uses the production adapters. Dev routes (`/api/dev/*`) exist only when both the machine clock and the outbox are in use. The machine clock is opt-in (`--time-machine` or `DMS_CLOCK=machine`; `npm run demo` and `npm run dev` pass it), and the Node entry refuses to start it when `DMS_BASE_URL` is not a localhost origin.
+Selection is by env var in `src/server/node.ts` (`DMS_CLOCK`, `DMS_STORE`, `DMS_MAILER`). The Worker in `src/worker/index.ts` always uses the production adapters for `Clock`, `VaultStore` and `Mailer`. For `RateLimiter`, `selectRateLimiter(env)` uses `CloudflareRateLimiter` only when the optional `DMS_RATE_LIMITER` binding is present (it is commented out in `wrangler.toml`) and `MemoryRateLimiter` otherwise. Dev routes (`/api/dev/*`) exist only when both the machine clock and the outbox are in use. The machine clock is opt-in (`--time-machine` or `DMS_CLOCK=machine`; `npm run demo` and `npm run dev` pass it), and the Node entry refuses to start it when `DMS_BASE_URL` is not a localhost origin.
 
 ## State machine
 
@@ -128,7 +129,7 @@ Errors are JSON `{ error }`: 400 validation, 401 owner token, 404 unknown link, 
 ### Response hardening
 
 - Every response (API, HTML and, on the Worker, static assets) carries `Content-Security-Policy` (`script-src 'self'`, `object-src 'none'`, `base-uri 'none'`, `frame-ancestors 'none'`, same-origin connect, font and image sources), `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `Referrer-Policy: no-referrer`, a closed `Permissions-Policy` and `Cross-Origin-Opener-Policy: same-origin`. This backs up DOMPurify: a sanitiser miss in a released letter still cannot run script or reach another origin. Defined once in `src/server/security.ts`.
-- `/api/witness/*` and `/api/open/*` are rate-limited per client (fixed window, 60 requests a minute by default; 429 with `Retry-After`). The key is the Cloudflare connecting IP on the Worker and the socket address on Node (`DMS_TRUST_PROXY=1` uses `X-Forwarded-For`). The window lives in memory per process or isolate, so it slows guessing and noise rather than guaranteeing a global cap; the 256-bit tokens remain the real defence.
+- `/api/witness/*` and `/api/open/*` are rate-limited per client through the `RateLimiter` port (`hit(key, now) -> { allowed, retryAfterSec }`; 60 requests a minute by default; 429 with the same JSON message and `Retry-After`). The key is the Cloudflare connecting IP on the Worker and the socket address on Node (`DMS_TRUST_PROXY=1` uses `X-Forwarded-For`). The default `MemoryRateLimiter` is a fixed window held in memory, so a restart or a new isolate resets it. With the optional Workers Rate Limiting binding, `CloudflareRateLimiter` asks the binding (`limit({ key }) -> { success }`), which the platform shares across isolates; the limit and period (10 or 60 seconds) are set in `wrangler.toml`, `Retry-After` is that period, and a binding error lets the request through so a limiter outage cannot lock out witnesses. The 256-bit tokens remain the real defence.
 
 ## Service flow
 
@@ -157,4 +158,6 @@ Every route validates input and returns a message that says what to do. The UI s
 - `tests/unit/api.test.ts`: the full lifecycle through HTTP with both custody modes, one-time opening, stand-down, denial, next-event jump, pause, validation and auth.
 - `tests/e2e/*.spec.ts` (Playwright against the built server): write a letter, fast-forward, witness confirms in a separate browser, recipient opens with a pasted keepsake in a fresh browser, link refuses a second opening; check-in during grace; vault-custody link; landing and honest-page smoke tests on desktop and mobile; the lifecycle run also asserts the CSP header and that no CSP violation is reported in the author's or the recipient's browser.
 - `tests/unit/security.test.ts`: security headers on every response, the token-route rate limit, and that dev routes are absent without the local adapters.
+- `tests/unit/rate-limiter.test.ts`: the memory window limits and resets; the Cloudflare adapter maps `success: false` to a blocked decision and a 429 through the middleware, and fails open. `tests/unit/adapters.test.ts` also checks that the Worker picks the binding when present and memory when absent.
+- `tests/unit/wax-seal.test.ts`: a seal mark is drawn as exactly one text glyph and the SVG stays `aria-hidden`.
 - `tests/unit/node-entry.test.ts` (CLI): the Node entry starts without the time machine by default, enables it only on request, and refuses it for a public origin.

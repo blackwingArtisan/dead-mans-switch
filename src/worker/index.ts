@@ -8,7 +8,10 @@ import { createApp } from '../server/app';
 import { SystemClock } from '../server/adapters/clocks';
 import { KvStore } from '../server/adapters/kv-store';
 import { ResendMailer } from '../server/adapters/mailers';
-import { withSecurityHeaders } from '../server/security';
+import { CloudflareRateLimiter, type RateLimitBinding } from '../server/adapters/cloudflare-rate-limiter';
+import { MemoryRateLimiter } from '../server/adapters/memory-rate-limiter';
+import type { RateLimiter } from '../server/ports';
+import { DEFAULT_TOKEN_RATE_LIMIT, withSecurityHeaders } from '../server/security';
 
 export interface Env {
   DMS_KV: KVNamespace;
@@ -16,6 +19,15 @@ export interface Env {
   RESEND_API_KEY: string;
   DMS_MAIL_FROM: string;
   DMS_BASE_URL: string;
+  /** Optional Workers Rate Limiting binding. Absent unless the operator enables it in wrangler.toml. */
+  DMS_RATE_LIMITER?: RateLimitBinding;
+}
+
+/** Uses Cloudflare's binding when present, else the per-isolate in-memory window. */
+export function selectRateLimiter(env: Env): RateLimiter {
+  return env.DMS_RATE_LIMITER
+    ? new CloudflareRateLimiter(env.DMS_RATE_LIMITER, DEFAULT_TOKEN_RATE_LIMIT.windowMs / 1000)
+    : new MemoryRateLimiter(DEFAULT_TOKEN_RATE_LIMIT);
 }
 
 // One app per isolate, so in-memory state such as the rate limiter survives between requests.
@@ -29,6 +41,7 @@ function build(env: Env) {
       mailer: new ResendMailer(env.RESEND_API_KEY, env.DMS_MAIL_FROM),
       clock: new SystemClock(),
       baseUrl: env.DMS_BASE_URL,
+      rateLimiter: selectRateLimiter(env),
     });
     apps.set(env, built);
   }
