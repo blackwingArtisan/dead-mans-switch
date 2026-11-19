@@ -1874,10 +1874,13 @@ fieldset {
   gap: 22px;
   flex-wrap: wrap;
 }
-.desk__stamp {
-  /* The unpressed stamp is drawn at 1.6x. Clip only the stamp's own box sideways so it cannot widen the page
-     on a 360 px screen. The row and the button must not clip, or the button's glow gets a hard edge. */
-  overflow-x: clip;
+/* The unpressed stamp is drawn at 1.6x. On a narrow screen, clip only the stamp's own box sideways so it
+   cannot widen the page. The row and the button must not clip, or the button's glow gets a hard edge.
+   Wider screens have room, so the stamp drops in unclipped. */
+@media (max-width: 520px) {
+  .desk__stamp {
+    overflow-x: clip;
+  }
 }
 .desk__stamp > * {
   opacity: 0;
