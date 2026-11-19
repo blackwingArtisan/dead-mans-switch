@@ -35,7 +35,7 @@ tests/
   unit/        Vitest (machine, crypto, API, adapters, security, rate limiter, wax seal, format, Node entry, Kiro config,
                sound, calendar, outbox order, link notices, the offline page)
   e2e/         Playwright (lifecycle, axe accessibility audit, smoke on desktop and mobile)
-scripts/       dev server, media capture, open-tasks.mjs (lists open spec tasks for the agent's SessionStart hook)
+scripts/       dev server, media capture, open-tasks.mjs (lists open spec tasks for the agent's SessionStart hook), sync-counts.mjs (keeps the README test counts true)
 .kiro/         steering, specs, hooks (v1 JSON), agents/dead-mans-switch.json, settings/mcp.json
 ```
 

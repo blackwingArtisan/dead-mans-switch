@@ -144,9 +144,12 @@ npm test              # Vitest: state machine, crypto, full API lifecycle, secur
 npm run e2e           # Playwright: builds and starts a fresh server on :3142 (or E2E_PORT), drives real browsers
 npm run typecheck     # web + server, and the Cloudflare Worker against Workers types
 npm run check         # all of the above plus a production build
+node scripts/sync-counts.mjs   # refresh the counts below from a real run (--check to verify)
 ```
 
-The end-to-end suite writes a letter, fast-forwards past the grace period, confirms as a witness in a separate browser, opens the letter as the recipient in a fresh browser with a pasted keepsake, and checks the link refuses a second opening. It also covers a check-in during grace, a one-tap check-in from the grace email on a second device, a vault-custody link, the founder's demo, the hands-off story, in-theme form errors, the room relighting on check-in, mobile layout, and an axe WCAG 2.2 AA audit of every page and state.
+Current suite: <!-- test-counts -->113 unit tests in 17 files, all passing, and 30 end-to-end runs (desktop and phone) in 3 Playwright files.<!-- /test-counts -->
+
+The end-to-end suite writes a letter, fast-forwards past the grace period, confirms as a witness in a separate browser, opens the letter as the recipient in a fresh browser with a pasted keepsake, and checks the link refuses a second opening. It also covers a check-in during grace, a one-tap check-in from the grace email on a second device, a vault-custody link, a candle lit back by a recipient, the sealed export opened by the offline page from disk with the network off, the calendar reminder, the founder's demo, the hands-off story, in-theme form errors, broken and unknown links, the room relighting on check-in, mobile layout, and an axe WCAG 2.2 AA audit of every page and state.
 
 GitHub Actions runs `npm run check` on every push and pull request ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)).
 
@@ -160,11 +163,11 @@ The seal in one line: each letter gets a random key K, split into a keepsake hal
 
 The initial build and the security hardening were done with Claude Code, working from the Kiro steering files and a spec written in Kiro's format. Kiro then reviewed the spec against the code, rewrote every criterion in EARS form, and built two tasks itself. Every call is in **[KIRO-LOG.md](KIRO-LOG.md)** with its prompt, duration, credits, files and test results.
 
-| Kiro feature | Where | What it produced | Tests after |
+| Kiro feature | Where | What it produced | Tests right after that pass |
 |---|---|---|---|
 | Spec review (Pass 2) | [`.kiro/specs/switch-lifecycle`](.kiro/specs/switch-lifecycle) | EARS criteria for Requirements 1 to 11, 12 new gap tasks, tasks checked only where a test exists | Vitest 79 of 79, Playwright 11 of 11, 0 axe violations |
 | Spec-driven tasks (Pass 2) | `tasks.md` 8.6 and 6.11 | The `RateLimiter` port and both adapters; a single-glyph wax seal; three test files | Same run |
-| Steering | [`.kiro/steering`](.kiro/steering) | Product, tech and structure rules every Kiro session reads first | n/a |
+| Steering | [`.kiro/steering`](.kiro/steering) | Five files: product, tech and structure rules every session reads first, plus `crypto.md` and `a11y.md`, which load only when a matching file is in play (added after Pass 2) | n/a |
 | Hooks | [`.kiro/hooks`](.kiro/hooks) | Four hooks in the v1 schema that Kiro IDE 1.x and CLI V3 share: unit tests on save, typecheck and tests before the agent stops, a crypto-custody review when `crypto.ts` changes, and a spec-drift review after each spec task | `tests/unit/kiro-config.test.ts` checks every trigger, matcher and command |
 | Custom agent | [`.kiro/agents/dead-mans-switch.json`](.kiro/agents/dead-mans-switch.json) | A builder agent that loads the steering and specs, works one task per session, and lists the open spec tasks when a session starts (`scripts/open-tasks.mjs`) | Same test |
 | MCP | [`.kiro/settings/mcp.json`](.kiro/settings/mcp.json) | AWS Documentation and Context7 servers, so API details are checked against current docs | Same test |
