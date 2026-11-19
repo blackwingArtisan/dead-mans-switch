@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent, type PointerEvent } from 'react';
 import { api, session } from '../lib/api';
 import { navigate } from '../lib/router';
 import { DEMO, FOUNDER_DEMO, sealAndStore } from '../lib/seal';
@@ -15,6 +15,61 @@ const BEGIN_MESSAGES: Record<string, FieldMessages> = {
   'author-name': { missing: 'Write your name, as your witnesses and recipients know you.' },
   'author-email': { missing: 'Add an email for your reminders.', type: 'That email does not look complete. Check it for an @ and a domain.' },
 };
+
+/**
+ * The landing candle answers the visitor: the flame leans toward the pointer and its glow follows,
+ * scrolling down the page burns the wax down, and a click snuffs it and strikes it alight again.
+ * Decorative only; under reduced motion the flame stays upright.
+ */
+function HeroCandle() {
+  const ref = useRef<HTMLDivElement>(null);
+  const [remaining, setRemaining] = useState(0.92);
+  const [snuffed, setSnuffed] = useState(false);
+  const [relighting, setRelighting] = useState(false);
+
+  useEffect(() => {
+    let frame = 0;
+    const onScroll = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        const max = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+        setRemaining(0.92 - 0.7 * Math.min(1, window.scrollY / max));
+      });
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    const lean = (e: globalThis.PointerEvent) => {
+      const el = ref.current;
+      if (!el) return;
+      const box = el.getBoundingClientRect();
+      const dx = (e.clientX - (box.left + box.width / 2)) / Math.max(240, window.innerWidth / 3);
+      el.style.setProperty('--lean', `${(Math.max(-1, Math.min(1, dx)) * 14).toFixed(1)}deg`);
+      el.style.setProperty('--glow-x', `${Math.round(e.clientX)}px`);
+      el.style.setProperty('--glow-y', `${Math.round(e.clientY)}px`);
+    };
+    window.addEventListener('pointermove', lean, { passive: true });
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('pointermove', lean);
+    };
+  }, []);
+
+  const snuff = (e: PointerEvent<HTMLDivElement>) => {
+    if (e.button !== 0 || snuffed) return;
+    setSnuffed(true);
+    window.setTimeout(() => {
+      setSnuffed(false);
+      setRelighting(true);
+      window.setTimeout(() => setRelighting(false), 950);
+    }, 1400);
+  };
+
+  return (
+    <div ref={ref} className="hero__candle" aria-hidden="true" onPointerDown={snuff} data-testid="hero-candle">
+      <Candle remaining={remaining} state={snuffed ? 'confirm' : 'alive'} size={340} relighting={relighting} />
+    </div>
+  );
+}
 
 export function Landing() {
   const fields = useFieldErrors(BEGIN_MESSAGES);
@@ -65,9 +120,7 @@ export function Landing() {
   return (
     <Shell>
       <section className="hero">
-        <div className="hero__candle">
-          <Candle remaining={0.92} state="alive" size={340} />
-        </div>
+        <HeroCandle />
         <div className="hero__copy">
           <p className="eyebrow">A vigil for your last words</p>
           <h1 className="display">Some words should wait.</h1>
@@ -83,14 +136,14 @@ export function Landing() {
             <button type="button" className="btn btn--ghost" onClick={() => demo(DEMO, 'demo')} disabled={busy !== ''}>
               {busy === 'demo' ? 'Summoning…' : 'Try a demo vigil'}
             </button>
-            <button type="button" className="btn btn--link" onClick={() => demo(FOUNDER_DEMO, 'founder')} disabled={busy !== ''}>
-              {busy === 'founder' ? 'Summoning…' : 'or a founder’s vigil'}
-            </button>
             {storyAvailable && (
-              <button type="button" className="btn btn--link" onClick={() => void playStory()} disabled={busy !== ''} data-testid="play-story">
+              <button type="button" className="btn btn--ghost" onClick={() => void playStory()} disabled={busy !== ''} data-testid="play-story">
                 ▶ Play the whole story (40 s)
               </button>
             )}
+            <button type="button" className="btn btn--link" onClick={() => demo(FOUNDER_DEMO, 'founder')} disabled={busy !== ''}>
+              {busy === 'founder' ? 'Summoning…' : 'or a founder’s vigil'}
+            </button>
           </div>
           {error && busy === '' && (
             <p className="form-error" role="alert">

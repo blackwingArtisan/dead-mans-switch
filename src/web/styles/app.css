@@ -136,6 +136,8 @@ a:hover {
 
 /* The room follows the candle: body[data-room] is set by the vigil (lib/room.ts). */
 .atmosphere__warm,
+.atmosphere__sick,
+.atmosphere__deep,
 .atmosphere__night,
 .atmosphere__moon,
 .atmosphere__smoke,
@@ -144,6 +146,18 @@ a:hover {
   position: absolute;
   inset: 0;
   transition: opacity 1.2s ease, filter 1.2s ease;
+}
+/* Grace: a sickly green-grey creeps into the room. */
+.atmosphere__sick {
+  opacity: 0;
+  background: radial-gradient(900px 640px at 24% 30%, rgba(150, 172, 112, 0.26), transparent 70%),
+    linear-gradient(180deg, rgba(66, 88, 54, 0.62), rgba(34, 46, 30, 0.68));
+}
+/* The candle is out: the room goes a cold blue-black. */
+.atmosphere__deep {
+  opacity: 0;
+  background: radial-gradient(1000px 700px at 50% 0%, rgba(58, 84, 132, 0.45), transparent 70%),
+    linear-gradient(180deg, rgba(18, 28, 52, 0.94), rgba(8, 12, 26, 0.96));
 }
 .atmosphere__night {
   background: #040303;
@@ -157,9 +171,12 @@ a:hover {
 .atmosphere__smoke {
   inset: -20%;
   opacity: 0;
-  background: radial-gradient(420px 260px at 20% 70%, rgba(150, 150, 160, 0.22), transparent 70%),
-    radial-gradient(520px 300px at 70% 40%, rgba(130, 132, 145, 0.18), transparent 70%),
-    radial-gradient(380px 240px at 40% 20%, rgba(160, 160, 170, 0.1), transparent 70%);
+  /* Smoke over the whole page, not only around the candle. */
+  background: radial-gradient(520px 320px at 18% 72%, rgba(150, 156, 172, 0.3), transparent 70%),
+    radial-gradient(640px 360px at 72% 38%, rgba(130, 138, 156, 0.26), transparent 70%),
+    radial-gradient(480px 280px at 42% 16%, rgba(160, 166, 182, 0.2), transparent 70%),
+    radial-gradient(560px 320px at 86% 84%, rgba(140, 146, 164, 0.24), transparent 70%),
+    radial-gradient(420px 260px at 8% 30%, rgba(150, 156, 172, 0.18), transparent 70%);
   animation: drift 26s ease-in-out infinite alternate;
 }
 .atmosphere__cold {
@@ -191,7 +208,21 @@ body[data-room='grace'] .ember {
   animation-duration: calc(24s + var(--i) * 1.6s);
 }
 body[data-room='grace'] .atmosphere__night {
-  opacity: 0.25;
+  opacity: 0.2;
+}
+body[data-room='grace'] .atmosphere__sick {
+  opacity: 1;
+}
+/* In grace the vignette closes in, leaving about the middle 40% of the room lit. */
+.atmosphere::after {
+  transition: opacity 1.2s ease;
+}
+body[data-room='grace'] .atmosphere::after,
+body[data-room='confirm'] .atmosphere::after {
+  background: radial-gradient(ellipse at 40% 45%, transparent 20%, rgba(0, 0, 0, 0.88) 72%);
+}
+body[data-room='confirm'] .atmosphere__deep {
+  opacity: 1;
 }
 body[data-room='grace'] .atmosphere__cold {
   opacity: 0.45;
@@ -201,7 +232,7 @@ body[data-room='released'] .atmosphere__warm {
   opacity: 0;
 }
 body[data-room='confirm'] .atmosphere__night {
-  opacity: 0.72;
+  opacity: 0.15;
 }
 body[data-room='confirm'] .atmosphere__cold {
   opacity: 1;
@@ -228,11 +259,15 @@ body[data-room='paused'] .atmosphere__moon {
 body[data-room='grace'] {
   --brass: #bfa577;
   --flame: #f2cf8f;
+  --panel: rgba(22, 28, 20, 0.88);
+  --panel-edge: #46523d;
 }
 body[data-room='confirm'] {
   --brass: #b3ad9f;
   --flame: #e3d2b0;
   --ember: #9c8f80;
+  --panel: rgba(12, 16, 27, 0.9);
+  --panel-edge: #34415a;
 }
 body[data-room='released'] {
   --brass: #b6bac4;
@@ -700,6 +735,22 @@ fieldset {
   grid-template-columns: auto 1fr;
   gap: clamp(20px, 5vw, 64px);
   align-items: center;
+}
+/* The landing candle leans toward the pointer; its warm light follows across the page. */
+.hero__candle {
+  cursor: pointer;
+}
+.hero__candle .candle__flame-inner {
+  rotate: var(--lean, 0deg);
+  transition: rotate 0.35s ease-out;
+}
+.hero__candle::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: radial-gradient(520px 420px at var(--glow-x, 22%) var(--glow-y, 34%), rgba(255, 170, 80, 0.07), transparent 70%);
 }
 .hero__actions {
   display: flex;
@@ -2748,10 +2799,16 @@ fieldset {
   }
   .ember,
   .checkin__sparks,
-  .candle__strike {
+  .candle__strike,
+  .hero__candle::before {
     display: none;
   }
+  .hero__candle .candle__flame-inner {
+    rotate: none;
+  }
   .atmosphere__warm,
+  .atmosphere__sick,
+  .atmosphere__deep,
   .atmosphere__night,
   .atmosphere__moon,
   .atmosphere__smoke,

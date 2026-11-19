@@ -15,6 +15,8 @@ export function Atmosphere() {
           <span key={i} className="ember" style={{ ['--i' as string]: i }} />
         ))}
       </div>
+      <div className="atmosphere__sick" />
+      <div className="atmosphere__deep" />
       <div className="atmosphere__night" />
       <div className="atmosphere__moon" />
       <div className="atmosphere__smoke" />

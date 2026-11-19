@@ -318,3 +318,28 @@ test('a second demo vigil starts with an empty outbox, and presenter mode hides 
   await page.goto('/?presenter=0');
   await expect(page.locator('html')).not.toHaveAttribute('data-presenter', /.*/);
 });
+
+test('each room has its own colour, and the landing candle answers the pointer', async ({ page }) => {
+  await page.goto('/');
+  // The flame leans toward the pointer, and a click snuffs it before a match relights it.
+  const candle = page.getByTestId('hero-candle');
+  const box = (await candle.boundingBox())!;
+  await page.mouse.move(box.x + box.width / 2 + 500, box.y + 40);
+  await expect.poll(() => candle.evaluate((el) => parseFloat((el as HTMLElement).style.getPropertyValue('--lean')))).toBeGreaterThan(5);
+  await candle.click();
+  await expect(candle.locator('svg.candle')).toHaveClass(/candle--confirm/);
+  await expect(candle.locator('svg.candle')).toHaveClass(/candle--alive/, { timeout: 5000 });
+
+  const layer = (name: string) => page.locator(`.atmosphere__${name}`).evaluate((el) => getComputedStyle(el).opacity);
+  await page.getByRole('button', { name: 'Try a demo vigil' }).click();
+  await expect(page.locator('body')).toHaveAttribute('data-room', 'alive');
+  expect(await layer('sick')).toBe('0');
+  await travel(page, '+30 days');
+  await expect(page.locator('body')).toHaveAttribute('data-room', 'grace');
+  await expect.poll(() => layer('sick')).toBe('1'); // green-grey
+  await travel(page, '+7 days');
+  await expect(page.locator('body')).toHaveAttribute('data-room', 'confirm');
+  await expect.poll(() => layer('deep')).toBe('1'); // blue-black
+  await expect.poll(() => layer('smoke')).toBe('1');
+  expect(await layer('sick')).toBe('0');
+});
