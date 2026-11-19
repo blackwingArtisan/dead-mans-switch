@@ -2241,7 +2241,7 @@ fieldset {
   }
 }
 /* The reader's own flame, drawn where the pointer or finger is. */
-.letter__flame {
+.letter__page > .letter__flame {
   position: absolute;
   z-index: 4;
   left: var(--x, 50%);
@@ -2285,6 +2285,55 @@ fieldset {
 .letter__after {
   text-align: center;
   margin-top: 26px;
+}
+
+/* Let it go: the parchment chars inward from its edges and the words fade to ash. */
+@property --burn {
+  syntax: '<percentage>';
+  inherits: false;
+  initial-value: 0%;
+}
+.letter__char {
+  display: none;
+}
+.letter__page--burning > .letter__char {
+  display: block;
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+  border-radius: inherit;
+  background: radial-gradient(
+    ellipse at 50% 50%,
+    rgba(0, 0, 0, 0) calc(100% - var(--burn)),
+    rgba(255, 196, 92, 0.95) calc(104% - var(--burn)),
+    rgba(214, 84, 28, 0.95) calc(108% - var(--burn)),
+    rgb(26, 14, 7) calc(114% - var(--burn))
+  );
+  animation: char-in 3.4s cubic-bezier(0.5, 0, 0.75, 1) forwards;
+}
+@keyframes char-in {
+  to {
+    --burn: 115%;
+  }
+}
+.letter__page--burning > :not(.letter__char):not(.letter__shade) {
+  animation: to-ash 2.8s ease-in forwards;
+}
+@keyframes to-ash {
+  60% {
+    color: #6b5b4b;
+    filter: blur(0.4px);
+  }
+  to {
+    color: #3a332c;
+    opacity: 0;
+    filter: blur(2px);
+    transform: translateY(-6px);
+  }
+}
+.letter__release {
+  margin-top: 18px;
 }
 
 /* ── how it works ───────────────────────────── */

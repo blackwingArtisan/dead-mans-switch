@@ -205,8 +205,13 @@ export function Open({ token, hash }: { token: string; hash: string }) {
  * reaches it. The text is always in the page for assistive technology, "Light the room" shows it
  * all at once, and under reduced motion the letter simply opens fully lit.
  */
+/** How long the letter takes to burn when motion is allowed. */
+const BURN_MS = 3400;
+
 function OpenedLetter({ info, letter, safeHtml }: { info: OpenInfo; letter: LetterContent; safeHtml: string }) {
   const [dark, setDark] = useState(() => !matchMedia('(prefers-reduced-motion: reduce)').matches);
+  // "Let it go": the parchment chars from the edges and the words fade to ash, then only a notice is left.
+  const [fate, setFate] = useState<'kept' | 'burning' | 'ash'>('kept');
   const [signed, setSigned] = useState(!dark);
   const pageRef = useRef<HTMLDivElement>(null);
   const signRef = useRef<HTMLParagraphElement>(null);
@@ -233,6 +238,33 @@ function OpenedLetter({ info, letter, safeHtml }: { info: OpenInfo; letter: Lett
     setSigned(true);
   };
 
+  const letItGo = () => {
+    const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    setDark(false);
+    setFate('burning');
+    window.setTimeout(() => setFate('ash'), reduce ? 0 : BURN_MS);
+  };
+
+  if (fate === 'ash') {
+    return (
+      <Shell>
+        <section className="notice ash" aria-labelledby="ash-title" data-testid="ash">
+          <WaxSeal size={96} cracked mark={info.authorName.trim()[0]} />
+          <h1 id="ash-title" className="display display--md" tabIndex={-1} ref={(el) => el?.focus()}>
+            It is ash now
+          </h1>
+          <p className="lede">
+            The vault has forgotten its copy, and so has this page. If you kept or printed the letter from {info.authorName}, that copy
+            is the only one.
+          </p>
+          <p role="status" className="sr-only">
+            The letter has burned to ash.
+          </p>
+        </section>
+      </Shell>
+    );
+  }
+
   return (
     <Shell>
       <article className="letter" aria-labelledby="letter-title" data-testid="opened-letter">
@@ -241,7 +273,7 @@ function OpenedLetter({ info, letter, safeHtml }: { info: OpenInfo; letter: Lett
         </div>
         <div
           ref={pageRef}
-          className={`letter__page parchment ${dark ? 'letter__page--dark' : 'letter__page--lit'}`}
+          className={`letter__page parchment ${dark ? 'letter__page--dark' : 'letter__page--lit'} ${fate === 'burning' ? 'letter__page--burning' : ''}`}
           onPointerMove={follow}
           onPointerDown={follow}
           data-testid="letter-page"
@@ -260,6 +292,7 @@ function OpenedLetter({ info, letter, safeHtml }: { info: OpenInfo; letter: Lett
           )}
           <div className="letter__shade" aria-hidden="true" />
           <div className="letter__flame" aria-hidden="true" />
+          <div className="letter__char" aria-hidden="true" />
         </div>
         <div className="letter__after">
           {dark ? (
@@ -284,6 +317,12 @@ function OpenedLetter({ info, letter, safeHtml }: { info: OpenInfo; letter: Lett
               Print
             </button>
           </div>
+          <p className="hint letter__release">
+            Kept a copy? Then, if you wish, let this one go.{' '}
+            <button type="button" className="btn btn--ghost btn--small" onClick={letItGo} disabled={fate !== 'kept'} data-testid="let-it-go">
+              {fate === 'burning' ? 'Burning…' : 'Let it go'}
+            </button>
+          </p>
         </div>
       </article>
     </Shell>

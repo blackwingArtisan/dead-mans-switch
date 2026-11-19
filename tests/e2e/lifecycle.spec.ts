@@ -126,6 +126,11 @@ test('write a letter, fall silent, witness confirms, recipient opens it once', a
   // Under reduced motion the letter opens fully lit, with no candlelight reveal.
   await expect(theo.getByTestId('letter-page')).toHaveClass(/letter__page--lit/);
   await expect(theo.getByTestId('candle-hint')).toHaveCount(0);
+  // Download and print come first; letting it go leaves only ash.
+  await expect(theo.getByRole('button', { name: 'Keep this letter (download)' })).toBeVisible();
+  await theo.getByTestId('let-it-go').click();
+  await expect(theo.getByTestId('ash')).toContainText('The vault has forgotten its copy');
+  await expect(theo.getByTestId('opened-letter')).toHaveCount(0);
 
   // One time only.
   await theo.reload();
@@ -213,6 +218,12 @@ test('a vault-custody letter opens from its link alone', async ({ page, browser 
   await expect(june.locator('.letter__flame')).toBeHidden();
   await expect(sheet).toHaveClass(/letter__page--lit/);
   await expect(june.locator('.letter__from')).toHaveClass(/letter__from--signed/);
+  // With motion allowed the page chars from its edges before it turns to ash.
+  await june.getByTestId('let-it-go').click();
+  await expect(sheet).toHaveClass(/letter__page--burning/);
+  await expect(june.locator('.letter__char')).toBeVisible();
+  await expect(june.getByTestId('ash')).toBeVisible({ timeout: 8000 });
+  await expect(june.getByRole('heading', { name: 'It is ash now' })).toBeFocused();
   await ctx.close();
 });
 

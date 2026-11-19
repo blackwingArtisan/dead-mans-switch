@@ -12,6 +12,7 @@ Notable changes to Dead Man's Switch. Work done with Kiro is recorded call by ca
 ### The costume
 - **A warm candlelight reader.** The light on an opened letter is amber, its radius breathes like a flame, and a small flame follows the reader's pointer or finger.
 - **The story ends in full light.** Play the whole story finishes on the whole letter, lit and signed, instead of a dark page.
+- **Let it go.** After keeping or printing a copy, a recipient can let the opened letter go: the parchment chars inward from its edges, the words fade to ash, and only a notice is left ("It is ash now"). Under reduced motion it goes at once.
 - **The seal is pressed on screen.** Sealing scrolls back to the top so the fold and the seal play in view, and focus moves to the heading.
 
 ### For judges and reviewers
