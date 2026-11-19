@@ -121,10 +121,11 @@ a:hover {
   animation: breathe 7s ease-in-out infinite;
 }
 .atmosphere__grain {
+  /* Plain alpha, not a blend mode: an overlay blend made the browser composite the whole room
+     through an extra surface every frame, which halved the frame rate in grace. */
   position: absolute;
   inset: 0;
-  opacity: 0.16;
-  mix-blend-mode: overlay;
+  opacity: 0.07;
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 0.9  0 0 0 0 0.75  0 0 0 0.9 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
 }
 .atmosphere::after {
@@ -145,7 +146,7 @@ a:hover {
 .atmosphere__flare {
   position: absolute;
   inset: 0;
-  transition: opacity 1.2s ease, filter 1.2s ease;
+  transition: opacity 1.2s ease;
 }
 /* Grace: a sickly green-grey creeps into the room. */
 .atmosphere__sick {
@@ -169,7 +170,7 @@ a:hover {
     linear-gradient(180deg, rgba(120, 136, 160, 0.08), transparent 60%);
 }
 .atmosphere__smoke {
-  inset: -20%;
+  inset: -8%;
   opacity: 0;
   /* Smoke over the whole page, not only around the candle. */
   background: radial-gradient(520px 320px at 18% 72%, rgba(150, 156, 172, 0.3), transparent 70%),
@@ -201,8 +202,15 @@ body[data-room='reminder'] .atmosphere__warm {
   opacity: 0.8;
 }
 body[data-room='grace'] .atmosphere__warm {
-  opacity: 0.5;
-  filter: saturate(0.55);
+  /* Dimmer rather than filtered: a filter on an animated layer is redrawn every frame. */
+  opacity: 0.4;
+}
+/* The warmth stops breathing once the flame gutters (and costs no frames while the room is dark). */
+body[data-room='grace'] .atmosphere__glow,
+body[data-room='confirm'] .atmosphere__glow,
+body[data-room='released'] .atmosphere__glow {
+  animation: none;
+  opacity: 0.85;
 }
 body[data-room='grace'] .ember {
   animation-duration: calc(24s + var(--i) * 1.6s);
@@ -1239,15 +1247,30 @@ fieldset {
 .vigil--grace .checkin__button,
 .vigil--confirm .checkin__button {
   border-color: rgba(255, 138, 61, 0.7);
-  animation: summon 2.4s ease-in-out infinite;
+}
+/* The summons: a ring that swells off the seal. It moves only by transform and opacity, so it runs on
+   the compositor; animating the button's box-shadow repainted the seal's SVG filters every frame. */
+.vigil--grace .checkin__button::after,
+.vigil--confirm .checkin__button::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  box-shadow: 0 0 0 2px rgba(255, 138, 61, 0.55);
+  opacity: 0;
+  pointer-events: none;
+  will-change: transform, opacity;
+  animation: summon 2.4s ease-out infinite;
 }
 @keyframes summon {
-  0%,
-  100% {
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5), 0 0 0 0 rgba(255, 138, 61, 0.45);
+  0% {
+    transform: scale(1);
+    opacity: 0.9;
   }
-  50% {
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5), 0 0 0 12px rgba(255, 138, 61, 0);
+  70%,
+  100% {
+    transform: scale(1.07, 1.18);
+    opacity: 0;
   }
 }
 .checkin__label {

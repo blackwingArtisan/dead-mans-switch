@@ -354,6 +354,19 @@ test('each room has its own colour, and the landing candle answers the pointer',
   await travel(page, '+30 days');
   await expect(page.locator('body')).toHaveAttribute('data-room', 'grace');
   await expect.poll(() => layer('sick')).toBe('1'); // green-grey
+  // Grace stays smooth: nothing in the room is filtered or blended, the warmth stops breathing, and the
+  // summons pulse moves only by transform and opacity (it once repainted the seal's SVG filters every frame).
+  const room = await page.evaluate(() => {
+    const css = (sel: string, pseudo?: string) => getComputedStyle(document.querySelector(sel)!, pseudo);
+    return {
+      grain: css('.atmosphere__grain').mixBlendMode,
+      warm: css('.atmosphere__warm').filter,
+      glow: css('.atmosphere__glow').animationName,
+      button: css('[data-testid="check-in"]').animationName,
+      ring: css('[data-testid="check-in"]', '::after').animationName,
+    };
+  });
+  expect(room).toEqual({ grain: 'normal', warm: 'none', glow: 'none', button: 'none', ring: 'summon' });
   await travel(page, '+7 days');
   await expect(page.locator('body')).toHaveAttribute('data-room', 'confirm');
   await expect.poll(() => layer('deep')).toBe('1'); // blue-black
