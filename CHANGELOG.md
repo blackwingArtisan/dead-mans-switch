@@ -9,6 +9,11 @@ Notable changes to Dead Man's Switch. Work done with Kiro is recorded call by ca
 - **MCP servers** for the AWS documentation and Context7 in `.kiro/settings/mcp.json`.
 - **A spec-drift hook** (`PostTaskExec`) beside the existing three. All four use the v1 hook schema that Kiro IDE 1.x and CLI V3 both read, and `tests/unit/kiro-config.test.ts` checks every trigger, matcher, resource and command.
 
+### The costume
+- **A warm candlelight reader.** The light on an opened letter is amber, its radius breathes like a flame, and a small flame follows the reader's pointer or finger.
+- **The story ends in full light.** Play the whole story finishes on the whole letter, lit and signed, instead of a dark page.
+- **The seal is pressed on screen.** Sealing scrolls back to the top so the fold and the seal play in view, and focus moves to the heading.
+
 ## 2026-11-18: the second round
 
 ### For the people using it

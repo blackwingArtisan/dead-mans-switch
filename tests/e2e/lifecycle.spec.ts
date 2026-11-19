@@ -58,6 +58,9 @@ test('write a letter, fall silent, witness confirms, recipient opens it once', a
   await page.keyboard.type('The spare key is under the third stone by the gate. I am so proud of you.');
   await page.getByTestId('seal-letter').click();
   await expect(page.getByTestId('sealed-title')).toBeVisible();
+  // The fold plays on screen: the page returns to the top and focus moves to the heading.
+  await expect(page.getByTestId('sealed-title')).toBeFocused();
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
   const keepsakeLink = await page.getByTestId('keepsake-link').inputValue();
   expect(keepsakeLink).toMatch(/\/keepsake\/L[\w-]+#k=[\w-]{43}/);
   await expect(page.getByTestId('key-split')).toContainText('Goes to Theo, on the card below');
@@ -200,7 +203,12 @@ test('a vault-custody letter opens from its link alone', async ({ page, browser 
   await expect
     .poll(async () => Math.abs(parseFloat(await sheet.evaluate((el) => (el as HTMLElement).style.getPropertyValue('--x'))) - 120))
     .toBeLessThanOrEqual(2);
+  // The reader's own flame sits at the light, and the light is warm.
+  await expect(june.locator('.letter__flame')).toBeVisible();
+  const shade = await june.locator('.letter__shade').evaluate((el) => getComputedStyle(el).backgroundImage);
+  expect(shade).toContain('rgba(255, 170, 80, 0.18)');
   await june.getByRole('button', { name: 'Light the room' }).click();
+  await expect(june.locator('.letter__flame')).toBeHidden();
   await expect(sheet).toHaveClass(/letter__page--lit/);
   await expect(june.locator('.letter__from')).toHaveClass(/letter__from--signed/);
   await ctx.close();
@@ -260,6 +268,9 @@ test('"Play the whole story" runs the lifecycle hands-off, with captions, to an 
   // The last caption stays as an end card until it is closed.
   await expect(caption).toContainText('Some words should wait', { timeout: 20_000 });
   await expect(caption).not.toContainText('of 7');
+  // The story ends on the whole letter in full light, signature included.
+  await expect(page.getByTestId('letter-page')).toHaveClass(/letter__page--lit/);
+  await expect(page.locator('.letter__from')).toHaveClass(/letter__from--signed/);
   await caption.getByRole('button', { name: 'Close' }).click();
   await expect(caption).toHaveCount(0);
 });

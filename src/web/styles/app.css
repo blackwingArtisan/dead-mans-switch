@@ -2187,7 +2187,13 @@ fieldset {
   text-align: right;
   margin: 28px 0 0;
 }
-/* Read by their last candle: darkness over the page with a circle of light at the pointer. */
+/* Read by their last candle: darkness over the page with a warm circle of light at the pointer.
+   The radius breathes by about 12 px, like a real flame, and a small flame marks where the light is. */
+@property --candle-flicker {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 0px;
+}
 .letter__page > .letter__shade {
   position: absolute;
   inset: 0;
@@ -2195,13 +2201,14 @@ fieldset {
   pointer-events: none;
   border-radius: inherit;
   background: radial-gradient(
-    circle 210px at var(--x, 50%) var(--y, 150px),
-    rgba(255, 186, 96, 0.05) 0%,
+    circle calc(220px + var(--candle-flicker)) at var(--x, 50%) var(--y, 150px),
+    rgba(255, 170, 80, 0.18) 0%,
+    rgba(255, 150, 60, 0.08) 26%,
     rgba(20, 12, 6, 0) 46%,
-    rgba(9, 6, 3, 0.97) 70%,
+    rgba(9, 6, 3, 0.97) 72%,
     rgb(6, 4, 2) 100%
   );
-  animation: candlelight 2.8s ease-in-out infinite;
+  animation: candlelight 2.6s ease-in-out infinite;
   transition: opacity 1.4s ease;
 }
 .letter__page--lit > .letter__shade {
@@ -2215,16 +2222,49 @@ fieldset {
 @keyframes candlelight {
   0%,
   100% {
-    opacity: 1;
+    --candle-flicker: 0px;
   }
-  40% {
-    opacity: 0.985;
+  18% {
+    --candle-flicker: -9px;
   }
-  55% {
-    opacity: 1;
+  37% {
+    --candle-flicker: 7px;
   }
-  70% {
-    opacity: 0.975;
+  52% {
+    --candle-flicker: -12px;
+  }
+  71% {
+    --candle-flicker: 12px;
+  }
+  86% {
+    --candle-flicker: -4px;
+  }
+}
+/* The reader's own flame, drawn where the pointer or finger is. */
+.letter__flame {
+  position: absolute;
+  z-index: 4;
+  left: var(--x, 50%);
+  top: var(--y, 150px);
+  width: 14px;
+  height: 26px;
+  margin: -30px 0 0 -7px;
+  pointer-events: none;
+  border-radius: 50% 50% 45% 45% / 62% 62% 38% 38%;
+  background: radial-gradient(ellipse at 50% 72%, #fff6d8 0%, #ffd27a 32%, #ff8a3d 64%, rgba(255, 90, 30, 0) 100%);
+  filter: drop-shadow(0 0 8px rgba(255, 170, 80, 0.85));
+  transform-origin: 50% 100%;
+  animation: reader-flame 0.9s ease-in-out infinite alternate;
+}
+.letter__page--lit > .letter__flame {
+  display: none;
+}
+@keyframes reader-flame {
+  from {
+    transform: scale(1, 1) rotate(-3deg);
+  }
+  to {
+    transform: scale(0.88, 1.1) rotate(3deg);
   }
 }
 .letter__from {
@@ -2650,7 +2690,8 @@ fieldset {
     box-shadow: none;
     background: #fff;
   }
-  .letter__page > .letter__shade {
+  .letter__page > .letter__shade,
+  .letter__flame {
     display: none;
   }
   .letter__from {

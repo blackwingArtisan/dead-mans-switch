@@ -253,12 +253,13 @@ function OpenedLetter({ info, letter, safeHtml }: { info: OpenInfo; letter: Lett
             </p>
           )}
           <div className="letter__shade" aria-hidden="true" />
+          <div className="letter__flame" aria-hidden="true" />
         </div>
         <div className="letter__after">
           {dark ? (
             <p className="hint" data-testid="candle-hint">
               Read by their last candle: move your cursor or finger over the page.{' '}
-              <button type="button" className="btn btn--ghost btn--small" onClick={lightRoom}>
+              <button type="button" className="btn btn--ghost btn--small" onClick={lightRoom} data-testid="light-room">
                 Light the room
               </button>
             </p>

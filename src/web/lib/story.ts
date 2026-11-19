@@ -161,7 +161,15 @@ const STEPS: { caption: string; run: () => Promise<void> }[] = [
   {
     caption: 'Some words should wait. Light a candle tonight.',
     run: async () => {
-      await wait(4000);
+      // End on the whole letter in full light, signature and all, not on a dark page.
+      // Under reduced motion the letter is already fully lit and there is no button to press.
+      const lit = () => document.querySelector<HTMLElement>('.letter__page--lit');
+      const next = await until(() => lit() ?? byTestId('light-room')());
+      if (!lit()) next.click();
+      await until(lit);
+      const page = document.querySelector<HTMLElement>('[data-testid="letter-page"]');
+      if (page) window.scrollTo({ top: Math.max(0, page.getBoundingClientRect().top + window.scrollY - 24), behavior: 'smooth' });
+      await wait(4500);
     },
   },
 ];

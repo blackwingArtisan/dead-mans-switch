@@ -172,11 +172,19 @@ function Sealed({ result, custody, recipient, author }: { result: SealedResult; 
     `Please keep this link somewhere safe. It opens nothing today. If I ever stop checking in, you will receive a letter from me, and this keepsake is the other half of its key.\n\n${result.keepsakeLink}\n\nKeepsake code: ${code}`,
   )}`;
 
+  // The fold and the pressed seal play at the top of the page; the desk was scrolled down to the
+  // Seal button, so bring the ceremony into view and move focus to its heading.
+  useEffect(() => {
+    const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    window.scrollTo({ top: 0, behavior: reduce ? 'instant' : 'smooth' });
+    document.getElementById('sealed-title')?.focus({ preventScroll: true });
+  }, []);
+
   return (
     <Shell>
       <section className="sealed" aria-labelledby="sealed-title">
         <SealCeremony mark={recipient.trim()[0]?.toUpperCase()} />
-        <h1 id="sealed-title" className="display display--md" data-testid="sealed-title">
+        <h1 id="sealed-title" className="display display--md" data-testid="sealed-title" tabIndex={-1}>
           The letter is sealed
         </h1>
         {custody === 'keepsake' ? (
