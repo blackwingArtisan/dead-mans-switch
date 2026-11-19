@@ -135,10 +135,15 @@ Cloudflare Workers free plan: static assets for the web app, one KV namespace, a
 
 ## Built with Kiro
 
-- **Steering** in [`.kiro/steering`](.kiro/steering): product, tech and structure rules that every Kiro session reads.
-- **Spec** in [`.kiro/specs/switch-lifecycle`](.kiro/specs/switch-lifecycle): EARS requirements, design (with Mermaid state diagram and the key scheme) and the task plan the build followed.
-- **Hooks** in [`.kiro/hooks`](.kiro/hooks): unit tests on every save, typecheck and tests before the agent stops, and a crypto-custody review prompt whenever `src/core/crypto.ts` changes.
-- **[KIRO-LOG.md](KIRO-LOG.md)**: every `kiro-cli` call, its prompt, its output and what was learned.
+The initial build and the security hardening were done with Claude Code, working from the Kiro steering files and a spec written in Kiro's format. Kiro then reviewed the spec against the code, rewrote every criterion in EARS form, and built two tasks itself. Every call is in **[KIRO-LOG.md](KIRO-LOG.md)** with its prompt, duration, credits, files and test results.
+
+| Kiro feature | Where | What it produced | Tests after |
+|---|---|---|---|
+| Spec review (Pass 2) | [`.kiro/specs/switch-lifecycle`](.kiro/specs/switch-lifecycle) | EARS criteria for Requirements 1 to 11, 12 new gap tasks, tasks checked only where a test exists | Vitest 79 of 79, Playwright 11 of 11, 0 axe violations |
+| Spec-driven tasks (Pass 2) | `tasks.md` 8.6 and 6.11 | The `RateLimiter` port and both adapters; a single-glyph wax seal; three test files | Same run |
+| Steering | [`.kiro/steering`](.kiro/steering) | Product, tech and structure rules every Kiro session reads first | n/a |
+| Hooks | [`.kiro/hooks`](.kiro/hooks) | Unit tests on save, typecheck and tests before the agent stops, a crypto-custody review when `crypto.ts` changes | n/a |
+| Prompts | [`.kiro/prompts`](.kiro/prompts) | The exact prompts, so each call can be re-run | n/a |
 
 ## Security headers and limits
 

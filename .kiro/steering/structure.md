@@ -20,12 +20,15 @@ src/
     node.ts        local Node entry (serves the built web app too)
   worker/      Cloudflare Worker entry (fetch + scheduled)
   web/         React app
-    pages/         one file per route
-    components/    candle, wax seal, parchment, time machine, outbox
-    styles/        tokens.css, base.css, per-component css
+    pages/         one file per route (Landing, Vigil, Write, Witness, Keepsake, Open, HowItWorks)
+    components/    Candle, WaxSeal, Chrome (shell and room atmosphere), Editor, TimeMachine (with the outbox),
+                   Comparison, FieldError
+    lib/           api client, router, seal (browser-side sealing), format, room (body data-room),
+                   tour (demo guide), validate (in-theme form errors)
+    styles/        app.css: design tokens on :root, then one section per component
 tests/
-  unit/        Vitest (machine, crypto, API)
-  e2e/         Playwright
+  unit/        Vitest (machine, crypto, API, adapters, security, rate limiter, wax seal, format, Node entry)
+  e2e/         Playwright (lifecycle, axe accessibility audit, smoke on desktop and mobile)
 ```
 
 ## Conventions
