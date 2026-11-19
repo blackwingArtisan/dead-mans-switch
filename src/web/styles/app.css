@@ -199,6 +199,9 @@ a:hover {
 }
 .masthead__brand {
   font-family: var(--font-display);
+  font-variant-ligatures: none;
+  font-feature-settings: 'liga' 0, 'clig' 0, 'dlig' 0, 'hlig' 0, 'calt' 0;
+  font-kerning: none;
   font-size: 1.25rem;
   color: var(--parchment);
   text-decoration: none;
@@ -254,6 +257,9 @@ a:hover {
 
 .display {
   font-family: var(--font-display);
+  font-variant-ligatures: none;
+  font-feature-settings: 'liga' 0, 'clig' 0, 'dlig' 0, 'hlig' 0, 'calt' 0;
+  font-kerning: none;
   font-weight: 700;
   font-size: clamp(2.3rem, 6vw, 4.2rem);
   line-height: 1.08;
@@ -281,6 +287,9 @@ a:hover {
 }
 .section-title {
   font-family: var(--font-display);
+  font-variant-ligatures: none;
+  font-feature-settings: 'liga' 0, 'clig' 0, 'dlig' 0, 'hlig' 0, 'calt' 0;
+  font-kerning: none;
   font-size: 1.35rem;
   color: var(--parchment);
   margin: 0 0 14px;
@@ -433,6 +442,21 @@ a:hover {
   display: grid;
   gap: 6px;
   min-width: 0;
+  align-content: start;
+}
+.field-error {
+  margin: 0;
+  color: #ffd2c4;
+  font-size: 1rem;
+  font-family: var(--font-hand);
+  font-style: italic;
+  padding-left: 12px;
+  border-left: 2px solid var(--wax-hi);
+}
+input[aria-invalid='true'],
+select[aria-invalid='true'] {
+  border-color: var(--danger);
+  box-shadow: 0 0 0 3px rgba(239, 138, 115, 0.18);
 }
 .field label,
 .custody legend {
@@ -459,8 +483,22 @@ select {
   width: 100%;
   transition: border-color 0.2s, box-shadow 0.2s;
 }
+select {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 42px;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='9' viewBox='0 0 14 9'><path d='M1 1l6 6 6-6' fill='none' stroke='%23c9a45c' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 16px center;
+  background-size: 14px 9px;
+  cursor: pointer;
+}
+select option {
+  background: #16100b;
+  color: var(--text);
+}
 input::placeholder {
-  color: #8a7a64;
+  color: #a59478;
   font-style: italic;
 }
 input:hover,
@@ -540,6 +578,9 @@ fieldset {
 }
 .rite__step h3 {
   font-family: var(--font-display);
+  font-variant-ligatures: none;
+  font-feature-settings: 'liga' 0, 'clig' 0, 'dlig' 0, 'hlig' 0, 'calt' 0;
+  font-kerning: none;
   font-size: 1.15rem;
   margin: 10px 0 6px;
   color: var(--parchment);
@@ -587,7 +628,9 @@ fieldset {
 }
 .stakes__figure {
   font-family: var(--font-display);
-  font-variant-ligatures: no-common-ligatures no-discretionary-ligatures;
+  font-variant-ligatures: none;
+  font-feature-settings: 'liga' 0, 'clig' 0, 'dlig' 0, 'hlig' 0, 'calt' 0;
+  font-kerning: none;
   font-size: 1.6rem;
   color: var(--flame);
 }
@@ -886,6 +929,9 @@ fieldset {
 }
 .checkin__label {
   font-family: var(--font-display);
+  font-variant-ligatures: none;
+  font-feature-settings: 'liga' 0, 'clig' 0, 'dlig' 0, 'hlig' 0, 'calt' 0;
+  font-kerning: none;
   font-size: clamp(1.15rem, 2.4vw, 1.5rem);
   line-height: 1.25;
   max-width: 12em;
@@ -1172,6 +1218,9 @@ fieldset {
   background: transparent;
   color: var(--parchment);
   font-family: var(--font-display);
+  font-variant-ligatures: none;
+  font-feature-settings: 'liga' 0, 'clig' 0, 'dlig' 0, 'hlig' 0, 'calt' 0;
+  font-kerning: none;
   font-size: 1.05rem;
   cursor: pointer;
 }
@@ -1212,6 +1261,9 @@ fieldset {
 .editor__page h2,
 .letter__body h2 {
   font-family: var(--font-display);
+  font-variant-ligatures: none;
+  font-feature-settings: 'liga' 0, 'clig' 0, 'dlig' 0, 'hlig' 0, 'calt' 0;
+  font-kerning: none;
   font-size: 1.4rem;
   margin: 0.4em 0;
 }
@@ -1504,8 +1556,9 @@ fieldset {
   margin: 0 0 10px;
 }
 .letter__title {
-  font-family: var(--font-display);
-  font-size: clamp(1.6rem, 4vw, 2.3rem);
+  font-family: var(--font-hand);
+  font-weight: 400;
+  font-size: clamp(1.9rem, 4.6vw, 2.6rem);
   line-height: 1.2;
   margin: 0 0 24px;
   color: #2a180c;
@@ -1535,6 +1588,9 @@ fieldset {
 }
 .prose h2 {
   font-family: var(--font-display);
+  font-variant-ligatures: none;
+  font-feature-settings: 'liga' 0, 'clig' 0, 'dlig' 0, 'hlig' 0, 'calt' 0;
+  font-kerning: none;
   font-size: 1.45rem;
   color: var(--parchment);
   margin: 40px 0 10px;
@@ -1561,10 +1617,11 @@ fieldset {
   right: 16px;
   bottom: 16px;
   z-index: 40;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 16px;
+  display: inline-grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  padding: 0;
   border-radius: 999px;
   border: 1px solid var(--brass-deep);
   background: linear-gradient(180deg, #2a2016, #16100b);
@@ -1576,7 +1633,18 @@ fieldset {
 .tm-toggle:hover {
   border-color: var(--brass);
 }
+.tm-toggle__label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
 .tm-toggle__count {
+  position: absolute;
+  top: -6px;
+  right: -6px;
   min-width: 24px;
   height: 24px;
   padding: 0 6px;
@@ -1615,6 +1683,9 @@ fieldset {
 }
 .tm__title {
   font-family: var(--font-display);
+  font-variant-ligatures: none;
+  font-feature-settings: 'liga' 0, 'clig' 0, 'dlig' 0, 'hlig' 0, 'calt' 0;
+  font-kerning: none;
   margin: 0;
   font-size: 1.4rem;
   color: var(--parchment);
@@ -1629,6 +1700,9 @@ fieldset {
 .tm__date {
   margin: 0;
   font-family: var(--font-display);
+  font-variant-ligatures: none;
+  font-feature-settings: 'liga' 0, 'clig' 0, 'dlig' 0, 'hlig' 0, 'calt' 0;
+  font-kerning: none;
   font-size: 1.1rem;
   color: #f3dfb2;
 }
@@ -1649,6 +1723,9 @@ fieldset {
 }
 .tm__subtitle {
   font-family: var(--font-display);
+  font-variant-ligatures: none;
+  font-feature-settings: 'liga' 0, 'clig' 0, 'dlig' 0, 'hlig' 0, 'calt' 0;
+  font-kerning: none;
   font-size: 1.1rem;
   margin: 18px 0 0;
   color: var(--parchment);
@@ -1737,20 +1814,16 @@ fieldset {
   .vigil__candle {
     justify-self: center;
   }
-  .hero__candle .candle,
-  .vigil__candle .candle {
+  .hero__candle .candle {
     width: 112px;
     height: 200px;
   }
-  .tm-toggle {
-    padding: 10px 12px;
+  .vigil {
+    gap: 8px;
   }
-  .tm-toggle > span:not(.tm-toggle__count) {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
+  .vigil__candle .candle {
+    width: 90px;
+    height: 160px;
   }
   .colophon {
     padding-bottom: 96px;

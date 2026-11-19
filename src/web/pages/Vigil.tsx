@@ -4,8 +4,10 @@ import { api, ApiError, authored, REFRESH_EVENT, session } from '../lib/api';
 import { longDate, relative, shortDate, STAGES, STATE_COPY } from '../lib/format';
 import { Link } from '../lib/router';
 import { keepsakeLinkFor } from '../lib/seal';
+import { useFieldErrors, type FieldMessages } from '../lib/validate';
 import { Candle } from '../components/Candle';
 import { Flourish, Shell } from '../components/Chrome';
+import { FieldError } from '../components/FieldError';
 import { WaxSeal } from '../components/WaxSeal';
 
 const DAY = 86_400_000;
@@ -99,6 +101,20 @@ export function Vigil({ onLost }: { onLost: () => void }) {
           </h1>
           <p className="lede">{copy.plain}</p>
 
+          {live && state !== 'paused' && (
+            <div className="checkin">
+              <button
+                type="button"
+                className={`checkin__button ${stamping ? 'checkin__button--stamp' : ''}`}
+                onClick={checkIn}
+                data-testid="check-in"
+              >
+                <WaxSeal size={132} tone={state === 'alive' ? 'oxblood' : 'ember'} />
+                <span className="checkin__label">I still walk among the living</span>
+              </button>
+              <p className="hint">One tap checks you in and relights the candle.</p>
+            </div>
+          )}
           <dl className="deadlines" data-testid="deadlines">
             {(state === 'alive' || state === 'reminder') && (
               <div>
@@ -141,20 +157,6 @@ export function Vigil({ onLost }: { onLost: () => void }) {
             </div>
           </dl>
 
-          {live && state !== 'paused' && (
-            <div className="checkin">
-              <button
-                type="button"
-                className={`checkin__button ${stamping ? 'checkin__button--stamp' : ''}`}
-                onClick={checkIn}
-                data-testid="check-in"
-              >
-                <WaxSeal size={132} tone={state === 'alive' ? 'oxblood' : 'ember'} />
-                <span className="checkin__label">I still walk among the living</span>
-              </button>
-              <p className="hint">One tap checks you in and relights the candle.</p>
-            </div>
-          )}
           {state === 'paused' && (
             <button type="button" className="btn btn--wax btn--large" onClick={() => act(api.resume, () => 'The vigil resumed with a fresh candle.')}>
               Lift the glass and resume
@@ -285,14 +287,28 @@ function Letters({ vault, onChange, onError }: { vault: VaultView; onChange: (v:
   );
 }
 
+const WITNESS_MESSAGES: Record<string, FieldMessages> = {
+  'w-name': { missing: 'Name the witness.' },
+  'w-email': { missing: 'Add the witness’s email.', type: 'That email does not look complete.' },
+};
+
+const TERMS_MESSAGES: Record<string, FieldMessages> = {
+  't-cadence': { range: 'Choose between 1 and 365 days.', missing: 'Choose between 1 and 365 days.' },
+  't-grace': { range: 'Choose between 1 and 90 days.', missing: 'Choose between 1 and 90 days.' },
+  't-lead': { range: 'Choose a lead no longer than the cadence.', missing: 'Choose a lead in days.' },
+  't-req': { range: 'Choose between 1 and 10 witnesses.', missing: 'Choose between 1 and 10 witnesses.' },
+};
+
 function Witnesses({ vault, onChange }: { vault: VaultView; onChange: (v: VaultView) => void }) {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [error, setError] = useState('');
   const live = vault.state !== 'released';
+  const fields = useFieldErrors(WITNESS_MESSAGES);
 
-  const add = async (e: FormEvent) => {
+  const add = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (!fields.validate(e)) return;
     try {
       onChange(await api.addWitness({ name, email }));
       setName('');
@@ -342,14 +358,16 @@ function Witnesses({ vault, onChange }: { vault: VaultView; onChange: (v: VaultV
         ))}
       </ul>
       {live && (
-        <form className="form form--inline" onSubmit={add} aria-label="Name a witness">
+        <form className="form form--inline" onSubmit={add} onInput={fields.onInput} noValidate aria-label="Name a witness">
           <div className="field">
             <label htmlFor="w-name">Name</label>
-            <input id="w-name" required value={name} onChange={(e) => setName(e.target.value)} />
+            <input id="w-name" required value={name} onChange={(e) => setName(e.target.value)} {...fields.aria('w-name')} />
+            <FieldError id="w-name" errors={fields.errors} />
           </div>
           <div className="field">
             <label htmlFor="w-email">Email</label>
-            <input id="w-email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
+            <input id="w-email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} {...fields.aria('w-email')} />
+            <FieldError id="w-email" errors={fields.errors} />
           </div>
           <button type="submit" className="btn btn--ghost">
             Name witness
@@ -377,10 +395,12 @@ function Terms({ vault, onChange }: { vault: VaultView; onChange: (v: VaultView)
   });
   const [msg, setMsg] = useState('');
   const live = vault.state !== 'released';
+  const fields = useFieldErrors(TERMS_MESSAGES);
   const num = (k: keyof typeof form) => (e: { target: { value: string } }) => setForm({ ...form, [k]: Number(e.target.value) });
 
-  const save = async (e: FormEvent) => {
+  const save = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (!fields.validate(e)) return;
     try {
       onChange(
         await api.settings({
@@ -402,27 +422,31 @@ function Terms({ vault, onChange }: { vault: VaultView; onChange: (v: VaultView)
       <h2 id="terms-title" className="section-title">
         Terms of the vigil
       </h2>
-      <form className="form terms" onSubmit={save}>
+      <form className="form terms" onSubmit={save} onInput={fields.onInput} noValidate>
         <fieldset disabled={!live}>
           <legend className="sr-only">Timing and witnesses</legend>
           <div className="field-row">
             <div className="field">
               <label htmlFor="t-cadence">Check in every (days)</label>
-              <input id="t-cadence" type="number" min={1} max={365} value={form.cadenceDays} onChange={num('cadenceDays')} />
+              <input id="t-cadence" type="number" min={1} max={365} value={form.cadenceDays} onChange={num('cadenceDays')} {...fields.aria('t-cadence')} />
+              <FieldError id="t-cadence" errors={fields.errors} />
             </div>
             <div className="field">
               <label htmlFor="t-grace">Grace period (days)</label>
-              <input id="t-grace" type="number" min={1} max={90} value={form.graceDays} onChange={num('graceDays')} />
+              <input id="t-grace" type="number" min={1} max={90} value={form.graceDays} onChange={num('graceDays')} {...fields.aria('t-grace')} />
+              <FieldError id="t-grace" errors={fields.errors} />
             </div>
           </div>
           <div className="field-row">
             <div className="field">
               <label htmlFor="t-lead">First reminder (days before)</label>
-              <input id="t-lead" type="number" min={0} max={form.cadenceDays} value={form.reminderLeadDays} onChange={num('reminderLeadDays')} />
+              <input id="t-lead" type="number" min={0} max={form.cadenceDays} value={form.reminderLeadDays} onChange={num('reminderLeadDays')} {...fields.aria('t-lead')} />
+              <FieldError id="t-lead" errors={fields.errors} />
             </div>
             <div className="field">
               <label htmlFor="t-req">Witnesses who must confirm</label>
-              <input id="t-req" type="number" min={1} max={10} value={form.witnessesRequired} onChange={num('witnessesRequired')} />
+              <input id="t-req" type="number" min={1} max={10} value={form.witnessesRequired} onChange={num('witnessesRequired')} {...fields.aria('t-req')} />
+              <FieldError id="t-req" errors={fields.errors} />
             </div>
           </div>
           <div className="field field--check">

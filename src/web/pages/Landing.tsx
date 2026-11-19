@@ -2,12 +2,20 @@ import { useState, type FormEvent } from 'react';
 import { api, session } from '../lib/api';
 import { navigate } from '../lib/router';
 import { DEMO, sealAndStore } from '../lib/seal';
+import { useFieldErrors, type FieldMessages } from '../lib/validate';
 import { Candle } from '../components/Candle';
 import { Flourish, Shell } from '../components/Chrome';
 import { Comparison, Stakes } from '../components/Comparison';
+import { FieldError } from '../components/FieldError';
 import { WaxSeal } from '../components/WaxSeal';
 
+const BEGIN_MESSAGES: Record<string, FieldMessages> = {
+  'author-name': { missing: 'Write your name, as your witnesses and recipients know you.' },
+  'author-email': { missing: 'Add an email for your reminders.', type: 'That email does not look complete. Check it for an @ and a domain.' },
+};
+
 export function Landing() {
+  const fields = useFieldErrors(BEGIN_MESSAGES);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [cadence, setCadence] = useState(30);
@@ -15,8 +23,9 @@ export function Landing() {
   const [error, setError] = useState('');
   const [busy, setBusy] = useState<'' | 'create' | 'demo'>('');
 
-  const begin = async (e: FormEvent) => {
+  const begin = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (!fields.validate(e)) return;
     setBusy('create');
     setError('');
     try {
@@ -129,10 +138,11 @@ export function Landing() {
         <h2 id="begin-title" className="section-title">
           Light the first candle
         </h2>
-        <form className="form" onSubmit={begin}>
+        <form className="form" onSubmit={begin} onInput={fields.onInput} noValidate>
           <div className="field">
             <label htmlFor="author-name">Your name</label>
-            <input id="author-name" autoComplete="name" required value={name} onChange={(e) => setName(e.target.value)} />
+            <input id="author-name" autoComplete="name" required value={name} onChange={(e) => setName(e.target.value)} {...fields.aria('author-name')} />
+            <FieldError id="author-name" errors={fields.errors} />
           </div>
           <div className="field">
             <label htmlFor="author-email">Your email</label>
@@ -143,8 +153,9 @@ export function Landing() {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              aria-describedby="author-email-hint"
+              {...fields.aria('author-email', 'author-email-hint')}
             />
+            <FieldError id="author-email" errors={fields.errors} />
             <p id="author-email-hint" className="hint">
               Reminders go here. Use one you will still read in a year.
             </p>

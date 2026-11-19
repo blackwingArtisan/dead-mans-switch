@@ -84,7 +84,7 @@ export function WaxSeal({ size = 96, mark, tone = 'oxblood', cracked = false, cl
         <circle cx="50" cy="50" r="33" fill="none" stroke={lo} strokeWidth="1.6" opacity="0.8" />
         <circle cx="50" cy="50" r="29" fill="none" stroke={hi} strokeWidth="0.7" opacity="0.5" strokeDasharray="1.5 2.2" />
         {mark ? (
-          <g fontFamily="'Cinzel Decorative', 'Cormorant Garamond', serif" fontWeight="700" fontSize={mark.length > 1 ? 24 : 36} textAnchor="middle" dominantBaseline="central">
+          <g style={{ fontVariantLigatures: 'none' }} fontFamily="'Cinzel Decorative', 'Cormorant Garamond', serif" fontWeight="700" fontSize={mark.length > 1 ? 24 : 36} textAnchor="middle" dominantBaseline="central">
             {/* One glyph only. The lit edge is a pale outline painted beneath the fill of the same
                 text element, so thin marks such as "I" never show a second, offset copy. */}
             <text x="50" y="51.5" fill={lo} stroke={hi} strokeWidth="1.1" strokeLinejoin="round" paintOrder="stroke" strokeOpacity="0.7">

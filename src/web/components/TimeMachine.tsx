@@ -105,12 +105,13 @@ export function TimeMachine() {
         className="tm-toggle"
         aria-expanded={open}
         aria-controls="time-machine"
+        title="Time machine (demo only)"
         onClick={() => setOpen((o) => !o)}
       >
         <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
           <path d="M6 2h12M6 22h12M7 2c0 6 10 6 10 10S7 16 7 22M17 2c0 6-10 6-10 10s10 4 10 10" fill="none" stroke="currentColor" strokeWidth="1.6" />
         </svg>
-        <span>Time machine</span>
+        <span className="tm-toggle__label">Time machine</span>
         {unread > 0 && <span className="tm-toggle__count" aria-label={`${unread} emails in the outbox`}>{unread}</span>}
       </button>
 

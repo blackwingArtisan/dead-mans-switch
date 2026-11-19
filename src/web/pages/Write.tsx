@@ -5,11 +5,19 @@ import type { VaultView } from '../../core/vault';
 import { api } from '../lib/api';
 import { Link, navigate } from '../lib/router';
 import { sealAndStore, type SealedResult } from '../lib/seal';
+import { useFieldErrors, type FieldMessages } from '../lib/validate';
 import { Shell } from '../components/Chrome';
 import { Editor } from '../components/Editor';
+import { FieldError } from '../components/FieldError';
 import { WaxSeal } from '../components/WaxSeal';
 
+const LETTER_MESSAGES: Record<string, FieldMessages> = {
+  'r-name': { missing: 'Who is this letter for?' },
+  'r-email': { missing: 'Add their email, so the one-time link can reach them.', type: 'That email does not look complete.' },
+};
+
 export function Write() {
+  const fields = useFieldErrors(LETTER_MESSAGES);
   const [vault, setVault] = useState<VaultView | null>(null);
   const [recipientName, setRecipientName] = useState('');
   const [recipientEmail, setRecipientEmail] = useState('');
@@ -31,8 +39,9 @@ export function Write() {
       .catch(() => navigate('/'));
   }, []);
 
-  const seal = async (e: FormEvent) => {
+  const seal = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (!fields.validate(e)) return;
     const text = html.replace(/<[^>]*>/g, '').trim();
     if (!text) {
       setError('The page is still blank. Write a few words before sealing.');
@@ -72,11 +81,19 @@ export function Write() {
           </Link>
         </div>
 
-        <form className={`form desk__form ${sealing ? 'desk__form--sealing' : ''}`} onSubmit={seal}>
+        <form className={`form desk__form ${sealing ? 'desk__form--sealing' : ''}`} onSubmit={seal} onInput={fields.onInput} noValidate>
           <div className="field-row">
             <div className="field">
               <label htmlFor="r-name">For</label>
-              <input id="r-name" required value={recipientName} onChange={(e) => setRecipientName(e.target.value)} placeholder="Their name" />
+              <input
+                id="r-name"
+                required
+                value={recipientName}
+                onChange={(e) => setRecipientName(e.target.value)}
+                placeholder="Their name"
+                {...fields.aria('r-name')}
+              />
+              <FieldError id="r-name" errors={fields.errors} />
             </div>
             <div className="field">
               <label htmlFor="r-email">Their email</label>
@@ -86,8 +103,9 @@ export function Write() {
                 required
                 value={recipientEmail}
                 onChange={(e) => setRecipientEmail(e.target.value)}
-                aria-describedby="r-email-hint"
+                {...fields.aria('r-email', 'r-email-hint')}
               />
+              <FieldError id="r-email" errors={fields.errors} />
               <p id="r-email-hint" className="hint">
                 Where the one-time link is sent if your candle goes out.
               </p>

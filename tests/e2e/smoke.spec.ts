@@ -14,3 +14,17 @@ test('the honest page explains the custody limits', async ({ page }) => {
   await expect(page.getByRole('heading', { name: 'How the seal works' })).toBeVisible();
   await expect(page.getByText('Vault custody is a convenience, not a secret.')).toBeVisible();
 });
+
+test('an incomplete form shows in-theme errors beside the fields, not browser bubbles', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Light the candle' }).click();
+  const name = page.getByLabel('Your name');
+  await expect(name).toHaveAttribute('aria-invalid', 'true');
+  await expect(name).toBeFocused();
+  await expect(page.locator('#author-name-error')).toContainText('Write your name');
+  await name.fill('Mara Whitlock');
+  await expect(page.locator('#author-name-error')).toHaveCount(0);
+  await page.getByLabel('Your email').fill('mara@');
+  await page.getByRole('button', { name: 'Light the candle' }).click();
+  await expect(page.locator('#author-email-error')).toContainText('does not look complete');
+});

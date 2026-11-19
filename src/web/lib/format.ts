@@ -2,12 +2,13 @@ import type { SwitchState } from '../../core/types';
 
 const DAY = 86_400_000;
 
-export function longDate(at: number): string {
-  return new Intl.DateTimeFormat('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric', timeZone: 'UTC' }).format(at);
+/** Dates are shown in the viewer's own time zone; pass `timeZone` only to pin one (tests, emails). */
+export function longDate(at: number, timeZone?: string): string {
+  return new Intl.DateTimeFormat('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric', timeZone }).format(at);
 }
 
-export function shortDate(at: number): string {
-  return new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' }).format(at);
+export function shortDate(at: number, timeZone?: string): string {
+  return new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone }).format(at);
 }
 
 /** "in 3 days", "2 days ago", "in 5 hours", "today". */
