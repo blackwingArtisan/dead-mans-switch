@@ -50,14 +50,19 @@ export function TimeMachine() {
   const panelRef = useRef<HTMLDivElement>(null);
   const guide = useTour();
 
+  // Polls and post-travel reloads can overlap; only the newest response is shown, so a slow,
+  // older poll can never put back an outbox from before the clock moved.
+  const latest = useRef(0);
   const load = useCallback(async () => {
+    const seq = ++latest.current;
     try {
       const [c, o] = await Promise.all([api.dev.clock(), api.dev.outbox()]);
+      if (seq !== latest.current) return;
       setClock(c);
       setMail(o.messages);
       setAvailable(true);
     } catch {
-      setAvailable(false);
+      if (seq === latest.current) setAvailable(false);
     }
   }, []);
 
