@@ -110,6 +110,11 @@ export interface Vault {
   letters: Letter[];
   history: HistoryEntry[];
   createdAt: number;
+  /**
+   * Hashes of the one-tap check-in links mailed to the author in this cycle. Each link can only
+   * check in; a check-in starts a new cycle and empties this list, so every link works once.
+   */
+  checkInTokenHashes?: string[];
 }
 
 export interface Schedule {

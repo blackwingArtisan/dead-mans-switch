@@ -22,7 +22,13 @@ interface Draft {
   link?: { href: string; label: string };
 }
 
-function draft(effect: EmailEffect, baseUrl: string): Draft {
+/** Emails to the author that carry a one-tap check-in link. */
+export const CHECK_IN_TEMPLATES: ReadonlySet<EmailEffect['template']> = new Set(['reminder', 'grace', 'last-call', 'witnesses-asked', 'denied']);
+
+function draft(effect: EmailEffect, baseUrl: string, checkInToken?: string): Draft {
+  const checkIn = checkInToken
+    ? { href: `${baseUrl}/check-in/${checkInToken}`, label: 'Check in now' }
+    : { href: `${baseUrl}/`, label: 'Check in now' };
   switch (effect.template) {
     case 'reminder':
       return {
@@ -31,7 +37,7 @@ function draft(effect: EmailEffect, baseUrl: string): Draft {
           `Your next check-in is due by ${formatDate(effect.dueAt)}.`,
           'One tap is enough to tell us you still walk among the living.',
         ],
-        link: { href: `${baseUrl}/`, label: 'Check in now' },
+        link: checkIn,
       };
     case 'grace':
       return {
@@ -40,7 +46,7 @@ function draft(effect: EmailEffect, baseUrl: string): Draft {
           `Your check-in was due on ${formatDate(effect.dueAt)}.`,
           `If you do not check in by ${formatDate(effect.graceEndsAt)}, your witnesses will be asked to confirm before any letter is released.`,
         ],
-        link: { href: `${baseUrl}/`, label: 'Check in now' },
+        link: checkIn,
       };
     case 'last-call':
       return {
@@ -49,7 +55,7 @@ function draft(effect: EmailEffect, baseUrl: string): Draft {
           `Your grace period ends on ${formatDate(effect.graceEndsAt)}.`,
           'If this is a mistake, check in now and nothing will be sent.',
         ],
-        link: { href: `${baseUrl}/`, label: 'Check in now' },
+        link: checkIn,
       };
     case 'witness-ask':
       return {
@@ -70,7 +76,7 @@ function draft(effect: EmailEffect, baseUrl: string): Draft {
             : 'Your grace period ended. You have no witnesses named.',
           'If you are reading this, check in now: it cancels everything and your witnesses will be told to stand down.',
         ],
-        link: { href: `${baseUrl}/`, label: 'Check in now' },
+        link: checkIn,
       };
     case 'stand-down':
       return {
@@ -84,7 +90,7 @@ function draft(effect: EmailEffect, baseUrl: string): Draft {
           `${effect.witnessName} stopped the release of your letters.`,
           `A new grace period runs until ${formatDate(effect.graceEndsAt)}. Check in to reset your candle.`,
         ],
-        link: { href: `${baseUrl}/`, label: 'Check in now' },
+        link: checkIn,
       };
     case 'witness-named':
       return {
@@ -112,8 +118,9 @@ function draft(effect: EmailEffect, baseUrl: string): Draft {
   }
 }
 
-export function renderEmail(effect: EmailEffect & { vaultId: string }, baseUrl: string): MailMessage {
-  const d = draft(effect, baseUrl.replace(/\/$/, ''));
+export function renderEmail(effect: EmailEffect & { vaultId: string; checkInToken?: string }, baseUrl: string): MailMessage {
+  const d = draft(effect, baseUrl.replace(/\/$/, ''), effect.checkInToken);
+  if (effect.checkInToken) d.lines.push('The button checks you in once and does nothing else: it cannot open your vault, read or change anything.');
   const greeting = `Dear ${effect.to.name},`;
   const sign = "Dead Man's Switch";
   const text = [greeting, '', ...d.lines.flatMap((l) => [l, '']), d.link ? `${d.link.label}: ${d.link.href}\n` : '', sign]

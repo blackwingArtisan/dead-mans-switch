@@ -59,6 +59,7 @@ export function createApp(deps: AppDeps) {
     const limiter = rateLimit(deps.clock, deps.rateLimiter ?? new MemoryRateLimiter(limits), deps.clientKey ?? cloudflareClientKey);
     app.use('/api/witness/*', limiter);
     app.use('/api/open/*', limiter);
+    app.use('/api/check-in/*', limiter);
   }
 
   const json = async (c: Context): Promise<Record<string, unknown>> => {
@@ -104,6 +105,11 @@ export function createApp(deps: AppDeps) {
     const body = await json(c);
     return c.json(await service.witnessRespond(c.req.param('token'), body.response));
   });
+
+  // One-tap check-in links from emails. GET only describes; checking in needs the POST, so mail
+  // scanners that follow links cannot check anyone in.
+  app.get('/api/check-in/:token', async (c) => c.json(await service.checkInLinkInfo(c.req.param('token'))));
+  app.post('/api/check-in/:token', async (c) => c.json(await service.checkInByLink(c.req.param('token'))));
 
   app.get('/api/open/:token', async (c) => c.json(await service.openInfo(c.req.param('token'))));
   app.post('/api/open/:token/break', async (c) => c.json(await service.breakSeal(c.req.param('token'))));

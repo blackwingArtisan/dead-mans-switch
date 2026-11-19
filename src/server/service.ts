@@ -15,7 +15,7 @@ import {
   viewOf,
   type VaultView,
 } from '../core/vault';
-import { renderEmail } from './emails';
+import { CHECK_IN_TEMPLATES, renderEmail } from './emails';
 import type { Clock, Mailer, TokenKind, VaultStore } from './ports';
 
 export class HttpError extends Error {
@@ -39,6 +39,8 @@ export interface ServiceDeps {
 type Mutation<T> = (vault: Vault, ctx: MachineContext) => { vault: Vault; effects?: Effect[]; result: T };
 
 const B64U = /^[A-Za-z0-9_-]+$/;
+/** Older check-in links beyond this many are dropped, newest kept. */
+const MAX_CHECK_IN_LINKS = 6;
 const LETTER_ID = /^[A-Za-z0-9_-]{8,32}$/;
 
 export class SwitchService {
@@ -182,6 +184,29 @@ export class SwitchService {
   }
 
   // ── witness ─────────────────────────────────────────────
+
+  // ── one-tap check-in from an email ──────────────────────
+
+  async checkInLinkInfo(token: string) {
+    const { vaultId } = await this.lookup('checkin', token, CHECK_IN_LINK_SPENT);
+    return this.transact(vaultId, (vault) => ({
+      vault,
+      result: { authorName: vault.author.name, state: vault.state, lastCheckInAt: vault.lastCheckInAt },
+    }));
+  }
+
+  async checkInByLink(token: string) {
+    const { vaultId } = await this.lookup('checkin', token, CHECK_IN_LINK_SPENT);
+    return this.transact(vaultId, (vault, ctx) => {
+      const r = step(vault, { type: 'checkIn' }, ctx);
+      const view = viewOf(r.vault, ctx.now);
+      return {
+        vault: r.vault,
+        effects: r.effects,
+        result: { authorName: view.author.name, state: view.state, lastCheckInAt: view.lastCheckInAt, nextDueAt: view.schedule.dueAt },
+      };
+    });
+  }
 
   async witnessInfo(token: string) {
     const { vaultId, hash } = await this.lookup('witness', token, 'This witness link has expired or was never valid.');
@@ -327,16 +352,37 @@ export class SwitchService {
 
   private async runNow<T>(vaultId: string, mutate: Mutation<T>): Promise<{ result: T; effects: Effect[] }> {
     const loaded = await this.mustGet(vaultId);
+    const cycle = loaded.cycle;
     const ctx: MachineContext = { now: this.now(), mint: await tokenPool(loaded.witnesses.length + loaded.letters.length + 4) };
     const ticked = step(loaded, { type: 'tick' }, ctx);
     const out = mutate(ticked.vault, ctx);
     const effects = [...ticked.effects, ...(out.effects ?? [])];
+    const outgoing = await this.withCheckInLinks(out.vault, cycle, effects);
     await this.deps.store.put(out.vault);
-    await this.deliver(out.vault.id, effects);
+    await this.deliver(out.vault.id, outgoing);
     return { result: out.result, effects };
   }
 
-  private async deliver(vaultId: string, effects: Effect[]): Promise<void> {
+  /**
+   * A check-in spends every link from the cycle before it. Each email to the author that asks
+   * them to check in gets a fresh one-tap link, stored only as a hash.
+   */
+  private async withCheckInLinks(vault: Vault, cycleBefore: number, effects: Effect[]): Promise<OutgoingEmail[]> {
+    if (vault.cycle !== cycleBefore || vault.state === 'released') vault.checkInTokenHashes = [];
+    const out: OutgoingEmail[] = [];
+    for (const e of effects) {
+      if (vault.state !== 'released' && CHECK_IN_TEMPLATES.has(e.template) && e.to.email === vault.author.email) {
+        const token = randomToken();
+        vault.checkInTokenHashes = [...(vault.checkInTokenHashes ?? []), await sha256(token)].slice(-MAX_CHECK_IN_LINKS);
+        out.push({ ...e, checkInToken: token });
+      } else {
+        out.push(e);
+      }
+    }
+    return out;
+  }
+
+  private async deliver(vaultId: string, effects: OutgoingEmail[]): Promise<void> {
     const failures: string[] = [];
     for (const e of effects) {
       try {
@@ -353,6 +399,10 @@ export class SwitchService {
     }
   }
 }
+
+type OutgoingEmail = Effect & { checkInToken?: string };
+
+const CHECK_IN_LINK_SPENT = 'This check-in link has been used or has expired. Open your vigil on your own device to check in.';
 
 function editable(vault: Vault): void {
   if (vault.state === 'released') {

@@ -72,6 +72,10 @@ export function HowItWorks() {
           <li>
             Each link opens once. If a recipient loses the letter after opening it, there is no second copy.
           </li>
+          <li>
+            Reminder emails carry a one-tap check-in link. It can only check you in, and each one works once, but someone reading
+            your email could use it to keep your candle lit. Your witnesses are still asked if you go quiet for good.
+          </li>
         </ul>
 
         <Comparison headingId="how-compare-title" />

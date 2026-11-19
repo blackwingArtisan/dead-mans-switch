@@ -4,6 +4,7 @@ import { usePath } from './lib/router';
 import { Atmosphere } from './components/Chrome';
 import { StoryCaptions } from './components/StoryCaptions';
 import { TimeMachine } from './components/TimeMachine';
+import { CheckIn } from './pages/CheckIn';
 import { HowItWorks } from './pages/HowItWorks';
 import { Keepsake } from './pages/Keepsake';
 import { Landing } from './pages/Landing';
@@ -16,6 +17,8 @@ function Route({ path, hash }: { path: string; hash: string }) {
   const [, setLost] = useState(0);
   const witness = path.match(/^\/witness\/([A-Za-z0-9_-]+)$/);
   if (witness) return <Witness token={witness[1]!} />;
+  const checkIn = path.match(/^\/check-in\/([A-Za-z0-9_-]+)$/);
+  if (checkIn) return <CheckIn token={checkIn[1]!} />;
   const open = path.match(/^\/open\/([A-Za-z0-9_-]+)$/);
   if (open) return <Open token={open[1]!} hash={hash} />;
   const keepsake = path.match(/^\/keepsake\/([A-Za-z0-9_-]+)$/);

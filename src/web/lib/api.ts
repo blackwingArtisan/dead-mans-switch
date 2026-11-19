@@ -90,6 +90,16 @@ export interface WitnessInfo {
   confirmationsRequired: number;
 }
 
+export interface CheckInLinkInfo {
+  authorName: string;
+  state: VaultView['state'];
+  lastCheckInAt: number;
+}
+
+export interface CheckInLinkResult extends CheckInLinkInfo {
+  nextDueAt: number;
+}
+
 export interface OpenInfo {
   letterId: string;
   authorName: string;
@@ -139,6 +149,8 @@ export const api = {
   witness: (token: string) => request<WitnessInfo>('GET', `/api/witness/${encodeURIComponent(token)}`),
   witnessRespond: (token: string, response: 'confirm' | 'deny') =>
     request<{ state: string; response: string }>('POST', `/api/witness/${encodeURIComponent(token)}`, { response }),
+  checkInLink: (token: string) => request<CheckInLinkInfo>('GET', `/api/check-in/${encodeURIComponent(token)}`),
+  checkInByLink: (token: string) => request<CheckInLinkResult>('POST', `/api/check-in/${encodeURIComponent(token)}`, {}),
   openInfo: (token: string) => request<OpenInfo>('GET', `/api/open/${encodeURIComponent(token)}`),
   breakSeal: (token: string) =>
     request<{ letterId: string; ciphertext: string; iv: string; vaultHalf: string }>(

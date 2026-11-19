@@ -85,6 +85,7 @@ Wax seals carry each recipient's initial, the check-in is a seal you press, and 
 - Reminder, grace, last-call, witness, stand-down, denial and release emails (plain text and HTML).
 - Witness page with a two-step confirm and a one-tap "they still live" that stops the release.
 - Recipient page: keepsake check before spending the link, the seal cracks, the letter unfolds; download and print; the server forgets its copy.
+- **One-tap check-in from email**: reminder and grace emails carry a link that checks in from any device, even one that has never opened the vigil. The page asks for a press first (mail scanners that follow links change nothing), the link can do nothing but check in, and a check-in spends every link from that cycle. Only a SHA-256 hash of each link is stored.
 - **Time machine** (local only): move the clock forward a day, a week, a month or to the next event, and read every email in the outbox. The whole lifecycle runs in about a minute.
 - **Play the whole story** (local only): a captioned, hands-off run from a lit candle to a letter read by candlelight.
 - **The room follows the candle**: glow, embers, smoke, moonlight and palette change with the state, and a check-in relights it.
@@ -121,7 +122,7 @@ npm run typecheck     # web + server, and the Cloudflare Worker against Workers 
 npm run check         # all of the above plus a production build
 ```
 
-The end-to-end suite writes a letter, fast-forwards past the grace period, confirms as a witness in a separate browser, opens the letter as the recipient in a fresh browser with a pasted keepsake, and checks the link refuses a second opening. It also covers a check-in during grace, a vault-custody link, the founder's demo, the hands-off story, in-theme form errors, the room relighting on check-in, mobile layout, and an axe WCAG 2.2 AA audit of every page and state.
+The end-to-end suite writes a letter, fast-forwards past the grace period, confirms as a witness in a separate browser, opens the letter as the recipient in a fresh browser with a pasted keepsake, and checks the link refuses a second opening. It also covers a check-in during grace, a one-tap check-in from the grace email on a second device, a vault-custody link, the founder's demo, the hands-off story, in-theme form errors, the room relighting on check-in, mobile layout, and an axe WCAG 2.2 AA audit of every page and state.
 
 GitHub Actions runs `npm run check` on every push and pull request ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)).
 
@@ -142,7 +143,7 @@ States: `alive -> reminder -> grace -> confirm -> released`, plus `paused`. Chec
 
 ### The seal
 
-Each letter gets a random key K. K is split into a keepsake half A (random) and a vault half B = K xor A. The server stores the ciphertext, B and a hash of A. At release the recipient's browser joins A and B and decrypts locally; the ciphertext is bound to the letter id so it cannot be swapped. Limits, stated plainly in the app: vault custody is readable by the operator; a compromised device can read letters as they are written; witnesses who collude can release early; the server sees names, emails and timing; browser crypto trusts the code it is served.
+Each letter gets a random key K. K is split into a keepsake half A (random) and a vault half B = K xor A. The server stores the ciphertext, B and a hash of A. At release the recipient's browser joins A and B and decrypts locally; the ciphertext is bound to the letter id so it cannot be swapped. Limits, stated plainly in the app: vault custody is readable by the operator; a compromised device can read letters as they are written; witnesses who collude can release early; someone reading your email could use a check-in link to keep the candle lit; the server sees names, emails and timing; browser crypto trusts the code it is served.
 
 ## Adapters
 

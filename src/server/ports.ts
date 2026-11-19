@@ -13,7 +13,7 @@ export interface AdjustableClock extends Clock {
   offset(): number;
 }
 
-export type TokenKind = 'owner' | 'witness' | 'open';
+export type TokenKind = 'owner' | 'witness' | 'open' | 'checkin';
 
 export interface VaultStore {
   get(id: string): Promise<Vault | null>;
@@ -43,6 +43,7 @@ export function tokenKeys(vault: Vault): { kind: TokenKind; hash: string }[] {
   const keys: { kind: TokenKind; hash: string }[] = [{ kind: 'owner', hash: vault.ownerTokenHash }];
   for (const w of vault.witnesses) if (w.tokenHash) keys.push({ kind: 'witness', hash: w.tokenHash });
   for (const l of vault.letters) if (l.openTokenHash) keys.push({ kind: 'open', hash: l.openTokenHash });
+  for (const hash of vault.checkInTokenHashes ?? []) keys.push({ kind: 'checkin', hash });
   return keys;
 }
 

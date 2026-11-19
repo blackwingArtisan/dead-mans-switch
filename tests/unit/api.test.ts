@@ -170,4 +170,60 @@ describe('API lifecycle', () => {
     const r = await t.call('DELETE', '/api/vault/letters/letter-burn-01');
     expect(r.body.letters).toHaveLength(0);
   });
+
+  describe('one-tap check-in links in the author\'s emails', () => {
+    it('checks in once from the grace email, with no owner token, and every link from that cycle is then spent', async () => {
+      await t.createVault({ cadenceDays: 30, graceDays: 7, reminderLeadDays: 3 });
+      await t.call('POST', '/api/dev/clock', { days: 28 });
+      await t.call('POST', '/api/dev/clock', { days: 3 });
+      const reminder = t.linkFrom('reminder', 'mara@example.com');
+      const grace = t.linkFrom('grace', 'mara@example.com');
+      expect(reminder.path).toMatch(/^\/check-in\/[\w-]{43}$/);
+      expect(grace.token).not.toBe(reminder.token);
+      expect(t.outbox.list().find((m) => m.kind === 'grace')!.text).toContain('checks you in once and does nothing else');
+
+      const info = await t.call('GET', `/api/check-in/${grace.token}`, undefined, false);
+      expect(info.status).toBe(200);
+      expect(info.body).toMatchObject({ authorName: 'Mara Whitlock', state: 'grace' });
+      expect(info.body).not.toHaveProperty('letters');
+      expect(info.body).not.toHaveProperty('witnesses');
+
+      const done = await t.call('POST', `/api/check-in/${grace.token}`, undefined, false);
+      expect(done.status).toBe(200);
+      expect(done.body.state).toBe('alive');
+      expect(done.body.nextDueAt).toBeGreaterThan(done.body.lastCheckInAt);
+
+      for (const link of [grace, reminder]) {
+        const again = await t.call('POST', `/api/check-in/${link.token}`, undefined, false);
+        expect(again.status).toBe(404);
+        expect(again.body.error).toMatch(/used or has expired/);
+      }
+    });
+
+    it('a check-in from the vigil also spends the emailed links', async () => {
+      await t.createVault({ cadenceDays: 30, graceDays: 7 });
+      await t.call('POST', '/api/dev/clock', { days: 31 });
+      const grace = t.linkFrom('grace', 'mara@example.com');
+      await t.call('POST', '/api/vault/check-in', {});
+      expect((await t.call('GET', `/api/check-in/${grace.token}`, undefined, false)).status).toBe(404);
+    });
+
+    it('cannot check in a released vigil, and letter or witness emails never carry a check-in link', async () => {
+      await t.createVault({ cadenceDays: 30, graceDays: 7, witnessesRequired: 1 });
+      await t.call('POST', '/api/vault/witnesses', { name: 'Silas Crane', email: 'silas@example.com' });
+      const letter = await sealFor({ name: 'June Okafor', email: 'june@example.com' }, 'vault', 'letter-june-001');
+      await t.call('POST', '/api/vault/letters', letter.body);
+      await t.call('POST', '/api/dev/clock', { days: 38 });
+      const asked = t.linkFrom('witnesses-asked', 'mara@example.com');
+      const witness = t.linkFrom('witness-ask', 'silas@example.com');
+      expect(witness.path).toMatch(/^\/witness\//);
+      await t.call('POST', `/api/witness/${witness.token}`, { response: 'confirm' }, false);
+      expect(t.linkFrom('release', 'june@example.com').path).toMatch(/^\/open\//);
+      expect((await t.call('POST', `/api/check-in/${asked.token}`, undefined, false)).status).toBe(404);
+    });
+
+    it('rejects a made-up token', async () => {
+      expect((await t.call('POST', `/api/check-in/${'x'.repeat(43)}`, undefined, false)).status).toBe(404);
+    });
+  });
 });

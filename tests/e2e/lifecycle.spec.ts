@@ -1,3 +1,4 @@
+import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
 
 // Every test starts from an empty world at the real today.
@@ -24,6 +25,8 @@ async function outboxLink(page: Page, kind: string, recipient: string): Promise<
   const panel = await openTimeMachine(page);
   const item = panel.locator(`.outbox__item[data-kind="${kind}"]`).filter({ hasText: `to ${recipient}` }).first();
   await expect(item).toBeVisible();
+  // Release and witness emails show their body; others open with a click on the summary.
+  if ((await item.locator('a.outbox__link').count()) === 0) await item.locator('.outbox__summary').click();
   const href = await item.locator('a.outbox__link').getAttribute('href');
   expect(href).toBeTruthy();
   return href!;
@@ -129,6 +132,35 @@ test('a check-in during grace cancels everything', async ({ page }) => {
   await page.getByTestId('check-in').click();
   await expect(page.getByTestId('state-title')).toHaveText('The candle burns');
   await expect(page.locator('.ledger')).toContainText('Checked in.');
+});
+
+test('the grace email checks in with one tap on another device, once, without opening the vigil', async ({ page, browser }) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Try a demo vigil' }).click();
+  await expect(page.getByTestId('envelope')).toHaveCount(2);
+  const tm = await openTimeMachine(page);
+  await tm.getByRole('button', { name: '+30 days' }).click();
+  await expect(page.getByTestId('state-title')).toHaveText('The flame gutters');
+  const link = await outboxLink(page, 'grace', 'Mara Whitlock');
+  expect(link).toMatch(/\/check-in\/[\w-]{43}$/);
+
+  // A phone that has never seen the vigil: no owner key in its storage.
+  const phone = await browser.newContext();
+  const p = await phone.newPage();
+  await p.goto(link);
+  await expect(p.getByRole('heading', { level: 1 })).toHaveText('Are you still with us, Mara?');
+  const axe = await new AxeBuilder({ page: p }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa']).analyze();
+  expect(axe.violations.map((v) => v.id)).toEqual([]);
+  await p.getByTestId('checkin-link-button').click();
+  await expect(p.getByTestId('checkin-link-done')).toContainText('The candle is lit again');
+  await expect(p.getByText('Write a letter')).toHaveCount(0);
+
+  await p.reload();
+  await expect(p.getByTestId('checkin-link-error')).toContainText('used or has expired');
+  await phone.close();
+
+  await page.reload();
+  await expect(page.getByTestId('state-title')).toHaveText('The candle burns');
 });
 
 test('a vault-custody letter opens from its link alone', async ({ page, browser }) => {
