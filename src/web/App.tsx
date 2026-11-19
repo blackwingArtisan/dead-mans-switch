@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { session } from './lib/api';
 import { usePath } from './lib/router';
 import { Atmosphere } from './components/Chrome';
+import { SoundToggle } from './components/SoundToggle';
 import { StoryCaptions } from './components/StoryCaptions';
 import { TimeMachine } from './components/TimeMachine';
 import { CheckIn } from './pages/CheckIn';
@@ -38,6 +39,7 @@ export function App() {
       <Atmosphere />
       <Route key={path} path={path} hash={hash} />
       <TimeMachine />
+      <SoundToggle />
       <StoryCaptions />
     </>
   );

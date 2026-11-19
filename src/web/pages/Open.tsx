@@ -6,6 +6,7 @@ import type { LetterContent } from '../../core/types';
 import { api, keepsakes, type OpenInfo } from '../lib/api';
 import { longDate } from '../lib/format';
 import { useRoom } from '../lib/room';
+import { sound } from '../lib/sound';
 import { tour } from '../lib/tour';
 import { Shell } from '../components/Chrome';
 import { WaxSeal } from '../components/WaxSeal';
@@ -91,6 +92,7 @@ export function Open({ token, hash }: { token: string; hash: string }) {
       return;
     }
     setStage('breaking');
+    sound.crack();
     try {
       const sealed = await api.breakSeal(token);
       const content = await openLetter(sealed.letterId, sealed, k);

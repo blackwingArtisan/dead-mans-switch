@@ -5,6 +5,7 @@
  */
 import { useEffect } from 'react';
 import type { SwitchState } from '../../core/types';
+import { sound } from './sound';
 
 export type Room = SwitchState;
 
@@ -23,6 +24,7 @@ export const ROOM_LINE: Record<Room, string> = {
 export function setRoom(room: Room | null): void {
   if (room) document.body.dataset.room = room;
   else delete document.body.dataset.room;
+  sound.room(room);
 }
 
 /** Keeps <body data-room> in step with the vigil while it is on screen. */
@@ -42,5 +44,6 @@ export function relight(): void {
   // Force a style flush so a second check-in replays the animation.
   void document.body.offsetWidth;
   document.body.dataset.relight = '';
+  sound.strike();
   relightTimer = window.setTimeout(() => delete document.body.dataset.relight, RELIGHT_MS + 100);
 }

@@ -14,6 +14,7 @@ Notable changes to Dead Man's Switch. Work done with Kiro is recorded call by ca
 - **The story ends in full light.** Play the whole story finishes on the whole letter, lit and signed, instead of a dark page.
 - **Three rooms you can tell apart at a glance.** Grace washes the room a sickly green-grey and the vignette closes in; when the candle goes out the room turns a cold blue-black with smoke over the whole page. The panels take on each room's colour too.
 - **A landing candle that answers.** The flame leans toward the pointer and its glow follows, scrolling down burns the wax, and a click snuffs it before a match strikes it alight again. **Play the whole story** is now a full button beside the demo.
+- **Sound, if you ask for it.** "Hear the room" (bottom left) turns on sound generated in the browser with Web Audio: a wick crackling while the candle burns, wind and a dying hiss in grace, a faint heartbeat once it is out, a match strike on check-in and wax cracking when a seal breaks. It is off by default and the choice is remembered on that device.
 - **Let it go.** After keeping or printing a copy, a recipient can let the opened letter go: the parchment chars inward from its edges, the words fade to ash, and only a notice is left ("It is ash now"). Under reduced motion it goes at once.
 - **The seal is pressed on screen.** Sealing scrolls back to the top so the fold and the seal play in view, and focus moves to the heading.
 

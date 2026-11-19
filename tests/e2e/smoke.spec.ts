@@ -28,3 +28,20 @@ test('an incomplete form shows in-theme errors beside the fields, not browser bu
   await page.getByRole('button', { name: 'Light the candle' }).click();
   await expect(page.locator('#author-email-error')).toContainText('does not look complete');
 });
+
+test('sound is off until asked for, and the choice is remembered', async ({ page }) => {
+  await page.goto('/');
+  const toggle = page.getByTestId('sound-toggle');
+  await expect(toggle).toHaveAttribute('aria-pressed', 'false');
+  await expect(toggle).toHaveAccessibleName(/Hear the room/);
+  await toggle.click();
+  await expect(toggle).toHaveAttribute('aria-pressed', 'true');
+  expect(await page.evaluate(() => window.localStorage.getItem('dms.sound'))).toBe('on');
+  await page.reload();
+  await expect(page.getByTestId('sound-toggle')).toHaveAttribute('aria-pressed', 'true');
+  await page.getByTestId('sound-toggle').click();
+  await expect(page.getByTestId('sound-toggle')).toHaveAttribute('aria-pressed', 'false');
+  // The toggle never pushes the page sideways on a phone.
+  const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+  expect(overflow).toBeLessThanOrEqual(0);
+});

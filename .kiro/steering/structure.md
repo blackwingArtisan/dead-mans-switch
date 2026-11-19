@@ -22,9 +22,10 @@ src/
   web/         React app
     pages/         one file per route (Landing, Vigil, Write, Witness, Keepsake, Open, HowItWorks)
     components/    Candle, WaxSeal, Chrome (shell and room atmosphere), Editor, TimeMachine (with the outbox),
-                   Comparison, FieldError
+                   Comparison, FieldError, SoundToggle
     lib/           api client, router, seal (browser-side sealing), format, room (body data-room),
-                   tour (demo guide), validate (in-theme form errors)
+                   tour (demo guide), validate (in-theme form errors), sound (generated Web Audio,
+                   off by default), presenter (?presenter=1 for recordings)
     styles/        app.css: design tokens on :root, then one section per component
 tests/
   unit/        Vitest (machine, crypto, API, adapters, security, rate limiter, wax seal, format, Node entry, Kiro config)

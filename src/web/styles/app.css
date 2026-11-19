@@ -2501,6 +2501,44 @@ fieldset {
   }
 }
 
+/* ── sound ──────────────────────────────────── */
+
+.sound-toggle {
+  position: fixed;
+  left: 16px;
+  bottom: 16px;
+  z-index: 40;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--brass-deep);
+  background: rgba(22, 16, 11, 0.9);
+  color: var(--muted);
+  font: italic 0.98rem var(--font-body);
+  cursor: pointer;
+}
+.sound-toggle:hover,
+.sound-toggle--on {
+  color: var(--text);
+  border-color: var(--brass);
+}
+@media (max-width: 640px) {
+  .sound-toggle span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+  }
+}
+[data-presenter] .sound-toggle:not(:hover):not(:focus-visible) {
+  opacity: 0;
+}
+
 /* ── time machine ───────────────────────────── */
 
 /* After a jump the drawer closes and its note waits here, beside the button. */
@@ -2823,6 +2861,7 @@ fieldset {
   .colophon,
   .tm,
   .tm-toggle,
+  .sound-toggle,
   .btn,
   .letter__after,
   .keepsake-card__actions,
