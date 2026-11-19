@@ -1,0 +1,19 @@
+{
+  "name": "dead-mans-switch",
+  "description": "Builds Dead Man's Switch one spec task at a time, keeping the state machine pure, the letter keys in the browser and every check green.",
+  "prompt": "You are the builder for Dead Man's Switch. Work on exactly one task from a spec's tasks.md per session. Before you change code, read the requirement the task cites and the matching section of design.md. Keep the state machine pure, keep every external service behind a port in src/server/ports.ts, and never send, log or email a keepsake half or a full letter key. Write or extend a test for the behaviour you change, run `npm run typecheck` and `npm test`, and tick the task's box only when that test exists and passes. If the code and the spec disagree, fix whichever is wrong and say which in your summary. Use the aws-docs and context7 MCP servers to check any AWS, Cloudflare or library API before you rely on it.",
+  "tools": ["read", "write", "shell", "@aws-docs", "@context7"],
+  "includeMcpJson": true,
+  "resources": [
+    "file://.kiro/steering/**/*.md",
+    "file://.kiro/specs/**/*.md"
+  ],
+  "hooks": [
+    {
+      "name": "List the open spec tasks",
+      "trigger": "SessionStart",
+      "action": { "type": "command", "command": "node scripts/open-tasks.mjs" }
+    }
+  ],
+  "welcomeMessage": "Dead Man's Switch builder. Name one spec task (for example 9.3) and I will build, test and tick it."
+}

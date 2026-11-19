@@ -27,8 +27,10 @@ src/
                    tour (demo guide), validate (in-theme form errors)
     styles/        app.css: design tokens on :root, then one section per component
 tests/
-  unit/        Vitest (machine, crypto, API, adapters, security, rate limiter, wax seal, format, Node entry)
+  unit/        Vitest (machine, crypto, API, adapters, security, rate limiter, wax seal, format, Node entry, Kiro config)
   e2e/         Playwright (lifecycle, axe accessibility audit, smoke on desktop and mobile)
+scripts/       dev server, media capture, open-tasks.mjs (lists open spec tasks for the agent's SessionStart hook)
+.kiro/         steering, specs, hooks (v1 JSON), agents/dead-mans-switch.json, settings/mcp.json
 ```
 
 ## Conventions

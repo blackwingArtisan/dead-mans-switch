@@ -1,0 +1,15 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Spec drift review after a task",
+      "description": "After Kiro finishes a spec task, compare the spec with the code so requirements, design and tasks never fall behind what ships.",
+      "trigger": "PostTaskExec",
+      "action": {
+        "type": "agent",
+        "prompt": "A spec task just finished. Compare .kiro/specs/*/requirements.md, design.md and tasks.md with the code you changed. List any behaviour the code now has that no requirement states, any requirement the code no longer meets, and any task ticked without a test that proves it. Fix the spec where the code is right, and report anything where the code is wrong instead of hiding it."
+      },
+      "enabled": true
+    }
+  ]
+}

@@ -168,7 +168,9 @@ The initial build and the security hardening were done with Claude Code, working
 | Spec review (Pass 2) | [`.kiro/specs/switch-lifecycle`](.kiro/specs/switch-lifecycle) | EARS criteria for Requirements 1 to 11, 12 new gap tasks, tasks checked only where a test exists | Vitest 79 of 79, Playwright 11 of 11, 0 axe violations |
 | Spec-driven tasks (Pass 2) | `tasks.md` 8.6 and 6.11 | The `RateLimiter` port and both adapters; a single-glyph wax seal; three test files | Same run |
 | Steering | [`.kiro/steering`](.kiro/steering) | Product, tech and structure rules every Kiro session reads first | n/a |
-| Hooks | [`.kiro/hooks`](.kiro/hooks) | Unit tests on save, typecheck and tests before the agent stops, a crypto-custody review when `crypto.ts` changes | n/a |
+| Hooks | [`.kiro/hooks`](.kiro/hooks) | Four hooks in the v1 schema that Kiro IDE 1.x and CLI V3 share: unit tests on save, typecheck and tests before the agent stops, a crypto-custody review when `crypto.ts` changes, and a spec-drift review after each spec task | `tests/unit/kiro-config.test.ts` checks every trigger, matcher and command |
+| Custom agent | [`.kiro/agents/dead-mans-switch.json`](.kiro/agents/dead-mans-switch.json) | A builder agent that loads the steering and specs, works one task per session, and lists the open spec tasks when a session starts (`scripts/open-tasks.mjs`) | Same test |
+| MCP | [`.kiro/settings/mcp.json`](.kiro/settings/mcp.json) | AWS Documentation and Context7 servers, so API details are checked against current docs | Same test |
 | Prompts | [`.kiro/prompts`](.kiro/prompts) | The exact prompts, so each call can be re-run | n/a |
 
 ## Security headers and limits

@@ -2,6 +2,13 @@
 
 Notable changes to Dead Man's Switch. Work done with Kiro is recorded call by call in [KIRO-LOG.md](KIRO-LOG.md).
 
+## Unreleased
+
+### Kiro workspace
+- **A custom agent** (`.kiro/agents/dead-mans-switch.json`) that loads the steering and specs, builds one spec task per session, and starts each session by listing the open tasks (`scripts/open-tasks.mjs`).
+- **MCP servers** for the AWS documentation and Context7 in `.kiro/settings/mcp.json`.
+- **A spec-drift hook** (`PostTaskExec`) beside the existing three. All four use the v1 hook schema that Kiro IDE 1.x and CLI V3 both read, and `tests/unit/kiro-config.test.ts` checks every trigger, matcher, resource and command.
+
 ## 2026-11-18: the second round
 
 ### For the people using it
