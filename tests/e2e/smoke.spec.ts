@@ -6,6 +6,15 @@ test('landing page renders, is keyboard reachable and fits the screen', async ({
   // The landing keeps the comparison short and links to the full table.
   await expect(page.getByRole('link', { name: 'Compare them side by side' })).toBeVisible();
   await expect(page.locator('.stakes')).toContainText('3,072,666');
+  // What no one else does, in three lines, with the usage reframe.
+  const distinct = page.getByTestId('distinct');
+  await expect(distinct.locator('li')).toHaveCount(3);
+  await expect(distinct).toContainText('The recipient holds half the key.');
+  await expect(distinct).toContainText('Any witness can veto.');
+  await expect(distinct).toContainText('The room is the state machine.');
+  await expect(distinct).toContainText('Twelve taps a year is the whole job.');
+  // Play the whole story is the primary call to action when the time machine is on.
+  await expect(page.getByTestId('play-story')).toHaveClass(/btn--wax/);
   await page.keyboard.press('Tab');
   await expect(page.getByRole('link', { name: 'Skip to content' })).toBeFocused();
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
@@ -19,7 +28,7 @@ test('the honest page explains the custody limits', async ({ page }) => {
   // The full comparison, with the paid tools people already use and their published prices.
   await expect(page.getByRole('region', { name: 'Comparison table' })).toBeVisible();
   await expect(page.getByTestId('paid-comparables')).toContainText('Everplans Premium');
-  await expect(page.getByTestId('paid-comparables')).toContainText('$39, once');
+  await expect(page.getByTestId('paid-comparables')).toContainText('$39 for ten years');
 });
 
 test('an incomplete form shows in-theme errors beside the fields, not browser bubbles', async ({ page }) => {
@@ -66,6 +75,10 @@ test('unknown addresses and bad links lead somewhere, without repeating themselv
   // The server's "This letter link is not valid." only repeats the heading, so it is left out.
   await expect(notice.getByText('This letter link is not valid.')).toHaveCount(0);
   await expect(notice.getByText(/everything after the # sign/)).toBeVisible();
+  // One masthead and one skip link, and the skip link stays out of sight until it has keyboard focus.
+  await expect(page.locator('header.masthead')).toHaveCount(1);
+  await expect(page.locator('.skip-link')).toHaveCount(1);
+  await expect(page.locator('.skip-link')).not.toBeInViewport();
   await notice.getByRole('link', { name: 'How the seal works' }).click();
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('How the seal works');
 

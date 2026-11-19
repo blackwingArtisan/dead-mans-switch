@@ -86,6 +86,10 @@ describe('API lifecycle', () => {
     expect(theoLink.fragment).toBe('');
     const meta = await t.call('GET', `/api/open/${theoLink.token}`, undefined, false);
     expect(meta.body).toMatchObject({ authorName: 'Mara Whitlock', recipientName: 'Theo Whitlock', custody: 'keepsake', opened: false });
+    // The recipient reads by the author's own candle, as it was last tended.
+    expect(meta.body.lastCandle.wax).toBeGreaterThan(0);
+    expect(meta.body.lastCandle.wax).toBeLessThanOrEqual(1);
+    expect(typeof meta.body.lastCandle.keptUntil).toBe('number');
     const broken = await t.call('POST', `/api/open/${theoLink.token}/break`, undefined, false);
     expect(broken.status).toBe(200);
     const letter = await openLetter(broken.body.letterId, broken.body, keep.keepsakeHalf);

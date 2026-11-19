@@ -114,6 +114,8 @@ export interface OpenInfo {
   keepsakeTag: string | null;
   candle: CandleLine | null;
   candles: CandleBack[];
+  /** The author's candle as they last tended it: when, and how much wax was left (0..1). */
+  lastCandle: { keptUntil: number; wax: number };
 }
 
 export interface ClockInfo {

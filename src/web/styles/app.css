@@ -833,6 +833,50 @@ fieldset {
 
 /* ── stakes, personas, comparison ───────────── */
 
+/* What no one else does: three short lines under the hero's buttons. */
+.distinct {
+  margin: 22px 0 18px;
+  max-width: 38em;
+  padding: 12px 16px 10px;
+  border-left: 2px solid var(--wax-hi);
+  background: linear-gradient(90deg, rgba(142, 27, 27, 0.14), transparent 80%);
+}
+.distinct__title {
+  margin: 0 0 6px;
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--brass);
+}
+.distinct__list {
+  margin: 0;
+  padding-left: 1.3em;
+  font-size: 1.05rem;
+  line-height: 1.45;
+  color: var(--muted);
+}
+.distinct__list li + li {
+  margin-top: 4px;
+}
+.distinct__list strong {
+  color: var(--parchment);
+  font-weight: 600;
+}
+.distinct__taps {
+  margin: 8px 0 0;
+  font-family: var(--font-hand);
+  font-style: italic;
+  color: var(--flame);
+}
+.personas__projection,
+.compare__sources {
+  margin: 8px 0 0;
+  font-size: 0.95rem;
+  color: var(--muted);
+}
+
 .stakes {
   margin: 0 0 18px;
   max-width: 38em;
@@ -2508,6 +2552,11 @@ fieldset {
   inherits: false;
   initial-value: 0px;
 }
+@property --candle-r {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 220px;
+}
 .letter__page > .letter__shade {
   position: absolute;
   inset: 0;
@@ -2515,7 +2564,7 @@ fieldset {
   pointer-events: none;
   border-radius: inherit;
   background: radial-gradient(
-    circle calc(220px + var(--candle-flicker)) at var(--x, 50%) var(--y, 150px),
+    circle calc(var(--candle-r) + var(--candle-flicker)) at var(--x, 50%) var(--y, 150px),
     rgba(255, 170, 80, 0.18) 0%,
     rgba(255, 150, 60, 0.08) 26%,
     rgba(20, 12, 6, 0) 46%,
@@ -2523,7 +2572,69 @@ fieldset {
     rgb(6, 4, 2) 100%
   );
   animation: candlelight 2.6s ease-in-out infinite;
-  transition: opacity 1.4s ease;
+  transition: opacity 1.4s ease, --candle-r 0.9s ease;
+}
+/* The first light is wide and centred on the opening lines, so the page never reads as a black slab. */
+.letter__page--first-light {
+  --candle-r: 330px;
+  --y: 230px;
+}
+/* The reading hint sits on the sheet itself, above the fold, and follows the reader down the page. */
+.letter__page > .letter__hint {
+  position: sticky;
+  top: 12px;
+  z-index: 6;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 4px 10px;
+  width: fit-content;
+  max-width: 100%;
+  margin: -14px auto 18px;
+  padding: 6px 8px 6px 16px;
+  border: 1px solid rgba(201, 164, 92, 0.5);
+  border-radius: 999px;
+  background: rgba(14, 9, 5, 0.84);
+  color: var(--parchment);
+  font-family: var(--font-hand);
+  font-style: italic;
+  font-size: 1.02rem;
+  cursor: auto;
+}
+.letter__hint .btn {
+  color: var(--parchment);
+}
+/* Their candle, your light: the author's own candle, as it stood at their last check-in. */
+.letter {
+  position: relative;
+}
+.letter__keeper {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  max-width: 22em;
+  margin: 28px auto 0;
+  text-align: center;
+}
+.letter__keeper figcaption {
+  font-family: var(--font-hand);
+  font-size: 1.02rem;
+  line-height: 1.4;
+  color: var(--muted);
+}
+.letter__keeper figcaption em {
+  display: block;
+  color: var(--flame);
+}
+@media (min-width: 1180px) {
+  .letter__keeper {
+    position: absolute;
+    top: 110px;
+    left: calc(50% - 360px - 200px);
+    width: 180px;
+    margin: 0;
+  }
 }
 .letter__page--lit > .letter__shade {
   opacity: 0;
@@ -3084,6 +3195,56 @@ fieldset {
   .ledger__row {
     grid-template-columns: 1fr;
     gap: 0;
+  }
+}
+
+/* Phones: the floating controls never sit on top of an action. The sound switch joins the masthead,
+   the time machine's note and the story caption dock to the top, and the page leaves room at the
+   bottom so the last button always scrolls clear of the hourglass. */
+@media (max-width: 640px) {
+  body {
+    padding-bottom: 88px;
+  }
+  .masthead {
+    padding-right: 128px;
+  }
+  .masthead__brand {
+    font-size: 1.02rem;
+  }
+  /* The hourglass joins the masthead beside the sound switch, so it never covers a button. */
+  .tm-toggle {
+    position: absolute;
+    top: 12px;
+    right: 68px;
+    bottom: auto;
+    width: 44px;
+    height: 44px;
+  }
+  .sound-toggle {
+    position: absolute;
+    top: 12px;
+    right: 16px;
+    left: auto;
+    bottom: auto;
+    width: 44px;
+    justify-content: center;
+    padding: 8px;
+  }
+  .tm-toast {
+    top: 12px;
+    bottom: auto;
+    left: 16px;
+    right: 16px;
+    max-width: none;
+  }
+  .story {
+    top: 8px;
+    bottom: auto;
+    width: calc(100% - 32px);
+    padding: 10px 10px 10px 16px;
+  }
+  .story__caption {
+    font-size: 1.05rem;
   }
 }
 

@@ -155,11 +155,12 @@ const STEPS: { caption: string; run: () => Promise<void> }[] = [
   {
     caption: 'She reads it by her last candle.',
     run: async () => {
-      await readByCandle(9000);
+      // The room lights itself after eight seconds in the dark; the hand moves for seven.
+      await readByCandle(7000);
     },
   },
   {
-    caption: 'Some words should wait. Light a candle tonight.',
+    caption: 'June reads by Mara’s own candle, just as Mara left it. Their candle, your light. Some words should wait.',
     run: async () => {
       // End on the whole letter in full light, signature and all, not on a dark page.
       // Under reduced motion the letter is already fully lit and there is no button to press.
@@ -167,9 +168,13 @@ const STEPS: { caption: string; run: () => Promise<void> }[] = [
       const next = await until(() => lit() ?? byTestId('light-room')());
       if (!lit()) next.click();
       await until(lit);
+      // Close on her candle: beside the letter on a wide screen, under it on a narrow one.
       const page = document.querySelector<HTMLElement>('[data-testid="letter-page"]');
-      if (page) window.scrollTo({ top: Math.max(0, page.getBoundingClientRect().top + window.scrollY - 24), behavior: 'smooth' });
-      await wait(4500);
+      const keeper = document.querySelector<HTMLElement>('[data-testid="their-candle"]');
+      const beside = page && keeper && keeper.getBoundingClientRect().right <= page.getBoundingClientRect().left;
+      if (keeper && !beside) keeper.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      else if (page) window.scrollTo({ top: Math.max(0, page.getBoundingClientRect().top + window.scrollY - 24), behavior: 'smooth' });
+      await wait(5500);
     },
   },
 ];

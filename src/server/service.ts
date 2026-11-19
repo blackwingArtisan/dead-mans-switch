@@ -3,7 +3,7 @@ import { keepsakeTagOf } from '../core/crypto';
 import { randomId, randomToken, sha256 } from '../core/encoding';
 import { step, SwitchError, type EmailEffect, type Effect, type MachineContext, type MintedToken, type SwitchEvent } from '../core/machine';
 import { EXPORT_FORMAT, type ExportedLetter, type SealedExport } from '../core/export';
-import { nextEventAt } from '../core/time';
+import { lastCandleOf, nextEventAt } from '../core/time';
 import type { Custody, Letter, Person, SealedLetter, Vault } from '../core/types';
 import {
   candlesOf,
@@ -284,6 +284,8 @@ export class SwitchService {
       // Only someone who has read their letter sees the candles the others left.
       candle: l.candle ?? null,
       candles: l.openedAt !== null ? candlesOf(vault) : [],
+      // The author's own candle, as they last tended it: the recipient reads by it.
+      lastCandle: lastCandleOf(vault),
     };
   }
 

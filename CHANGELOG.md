@@ -4,6 +4,16 @@ Notable changes to Dead Man's Switch. Work done with Kiro is recorded call by ca
 
 ## Unreleased
 
+### Round three
+- **What no one else does, above the fold.** Three lines under the hero's buttons and at the top of the README: the recipient holds half the key, any witness can veto, and the room is the state machine. "Twelve taps a year is the whole job."
+- **A fuller comparison.** GoodTrust Future Messages, Everplans letters (Sharing After Death) and SafeBeyond join the table, each checked at the product's own pages, with the sources linked under it.
+- **Plans that add up.** Keepsake is $39 for ten years of vigil, then $5 a year; the Founder plan (formerly Teams) is a flat $8 a month per business with up to 5 recipients, since most of the market has no employees. A bottom-up projection line is labelled as one.
+- **Their candle, your light.** An opened letter is read beside the author's own candle, standing at the wax height and date of their last check-in, and it is the closing shot of Play the whole story. The letter API returns it as `lastCandle`, worked out by `lastCandleOf` in `src/core/time.ts`.
+- **A reader that never looks broken.** The hint and "Light the room" sit on the sheet itself, above the fold; the first light is wider and centred on the opening lines; and the room lights itself after eight seconds in the dark.
+- **Phones: nothing floats over an action.** The sound switch and the hourglass join the masthead, the time machine's note and the story caption dock to the top, and the page leaves room at the bottom. A phone-only Playwright file checks that no control overlaps a link, button or field as the page scrolls.
+- **One masthead on a bad letter link.** The notice page no longer sits inside a second page frame.
+- **Play the whole story is the primary button** on the landing page; "Try a demo vigil" is second and "Begin your vigil" is a text link to the form.
+
 ### Kiro workspace
 - **A custom agent** (`.kiro/agents/dead-mans-switch.json`) that loads the steering and specs, builds one spec task per session, and starts each session by listing the open tasks (`scripts/open-tasks.mjs`).
 - **MCP servers** for the AWS documentation and Context7 in `.kiro/settings/mcp.json`.

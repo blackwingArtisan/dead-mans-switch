@@ -53,3 +53,19 @@ export function sentKey(vault: Vault, what: string): string {
 export function daysBetween(from: number, to: number): number {
   return (to - from) / DAY;
 }
+
+/**
+ * "Their candle, your light": the author's own candle as they last tended it. The wax stands where it
+ * was at the moment of the last check-in (a check-in with nine days of a thirty-day cadence to spare
+ * left 30% of the candle), and a vigil never checked in since it began stands full. Never below the
+ * stub the vigil page draws.
+ */
+export function lastCandleOf(vault: Vault): { keptUntil: number; wax: number } {
+  const checkIns = vault.history.filter((h) => h.kind === 'check-in').map((h) => h.at);
+  const last = vault.lastCheckInAt;
+  if (!checkIns.includes(last)) return { keptUntil: last, wax: 1 };
+  const before = [vault.createdAt, ...checkIns.filter((at) => at < last)];
+  const previous = Math.max(...before);
+  const burned = (last - previous) / (vault.settings.cadenceDays * DAY);
+  return { keptUntil: last, wax: Math.max(0.06, Math.min(1, 1 - burned)) };
+}

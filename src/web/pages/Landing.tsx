@@ -7,7 +7,7 @@ import { tour } from '../lib/tour';
 import { useFieldErrors, type FieldMessages } from '../lib/validate';
 import { Candle } from '../components/Candle';
 import { Flourish, Shell } from '../components/Chrome';
-import { ComparisonTeaser, MARKET, Stakes } from '../components/Comparison';
+import { ComparisonTeaser, Distinct, MARKET, PROJECTION, Stakes } from '../components/Comparison';
 import { FieldError } from '../components/FieldError';
 import { WaxSeal } from '../components/WaxSeal';
 
@@ -128,23 +128,29 @@ export function Landing() {
             Not an account handover. A letter, in your words, that nobody (not even us) can open until the people you trust
             agree you are gone. Keep a candle lit with one tap a month; if it ever goes out, your witnesses are asked first.
           </p>
-          <Stakes />
           <div className="hero__actions">
-            <a className="btn btn--wax" href="#begin">
-              Begin your vigil
-            </a>
-            <button type="button" className="btn btn--ghost" onClick={() => demo(DEMO, 'demo')} disabled={busy !== ''}>
-              {busy === 'demo' ? 'Summoning…' : 'Try a demo vigil'}
-            </button>
             {storyAvailable && (
-              <button type="button" className="btn btn--ghost" onClick={() => void playStory()} disabled={busy !== ''} data-testid="play-story">
+              <button type="button" className="btn btn--wax" onClick={() => void playStory()} disabled={busy !== ''} data-testid="play-story">
                 ▶ Play the whole story (40 s)
               </button>
             )}
+            <button
+              type="button"
+              className={`btn ${storyAvailable ? 'btn--ghost' : 'btn--wax'}`}
+              onClick={() => demo(DEMO, 'demo')}
+              disabled={busy !== ''}
+            >
+              {busy === 'demo' ? 'Summoning…' : 'Try a demo vigil'}
+            </button>
+            <a className="btn btn--link" href="#begin">
+              Begin your vigil
+            </a>
             <button type="button" className="btn btn--link" onClick={() => demo(FOUNDER_DEMO, 'founder')} disabled={busy !== ''}>
               {busy === 'founder' ? 'Summoning…' : 'or a founder’s vigil'}
             </button>
           </div>
+          <Distinct />
+          <Stakes />
           {error && busy === '' && (
             <p className="form-error" role="alert">
               {error}
@@ -221,7 +227,7 @@ export function Landing() {
               hospital for three weeks and payroll is due on Friday. Her accountant, her witness, confirms she cannot check in, and her
               co-founder opens the letter that says where each recovery code lives. The company keeps running.
             </p>
-            <p className="persona__plan">Teams plan: $4 a seat a month, bought by the founder or an ops lead.</p>
+            <p className="persona__plan">Founder plan: a flat $8 a month per business, with up to 5 recipients.</p>
           </article>
           <article className="persona">
             <h3>Ruth, hospice social worker</h3>
@@ -229,7 +235,7 @@ export function Landing() {
               Ruth has the hardest conversation of a family’s life every week. Now she can hand them something: a printed keepsake kit,
               one card per person, so a mother can seal her last letters before she is too tired to write them.
             </p>
-            <p className="persona__plan">Keepsake plan: $39 once, with the printed kit.</p>
+            <p className="persona__plan">Keepsake plan: $39 for ten years of vigil, then $5 a year, with the printed kit.</p>
           </article>
         </div>
         <p className="personas__pricing">The paid plans are planned for after Kiroween; today every vigil is free.</p>
@@ -239,6 +245,7 @@ export function Landing() {
             ({MARKET.source})
           </a>
         </p>
+        <p className="personas__projection">{PROJECTION}</p>
       </section>
 
       <ComparisonTeaser />

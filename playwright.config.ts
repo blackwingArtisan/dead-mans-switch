@@ -17,8 +17,8 @@ export default defineConfig({
     reducedMotion: 'reduce',
   },
   projects: [
-    { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
-    { name: 'mobile', use: { ...devices['Pixel 7'] }, testMatch: /smoke/ },
+    { name: 'chromium', use: { ...devices['Desktop Chrome'] }, testIgnore: /phone/ },
+    { name: 'mobile', use: { ...devices['Pixel 7'] }, testMatch: /smoke|phone/ },
   ],
   webServer: {
     command: 'npm run build && npx tsx src/server/node.ts',

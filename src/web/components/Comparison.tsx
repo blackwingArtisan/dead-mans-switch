@@ -61,11 +61,43 @@ export function PaidComparables() {
           {i < PAID.length - 1 ? '; ' : '. '}
         </span>
       ))}
-      Those are places to file documents and accounts. Dead Man’s Switch is planned at <strong>$39, once</strong>, and even we cannot read the
-      letters.
+      Those are places to file documents and accounts. Dead Man’s Switch is planned at <strong>$39 for ten years, then $5 a year</strong>, and
+      even we cannot read the letters.
     </p>
   );
 }
+
+/**
+ * The three things no other tool here does, said once and shared by the landing page and the README.
+ * Keep the wording in step with the README's "What no one else does" block.
+ */
+export const DISTINCT = [
+  { title: 'The recipient holds half the key.', text: 'In keepsake custody the vault never holds enough to read a letter, so not even we can.' },
+  { title: 'Any witness can veto.', text: 'A lost phone or a long holiday never sends a letter: one “they still live” stops the release.' },
+  { title: 'The room is the state machine.', text: 'Lit, guttering, out: the candle and the whole page show exactly where the vigil stands.' },
+];
+
+export function Distinct() {
+  return (
+    <section className="distinct" aria-labelledby="distinct-title" data-testid="distinct">
+      <h2 id="distinct-title" className="distinct__title">
+        What no one else does
+      </h2>
+      <ol className="distinct__list">
+        {DISTINCT.map((d) => (
+          <li key={d.title}>
+            <strong>{d.title}</strong> {d.text}
+          </li>
+        ))}
+      </ol>
+      <p className="distinct__taps">Twelve taps a year is the whole job.</p>
+    </section>
+  );
+}
+
+/** A bottom-up projection for the founder plan, labelled as one. */
+export const PROJECTION =
+  'Projection: if 1% of the 29.8 million solo businesses kept a founder vigil at $96 a year, that would be about $286 million a year.';
 
 /** The landing page's short version; the full table lives on the honest page. */
 export function ComparisonTeaser() {
@@ -125,6 +157,27 @@ export const ROWS: Row[] = [
     where: 'Any email address',
   },
   {
+    name: 'GoodTrust Future Messages',
+    hands: 'Video, photo or text messages',
+    reads: 'GoodTrust stores them (AES-256 at rest; not stated as end-to-end)',
+    checks: 'No one. They go out on dates you choose',
+    where: 'Email or your social accounts',
+  },
+  {
+    name: 'Everplans letters (Sharing After Death)',
+    hands: 'A “Letters to Family & Friends” section of your plan',
+    reads: 'Everplans stores the plan',
+    checks: 'One deputy reports your death; only you can block it, by email, within up to 30 days',
+    where: 'Everplans members and their deputies',
+  },
+  {
+    name: 'SafeBeyond',
+    hands: 'Messages, videos and files on a date, event or place',
+    reads: 'Stored in its cloud; encryption not stated',
+    checks: 'Trustees you name report your death',
+    where: 'Its mobile app (safebeyond.com no longer resolves)',
+  },
+  {
     name: 'Dead Man’s Switch',
     hands: 'A sealed letter for each person, in your words',
     reads: 'No one in keepsake custody: the recipient holds half the key',
@@ -165,6 +218,25 @@ export function Comparison({ headingId, headingLevel = 2 }: { headingId: string;
           </tbody>
         </table>
       </div>
+      <p className="compare__sources">
+        Checked at each product’s own pages on 2026-11-19:{' '}
+        <a href="https://mygoodtrust.com/future-message" target="_blank" rel="noopener noreferrer">
+          GoodTrust Future Messages
+        </a>
+        ,{' '}
+        <a href="https://www.everplans.com/blog/keep-things-private-until-after-youre-gone" target="_blank" rel="noopener noreferrer">
+          Everplans Sharing After Death
+        </a>{' '}
+        and{' '}
+        <a
+          href="https://www.prnewswire.com/news-releases/safebeyond-launches-the-worlds-first-posthumous-message-delivery-platform-300150111.html"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          SafeBeyond’s launch release
+        </a>
+        .
+      </p>
       <p className="compare__close">The big platforms hand over accounts. This hands over the words, and even we cannot read them.</p>
       <PaidComparables />
     </section>

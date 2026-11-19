@@ -10,6 +10,7 @@ import { LinkNotice } from '../components/Lost';
 import { LightACandle } from '../components/CandlesLit';
 import { sound } from '../lib/sound';
 import { tour } from '../lib/tour';
+import { Candle } from '../components/Candle';
 import { Shell } from '../components/Chrome';
 import { WaxSeal } from '../components/WaxSeal';
 
@@ -109,26 +110,28 @@ export function Open({ token, hash }: { token: string; hash: string }) {
   };
 
   if (!info) {
+    // LinkNotice brings its own Shell, so the masthead and skip link appear once.
+    if (error) {
+      return (
+        <LinkNotice
+          title="This link is not valid"
+          message={error}
+          cracked
+          testId="open-link-error"
+          detail={
+            <>
+              Check that the whole link was copied, including everything after the # sign. A letter link is made only when a vigil
+              is released, and it opens its letter once.
+            </>
+          }
+        />
+      );
+    }
     return (
       <Shell>
-        {error ? (
-          <LinkNotice
-            title="This link is not valid"
-            message={error}
-            cracked
-            testId="open-link-error"
-            detail={
-              <>
-                Check that the whole link was copied, including everything after the # sign. A letter link is made only when a
-                vigil is released, and it opens its letter once.
-              </>
-            }
-          />
-        ) : (
-          <p className="loading" role="status">
-            Fetching the envelope…
-          </p>
-        )}
+        <p className="loading" role="status">
+          Fetching the envelope…
+        </p>
       </Shell>
     );
   }
@@ -219,12 +222,16 @@ export function Open({ token, hash }: { token: string; hash: string }) {
  */
 /** How long the letter takes to burn when motion is allowed. */
 const BURN_MS = 3400;
+/** After this long in the dark, the room lights itself, so nobody is left reading a black page. */
+export const AUTO_LIGHT_MS = 8000;
 
 function OpenedLetter({ token, info, letter, safeHtml }: { token: string; info: OpenInfo; letter: LetterContent; safeHtml: string }) {
   const [dark, setDark] = useState(() => !matchMedia('(prefers-reduced-motion: reduce)').matches);
   // "Let it go": the parchment chars from the edges and the words fade to ash, then only a notice is left.
   const [fate, setFate] = useState<'kept' | 'burning' | 'ash'>('kept');
   const [signed, setSigned] = useState(!dark);
+  // The light starts wide on the first lines and settles to a candle's reach once the reader moves it.
+  const [moved, setMoved] = useState(false);
   const pageRef = useRef<HTMLDivElement>(null);
   const signRef = useRef<HTMLParagraphElement>(null);
   // A letter opened during the demo guide is the end of the story; the guide closes here.
@@ -234,6 +241,15 @@ function OpenedLetter({ token, info, letter, safeHtml }: { token: string; info: 
   }, [storyDone]);
   useRoom('released');
 
+  useEffect(() => {
+    if (!dark) return;
+    const timer = window.setTimeout(() => {
+      setDark(false);
+      setSigned(true);
+    }, AUTO_LIGHT_MS);
+    return () => window.clearTimeout(timer);
+  }, [dark]);
+
   const follow = (e: PointerEvent<HTMLDivElement>) => {
     if (!dark) return;
     const page = e.currentTarget.getBoundingClientRect();
@@ -241,6 +257,7 @@ function OpenedLetter({ token, info, letter, safeHtml }: { token: string; info: 
     const y = e.clientY - page.top;
     e.currentTarget.style.setProperty('--x', `${Math.round(x)}px`);
     e.currentTarget.style.setProperty('--y', `${Math.round(y)}px`);
+    if (!moved) setMoved(true);
     const sign = signRef.current?.getBoundingClientRect();
     if (!signed && sign && e.clientY > sign.top - 120) setSigned(true);
   };
@@ -285,11 +302,19 @@ function OpenedLetter({ token, info, letter, safeHtml }: { token: string; info: 
         </div>
         <div
           ref={pageRef}
-          className={`letter__page parchment ${dark ? 'letter__page--dark' : 'letter__page--lit'} ${fate === 'burning' ? 'letter__page--burning' : ''}`}
+          className={`letter__page parchment ${dark ? 'letter__page--dark' : 'letter__page--lit'} ${dark && !moved ? 'letter__page--first-light' : ''} ${fate === 'burning' ? 'letter__page--burning' : ''}`}
           onPointerMove={follow}
           onPointerDown={follow}
           data-testid="letter-page"
         >
+          {dark ? (
+            <p className="letter__hint" data-testid="candle-hint">
+              <span>Move your light over the page.</span>{' '}
+              <button type="button" className="btn btn--ghost btn--small" onClick={lightRoom} data-testid="light-room">
+                Light the room
+              </button>
+            </p>
+          ) : null}
           <p className="letter__eyebrow">
             From {info.authorName} · sealed {longDate(info.sealedAt)}
           </p>
@@ -306,15 +331,14 @@ function OpenedLetter({ token, info, letter, safeHtml }: { token: string; info: 
           <div className="letter__flame" aria-hidden="true" />
           <div className="letter__char" aria-hidden="true" />
         </div>
+        <figure className="letter__keeper" data-testid="their-candle">
+          <Candle remaining={info.lastCandle.wax} state="alive" size={170} />
+          <figcaption>
+            This is the candle {info.authorName.split(' ')[0]} kept until {longDate(info.lastCandle.keptUntil)}.{' '}
+            <em>Their candle, your light.</em>
+          </figcaption>
+        </figure>
         <div className="letter__after">
-          {dark ? (
-            <p className="hint" data-testid="candle-hint">
-              Read by their last candle: move your cursor or finger over the page.{' '}
-              <button type="button" className="btn btn--ghost btn--small" onClick={lightRoom} data-testid="light-room">
-                Light the room
-              </button>
-            </p>
-          ) : null}
           {storyDone && (
             <p className="story-done" data-testid="story-done">
               The story is complete. That is the whole vigil, from a lit candle to a letter read.

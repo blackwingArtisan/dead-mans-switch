@@ -2,6 +2,13 @@
 
 **Write letters for the people you love, sealed until you can no longer check in.**
 
+> **What no one else does**
+> 1. **The recipient holds half the key.** In keepsake custody the vault never holds enough to read a letter, so not even we can.
+> 2. **Any witness can veto.** A lost phone or a long holiday never sends a letter: one "they still live" stops the release.
+> 3. **The room is the state machine.** Lit, guttering, out: the candle and the whole page show exactly where the vigil stands.
+>
+> *Twelve taps a year is the whole job.* Success is candles still lit after twelve months.
+
 [![CI](https://github.com/blackwingArtisan/dead-mans-switch/actions/workflows/ci.yml/badge.svg)](https://github.com/blackwingArtisan/dead-mans-switch/actions/workflows/ci.yml)
 
 ![The whole story in seven seconds: the candle burns, gutters in grace and goes out as the room dies with it; the witness confirms; the recipient breaks the seal and reads by candlelight.](docs/media/story.gif)
@@ -29,7 +36,7 @@ You keep a candle lit with one tap a month: twelve taps a year, and the vigil ca
 
 - **[3,072,666 people died in the U.S. in 2024](https://www.cdc.gov/nchs/fastats/deaths.htm)** (CDC), and **[only 46% of U.S. adults have a will](https://news.gallup.com/poll/351500/how-many-americans-have-will.aspx)** (Gallup, 2021). Not one of those wills tells your sister where the password sheet is.
 - **[29.8 million U.S. small businesses have no employees](https://advocacy.sba.gov/wp-content/uploads/2026/02/FINAL_FAQsAboutSmallBusiness_2026_012826.pdf)** (SBA Office of Advocacy, 2026, from 2022 data). In each one, a single person holds every account.
-- **People already pay for a place to leave things behind:** [Everplans Premium](https://www.everplans.com/pricing) is $99.99 a year, [Trustworthy](https://www.trustworthy.com/pricing) starts at $10 a month billed yearly, and [GoodTrust](https://mygoodtrust.com/pricing) lists $149 for a will or trust. Those are places to file documents and accounts; Dead Man's Switch is planned at **$39 once, and even we cannot read the letters.**
+- **People already pay for a place to leave things behind:** [Everplans Premium](https://www.everplans.com/pricing) is $99.99 a year, [Trustworthy](https://www.trustworthy.com/pricing) starts at $10 a month billed yearly, and [GoodTrust](https://mygoodtrust.com/pricing) lists $149 for a will or trust. Those are places to file documents and accounts; Dead Man's Switch is planned at **$39 for ten years, then $5 a year, and even we cannot read the letters.**
 
 Figures checked at each linked source on 2026-11-18.
 
@@ -49,9 +56,12 @@ Figures checked at each linked source on 2026-11-18.
 | Apple Legacy Contact | Apple account data | Apple holds the data | Apple, after a death certificate | Apple accounts only |
 | Bitwarden Emergency Access | The whole password vault | No one (end-to-end encrypted) | Only you, by rejecting within a wait time | Bitwarden Premium users |
 | deadmansswitch.net | Pre-written emails | Not stated on its site | No one: missed reminders release them | Any email address |
+| [GoodTrust Future Messages](https://mygoodtrust.com/future-message) | Video, photo or text messages | GoodTrust stores them (AES-256; not stated as end-to-end) | No one: they go out on dates you choose | Email or your social accounts |
+| [Everplans letters](https://www.everplans.com/blog/keep-things-private-until-after-youre-gone) (Sharing After Death) | A "Letters to Family & Friends" section of your plan | Everplans stores the plan | One deputy reports your death; only you can block it, by email, within up to 30 days | Everplans members and their deputies |
+| [SafeBeyond](https://www.prnewswire.com/news-releases/safebeyond-launches-the-worlds-first-posthumous-message-delivery-platform-300150111.html) | Messages, videos and files on a date, event or place | Stored in its cloud; encryption not stated | Trustees you name report your death | Its mobile app (safebeyond.com no longer resolves) |
 | **Dead Man's Switch** | **A sealed letter for each person, in your words** | **No one in keepsake custody: the recipient holds half the key** | **Witnesses you name; any one of them can stop it** | **Any browser, any email** |
 
-The big platforms hand over accounts. This hands over the words, and even we cannot read them.
+The big platforms hand over accounts. This hands over the words, and even we cannot read them. The three posthumous-message rows were checked at each product's own pages on 2026-11-19.
 
 ## The costume
 
@@ -80,8 +90,9 @@ Wax seals carry each recipient's initial, the check-in is a seal you press, and 
 ## Beyond Kiroween
 
 - **Free** for one vigil with a few letters, because everyone should be able to leave words behind.
-- **Keepsake, $39 once:** more letters, more witnesses and a printed keepsake kit, one card per person. Hospice social workers and estate attorneys are the referrers: they have this conversation every week and need something to hand a family.
-- **Teams, $4 a seat a month:** bought by a founder or an ops lead as a bus-factor plan, where the letter is the runbook for the accounts only one person holds. When Priya is in hospital for three weeks and payroll is due on Friday, her accountant confirms and her co-founder opens the runbook.
+- **Keepsake, $39 for ten years of vigil, then $5 a year:** more letters, more witnesses and a printed keepsake kit, one card per person. Hospice social workers and estate attorneys are the referrers: they have this conversation every week and need something to hand a family.
+- **Founder, a flat $8 a month per business, with up to 5 recipients:** bought by a solo founder or an ops lead as a bus-factor plan (most of the market has no employees, so there are no seats to count), where the letter is the runbook for the accounts only one person holds. When Priya is in hospital for three weeks and payroll is due on Friday, her accountant confirms and her co-founder opens the runbook.
+- **Projection, not a result:** if 1% of the 29.8 million solo businesses kept a founder vigil at $96 a year, that would be about $286 million a year.
 - Both paid plans come after Kiroween; today every vigil is free.
 - **Why now:** passkeys and account sprawl mean more of a life sits behind logins nobody else can open, and the free first-party tools hand over accounts, not words.
 - **Next:** an AWS runtime (DynamoDB, SES, EventBridge) behind the same ports, and an optional Shamir split of the vault half across witnesses.
@@ -111,7 +122,7 @@ A vigil can outlast a web service, so it is built not to depend on one:
 - **Time machine** (local only): move the clock forward a day, a week, a month or to the next event, and read every email in the outbox. The whole lifecycle runs in about a minute.
 - **Play the whole story** (local only): a captioned, hands-off run from a lit candle to a letter read by candlelight.
 - **The room follows the candle**: glow, embers, smoke, moonlight and palette change with the state, and a check-in relights it.
-- **Read by their last candle**: the opened letter starts dark and a circle of light follows the reader's pointer or finger.
+- **Their candle, your light**: the opened letter starts dark, with a wide warm light on its first lines that then follows the reader's pointer or finger, and the room lights itself after eight seconds. Beside it stands the author's own candle, at the wax height and date of their last check-in: "This is the candle Mara kept until ...". It is the closing shot of Play the whole story.
 - **Two demo vigils**: Mara writing to her family, and Priya, a founder, writing to her co-founder about the accounts only she holds.
 - A demo guide that says what to try next at each stage.
 - An honest "How the seal works" page.
@@ -147,7 +158,7 @@ npm run check         # all of the above plus a production build
 node scripts/sync-counts.mjs   # refresh the counts below from a real run (--check to verify)
 ```
 
-Current suite: <!-- test-counts -->113 unit tests in 17 files, all passing, and 30 end-to-end runs (desktop and phone) in 3 Playwright files.<!-- /test-counts -->
+Current suite: <!-- test-counts -->117 unit tests in 18 files, all passing, and 31 end-to-end runs (desktop and phone) in 4 Playwright files.<!-- /test-counts -->
 
 The end-to-end suite writes a letter, fast-forwards past the grace period, confirms as a witness in a separate browser, opens the letter as the recipient in a fresh browser with a pasted keepsake, and checks the link refuses a second opening. It also covers a check-in during grace, a one-tap check-in from the grace email on a second device, a vault-custody link, a candle lit back by a recipient, the sealed export opened by the offline page from disk with the network off, the calendar reminder, the founder's demo, the hands-off story, in-theme form errors, broken and unknown links, the room relighting on check-in, mobile layout, and an axe WCAG 2.2 AA audit of every page and state.
 

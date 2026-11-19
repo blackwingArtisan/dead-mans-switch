@@ -58,7 +58,7 @@ export function useTour(): { on: boolean; opened: boolean } {
 export function nextStep(state: SwitchState, witness: string, reader: string): string {
   switch (state) {
     case 'alive':
-      return 'Open the Time machine (the hourglass, bottom right) and press +30 days to skip a missed check-in.';
+      return 'Open the Time machine (the hourglass button) and press +30 days to skip a missed check-in.';
     case 'reminder':
       return 'Press +30 days in the Time machine to let the check-in pass.';
     case 'grace':

@@ -209,6 +209,12 @@ test('a vault-custody letter opens from its link alone', async ({ page, browser 
   await expect(june.getByTestId('opened-letter')).toContainText('Biscuit eats twice a day');
   const sheet = june.getByTestId('letter-page');
   await expect(sheet).toHaveClass(/letter__page--dark/);
+  // The hint and "Light the room" sit on the sheet, above the fold, and the first light is wide.
+  await expect(sheet.getByTestId('candle-hint')).toBeInViewport();
+  await expect(sheet.getByRole('button', { name: 'Light the room' })).toBeInViewport();
+  await expect(sheet).toHaveClass(/letter__page--first-light/);
+  // She reads by Mara's own candle.
+  await expect(june.getByTestId('their-candle')).toContainText('This is the candle Mara kept until');
   await expect(june.locator('body')).toHaveAttribute('data-room', 'released');
   await june.waitForTimeout(1200); // let the page finish unfolding
   const box = (await sheet.boundingBox())!;
@@ -216,6 +222,7 @@ test('a vault-custody letter opens from its link alone', async ({ page, browser 
   await expect
     .poll(async () => Math.abs(parseFloat(await sheet.evaluate((el) => (el as HTMLElement).style.getPropertyValue('--x'))) - 120))
     .toBeLessThanOrEqual(2);
+  await expect(sheet).not.toHaveClass(/letter__page--first-light/);
   // The reader's own flame sits at the light, and the light is warm.
   await expect(june.locator('.letter__flame')).toBeVisible();
   const shade = await june.locator('.letter__shade').evaluate((el) => getComputedStyle(el).backgroundImage);
@@ -305,6 +312,10 @@ test('"Play the whole story" runs the lifecycle hands-off, with captions, to an 
   // The story ends on the whole letter in full light, signature included.
   await expect(page.getByTestId('letter-page')).toHaveClass(/letter__page--lit/);
   await expect(page.locator('.letter__from')).toHaveClass(/letter__from--signed/);
+  // It closes on Mara's own candle, as she left it.
+  await expect(caption).toContainText('Their candle, your light');
+  await expect(page.getByTestId('their-candle')).toContainText('This is the candle Mara kept until');
+  await expect(page.getByTestId('their-candle').locator('svg.candle')).toBeInViewport();
   await caption.getByRole('button', { name: 'Close' }).click();
   await expect(caption).toHaveCount(0);
 });
