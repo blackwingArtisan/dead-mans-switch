@@ -1766,6 +1766,16 @@ fieldset {
   padding: 0;
   list-style: none;
 }
+.letters__keep {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 1rem;
+}
+.letters__keep p {
+  margin: 0 0 10px;
+}
 .rooms-strip .candle {
   align-self: end;
   max-height: 160px;

@@ -1,4 +1,5 @@
 /** Thin client for the API, plus the few things this browser remembers. */
+import type { SealedExport } from '../../core/export';
 import type { VaultView } from '../../core/vault';
 import type { SealedLetter, Settings } from '../../core/types';
 
@@ -145,6 +146,7 @@ export const api = {
     sealed: SealedLetter;
     keepsakeHalf?: string;
   }) => request<VaultView>('POST', '/api/vault/letters', body, true),
+  exportSealed: () => request<SealedExport>('GET', '/api/vault/export', undefined, true),
   burnLetter: (id: string) => request<VaultView>('DELETE', `/api/vault/letters/${encodeURIComponent(id)}`, undefined, true),
   witness: (token: string) => request<WitnessInfo>('GET', `/api/witness/${encodeURIComponent(token)}`),
   witnessRespond: (token: string, response: 'confirm' | 'deny') =>

@@ -2,6 +2,7 @@
 import { keepsakeTagOf } from '../core/crypto';
 import { randomId, randomToken, sha256 } from '../core/encoding';
 import { step, SwitchError, type EmailEffect, type Effect, type MachineContext, type MintedToken, type SwitchEvent } from '../core/machine';
+import { EXPORT_FORMAT, type ExportedLetter, type SealedExport } from '../core/export';
 import { nextEventAt } from '../core/time';
 import type { Custody, Letter, Person, SealedLetter, Vault } from '../core/types';
 import {
@@ -170,6 +171,28 @@ export class SwitchService {
       vault.history.push({ at: ctx.now, kind: 'letter-sealed', note: `A letter to ${recipient.name} was sealed (${custody} custody).` });
       return { vault, result: viewOf(vault, ctx.now) };
     });
+  }
+
+  /** Every unopened letter as the vault holds it, for the author to keep (see core/export.ts). */
+  async exportSealed(vaultId: string): Promise<SealedExport> {
+    const vault = await this.mustGet(vaultId);
+    const letters: ExportedLetter[] = [];
+    for (const l of vault.letters) {
+      if (!l.sealed) continue;
+      letters.push({
+        id: l.id,
+        recipientName: l.recipient.name,
+        custody: l.custody,
+        sealedAt: l.sealedAt,
+        releasedAt: l.releasedAt,
+        ciphertext: l.sealed.ciphertext,
+        iv: l.sealed.iv,
+        vaultHalf: l.sealed.vaultHalf,
+        keepsakeTag: l.sealed.keepsakeTag,
+        ...(l.custody === 'vault' && l.sealed.keepsakeHalf ? { keepsakeHalf: l.sealed.keepsakeHalf } : {}),
+      });
+    }
+    return { format: EXPORT_FORMAT, exportedAt: this.now(), authorName: vault.author.name, letters };
   }
 
   async burnLetter(vaultId: string, letterId: string): Promise<VaultView> {

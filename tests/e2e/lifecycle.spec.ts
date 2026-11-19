@@ -349,3 +349,58 @@ test('each room has its own colour, and the landing candle answers the pointer',
   await expect.poll(() => layer('smoke')).toBe('1');
   expect(await layer('sick')).toBe('0');
 });
+
+test('the sealed export and the saved offline page open a letter with no server', async ({ page, browser }) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Try a demo vigil' }).click();
+  await expect(page.getByTestId('envelope')).toHaveCount(2);
+
+  // The author downloads the sealed export and the offline page from the vigil.
+  const [exported] = await Promise.all([page.waitForEvent('download'), page.getByTestId('export-letters').click()]);
+  expect(exported.suggestedFilename()).toBe('sealed-letters.json');
+  const exportPath = (await exported.path())!;
+  const [saved] = await Promise.all([
+    page.waitForEvent('download'),
+    page.getByTestId('export').getByRole('link', { name: 'this one page' }).click(),
+  ]);
+  expect(saved.suggestedFilename()).toBe('offline-open.html');
+  const pagePath = `${(await saved.path())!}.html`;
+  await saved.saveAs(pagePath);
+  const sealed = JSON.parse(await (await import('node:fs/promises')).readFile(exportPath, 'utf8')) as {
+    letters: { id: string; recipientName: string; keepsakeHalf?: string }[];
+  };
+  const theo = sealed.letters.find((l) => l.recipientName === 'Theo Whitlock')!;
+  // A keepsake-custody letter leaves its half with the author's browser and the recipient, never in the export.
+  expect(theo.keepsakeHalf).toBeUndefined();
+  const theoHalf = (await page.evaluate((id) => localStorage.getItem(`dms.authored.${id}`), theo.id))!;
+
+  // Years later, with the service gone: a fresh browser with no network opens the saved page from disk.
+  const offline = await browser.newContext({ offline: true });
+  const reader = await offline.newPage();
+  const requests: string[] = [];
+  reader.on('request', (r) => {
+    if (!r.url().startsWith('file:')) requests.push(r.url());
+  });
+  await reader.goto(`file://${pagePath}`);
+  await expect(reader.getByRole('heading', { name: 'Open a sealed letter offline' })).toBeVisible();
+  await reader.getByLabel('1. The sealed export').setInputFiles(exportPath);
+  await reader.getByLabel('2. The letter').selectOption({ label: 'For Theo Whitlock' });
+
+  // The wrong keepsake breaks nothing.
+  await reader.getByLabel('3. The keepsake').fill('0000-0000-0000-0000-0000-0000-0000-0000-0000-0000-0000-0000-0000');
+  await reader.getByRole('button', { name: 'Break the seal' }).click();
+  await expect(reader.getByRole('alert')).toContainText('The seal will not break');
+
+  await reader.getByLabel('3. The keepsake').fill(`https://vigil.example.com/keepsake/${theo.id}#k=${theoHalf}`);
+  await reader.getByRole('button', { name: 'Break the seal' }).click();
+  await expect(reader.getByRole('heading', { name: 'For Theo, when the lights go out' })).toBeVisible();
+  await expect(reader.getByText('The deed to the cottage is in the blue tin')).toBeVisible();
+
+  // June's vault-custody letter needs no keepsake.
+  await reader.getByLabel('3. The keepsake').fill('');
+  await reader.getByLabel('2. The letter').selectOption({ label: 'For June Okafor (vault custody, no keepsake needed)' });
+  await reader.getByRole('button', { name: 'Break the seal' }).click();
+  await expect(reader.getByRole('heading', { name: 'June, the passwords and the cat' })).toBeVisible();
+  expect(requests).toEqual([]);
+  await offline.close();
+});

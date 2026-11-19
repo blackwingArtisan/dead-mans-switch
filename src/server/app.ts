@@ -99,6 +99,7 @@ export function createApp(deps: AppDeps) {
   );
   app.post('/api/vault/letters', async (c) => c.json(await service.addLetter(c.get('vaultId'), await json(c)), 201));
   app.delete('/api/vault/letters/:id', async (c) => c.json(await service.burnLetter(c.get('vaultId'), c.req.param('id'))));
+  app.get('/api/vault/export', async (c) => c.json(await service.exportSealed(c.get('vaultId'))));
 
   app.get('/api/witness/:token', async (c) => c.json(await service.witnessInfo(c.req.param('token'))));
   app.post('/api/witness/:token', async (c) => {

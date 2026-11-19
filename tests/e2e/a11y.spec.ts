@@ -52,6 +52,12 @@ test('honest page has no WCAG AA violations', async ({ page }) => {
   await audit(page);
 });
 
+test('the saved offline page has no WCAG AA violations', async ({ page }) => {
+  await page.goto(`file://${process.cwd()}/src/web/public/offline-open.html`);
+  await expect(page.getByLabel('1. The sealed export')).toBeVisible();
+  await audit(page);
+});
+
 test('the lost-address page and a spent link have no WCAG AA violations', async ({ page }) => {
   await page.goto('/no/such/place');
   await expect(page.getByTestId('not-found')).toBeVisible();

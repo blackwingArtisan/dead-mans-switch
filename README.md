@@ -86,6 +86,15 @@ Wax seals carry each recipient's initial, the check-in is a seal you press, and 
 - **Why now:** passkeys and account sprawl mean more of a life sits behind logins nobody else can open, and the free first-party tools hand over accounts, not words.
 - **Next:** an AWS runtime (DynamoDB, SES, EventBridge) behind the same ports, and an optional Shamir split of the vault half across witnesses.
 
+## What if this service ends before you do?
+
+A vigil can outlast a web service, so it is built not to depend on one:
+
+- **MIT-licensed and self-hostable** on a free Cloudflare Workers plan (see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)).
+- **A stated sunset policy:** if the service ever closes, every author gets at least 90 days' notice and a sealed export of their letters, released letters stay openable until the notice ends, and nothing is deleted silently.
+- **Your own sealed copy, any time:** **Export the sealed letters** on the vigil downloads each unopened letter exactly as the vault holds it. A keepsake-custody letter in the export is still unreadable without its keepsake.
+- **[`offline-open.html`](src/web/public/offline-open.html):** one self-contained page that opens a letter from the export and a keepsake in any browser, offline, with no server. It is tested against the app's own sealing code (Vitest) and opened from disk with the network off (Playwright).
+
 ## What works today
 
 - Begin a vigil with your own cadence, grace period, reminder lead, witnesses-required (k of n) and an optional silence window.

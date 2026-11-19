@@ -345,6 +345,36 @@ function Letters({ vault, onChange, onError }: { vault: VaultView; onChange: (v:
           );
         })}
       </ul>
+      {vault.letters.some((l) => l.openedAt === null) && (
+        <div className="letters__keep" data-testid="export">
+          <p>
+            <strong>If this service ends before you do.</strong> Keep your own sealed copy. Each letter still needs its keepsake to
+            open, and <a href="/offline-open.html" download="offline-open.html">this one page</a> opens it with no server at all.
+            {vault.letters.some((l) => l.custody === 'vault') &&
+              ' Vault-custody letters open from the export alone, so keep it as safely as the letters themselves.'}
+          </p>
+          <button
+            type="button"
+            className="btn btn--ghost btn--small"
+            data-testid="export-letters"
+            onClick={async () => {
+              try {
+                const data = await api.exportSealed();
+                const url = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }));
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'sealed-letters.json';
+                a.click();
+                setTimeout(() => URL.revokeObjectURL(url), 1000);
+              } catch (err) {
+                onError(err instanceof Error ? err.message : 'The export could not be made.');
+              }
+            }}
+          >
+            Export the sealed letters
+          </button>
+        </div>
+      )}
     </section>
   );
 }

@@ -10,6 +10,7 @@ src/
     machine.ts     the switch state machine (pure)
     crypto.ts      AES-GCM letter sealing and key halves (WebCrypto)
     encoding.ts    base64url helpers
+    export.ts      the sealed export format (what offline-open.html reads)
     time.ts        day/ms helpers and deadline maths
   server/      HTTP API and adapters
     app.ts         createApp(deps): every route
@@ -27,8 +28,11 @@ src/
                    tour (demo guide), validate (in-theme form errors), sound (generated Web Audio,
                    off by default), presenter (?presenter=1 for recordings), calendar (.ics reminder)
     styles/        app.css: design tokens on :root, then one section per component
+    public/        static files, including offline-open.html (opens an exported letter with no server;
+                   its script is a self-contained copy of the opening code, tested against core/crypto.ts)
 tests/
-  unit/        Vitest (machine, crypto, API, adapters, security, rate limiter, wax seal, format, Node entry, Kiro config)
+  unit/        Vitest (machine, crypto, API, adapters, security, rate limiter, wax seal, format, Node entry, Kiro config,
+               sound, calendar, outbox order, link notices, the offline page)
   e2e/         Playwright (lifecycle, axe accessibility audit, smoke on desktop and mobile)
 scripts/       dev server, media capture, open-tasks.mjs (lists open spec tasks for the agent's SessionStart hook)
 .kiro/         steering, specs, hooks (v1 JSON), agents/dead-mans-switch.json, settings/mcp.json

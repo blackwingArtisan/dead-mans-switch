@@ -86,6 +86,19 @@ export function HowItWorks() {
 
         <Comparison headingId="how-compare-title" />
 
+        <h2>If this service ends before you do</h2>
+        <p>
+          A vigil can last years, longer than many web services. So the code is MIT-licensed and runs on a free hosting plan, and
+          the policy is plain: if Dead Man’s Switch ever closes, every author gets at least 90 days’ notice and a sealed export of
+          their letters, released letters stay openable until the notice ends, and nothing is deleted silently.
+        </p>
+        <p>
+          You need not wait for that. <strong>Export the sealed letters</strong>, on your vigil, downloads each unopened letter
+          exactly as the vault holds it. With that file and a keepsake, <a href="/offline-open.html" download="offline-open.html">one
+          saved page</a> breaks the seal in any browser, offline, with no server at all. A keepsake-custody letter in the export is
+          still unreadable without its keepsake.
+        </p>
+
         <h2>False alarms</h2>
         <p>
           Missing a check-in only starts a grace period with reminders. When grace ends, your witnesses are asked first, and any one

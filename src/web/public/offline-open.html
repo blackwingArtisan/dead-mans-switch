@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Open a sealed letter offline</title>
+<meta name="description" content="Opens a Dead Man's Switch letter from a sealed export and a keepsake, with no server and no network.">
+<style>
+  :root {
+    --bg: #120c08; --panel: #1d140e; --line: #4a3622; --text: #efe4cf; --muted: #c7b79a;
+    --flame: #ffcf7a; --wax: #b8322a; --parchment: #efe0bf; --ink: #2a1d12;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; min-height: 100vh; background: radial-gradient(80% 60% at 50% 0%, #2a1a0f, var(--bg) 70%);
+    color: var(--text); font: 1.1rem/1.6 Georgia, 'Times New Roman', serif;
+  }
+  main { max-width: 44rem; margin: 0 auto; padding: 40px 16px 64px; }
+  h1 { font-weight: normal; letter-spacing: 0.04em; font-size: clamp(1.7rem, 5vw, 2.4rem); margin: 0 0 8px; }
+  p { margin: 0 0 14px; }
+  .muted { color: var(--muted); }
+  form { display: grid; gap: 18px; margin-top: 26px; padding: 22px; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; }
+  label { display: block; font-weight: bold; margin-bottom: 6px; }
+  input[type=file], select, textarea {
+    width: 100%; font: inherit; color: var(--text); background: #0f0a07; border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px;
+  }
+  textarea { min-height: 4.5em; resize: vertical; }
+  :focus-visible { outline: 2px solid var(--flame); outline-offset: 2px; }
+  button {
+    justify-self: start; font: inherit; color: #fff; background: var(--wax); border: 1px solid #e0685d; border-radius: 999px; padding: 10px 22px; cursor: pointer;
+  }
+  .error { color: #ffb4a8; font-weight: bold; min-height: 1.6em; margin: 0; }
+  .hint { font-size: 0.95rem; color: var(--muted); margin: 6px 0 0; }
+  article {
+    margin-top: 30px; padding: clamp(22px, 5vw, 44px); background: var(--parchment); color: var(--ink); border-radius: 4px;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+  }
+  article h2 { margin-top: 0; font-weight: normal; }
+  .letter-from { font-style: italic; margin-top: 24px; }
+  [hidden] { display: none !important; }
+  @media print { body { background: #fff; } form, header, .no-print { display: none; } article { box-shadow: none; } }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>Open a sealed letter offline</h1>
+    <p>This page opens a letter from a sealed export and its keepsake. It runs entirely in this browser: it never connects to a server, and it keeps working if the service that made the letter has closed.</p>
+    <p class="muted" id="blocked">Save this page and open the saved copy to use it. A web server's security policy stops its script from running here, by design.</p>
+  </header>
+
+  <form id="open-form" hidden>
+    <div>
+      <label for="export-file">1. The sealed export</label>
+      <input id="export-file" type="file" accept="application/json,.json" aria-describedby="export-hint">
+      <p class="hint" id="export-hint">The file the author downloaded with "Export the sealed letters", usually <code>sealed-letters.json</code>.</p>
+    </div>
+    <div>
+      <label for="letter">2. The letter</label>
+      <select id="letter" disabled><option>Choose an export first</option></select>
+    </div>
+    <div>
+      <label for="keepsake">3. The keepsake</label>
+      <textarea id="keepsake" autocomplete="off" spellcheck="false" aria-describedby="keepsake-hint"></textarea>
+      <p class="hint" id="keepsake-hint">Paste the keepsake link, or type the code printed on the keepsake card. Letters kept in vault custody need none.</p>
+    </div>
+    <p class="error" id="error" role="alert"></p>
+    <button type="submit" id="open">Break the seal</button>
+  </form>
+
+  <article id="letter-view" hidden aria-labelledby="letter-title" tabindex="-1">
+    <h2 id="letter-title"></h2>
+    <div id="letter-body"></div>
+    <p class="letter-from" id="letter-from"></p>
+    <p class="no-print"><button type="button" id="print">Print this letter</button></p>
+  </article>
+</main>
+
+<script>
+// The same scheme as src/core/crypto.ts, written out in full so this file needs nothing else:
+// K = A xor B; AES-GCM-256 with the letter id bound as additional data; Crockford base32 codes.
+const FORMAT = 'dms-letter-v1';
+const EXPORT_FORMAT = 'dms-export-v1';
+const B32 = '0123456789ABCDEFGHJKMNPQRSTVWXYZ';
+const ALLOWED = new Set(['P', 'BR', 'STRONG', 'B', 'EM', 'I', 'U', 'H2', 'H3', 'BLOCKQUOTE', 'UL', 'OL', 'LI', 'DIV', 'SPAN']);
+
+function fromBase64Url(text) {
+  const clean = String(text).trim().replace(/-/g, '+').replace(/_/g, '/');
+  if (!/^[A-Za-z0-9+/]*$/.test(clean)) throw new Error('Not valid base64url text.');
+  const bin = atob(clean + '='.repeat((4 - (clean.length % 4)) % 4));
+  return Uint8Array.from(bin, (c) => c.charCodeAt(0));
+}
+
+function toBase64Url(bytes) {
+  let bin = '';
+  for (const b of bytes) bin += String.fromCharCode(b);
+  return btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+
+function fromBase32(text, byteLength) {
+  const clean = String(text).toUpperCase().replace(/[\s-]/g, '').replace(/O/g, '0').replace(/[IL]/g, '1');
+  const out = new Uint8Array(byteLength);
+  let bits = 0, value = 0, index = 0;
+  for (const ch of clean) {
+    const v = B32.indexOf(ch);
+    if (v < 0) throw new Error('Not a keepsake code.');
+    value = (value << 5) | v;
+    bits += 5;
+    if (bits >= 8) {
+      if (index >= byteLength) throw new Error('This keepsake code is too long.');
+      out[index++] = (value >>> (bits - 8)) & 255;
+      bits -= 8;
+    }
+  }
+  if (index !== byteLength) throw new Error('This keepsake code is too short.');
+  return out;
+}
+
+/** A keepsake link, a bare base64url half or a printed code, as base64url; null if it is none of those. */
+function parseKeepsake(input) {
+  const text = String(input || '').trim();
+  if (!text) return null;
+  if (text.includes('#')) {
+    const k = new URLSearchParams(text.slice(text.indexOf('#') + 1)).get('k');
+    if (k) return k;
+  }
+  if (/^[A-Za-z0-9_-]{43}$/.test(text)) return text;
+  try { return toBase64Url(fromBase32(text, 32)); } catch { return null; }
+}
+
+function readExport(json) {
+  const data = typeof json === 'string' ? JSON.parse(json) : json;
+  if (!data || data.format !== EXPORT_FORMAT || !Array.isArray(data.letters)) {
+    throw new Error('That file is not a sealed export from Dead Man’s Switch.');
+  }
+  return data;
+}
+
+/** Opens one letter from an export. Resolves to { title, html, from }. */
+async function openFromExport(json, letterId, keepsakeInput) {
+  const data = readExport(json);
+  const letter = data.letters.find((l) => l.id === letterId);
+  if (!letter) throw new Error('That letter is not in this export.');
+  const half = letter.keepsakeHalf || parseKeepsake(keepsakeInput);
+  if (!half) throw new Error('That does not look like a keepsake. Paste the whole keepsake link, or type the code exactly as printed.');
+  const a = fromBase64Url(half);
+  const b = fromBase64Url(letter.vaultHalf);
+  if (a.length !== 32 || b.length !== 32) throw new Error('The keepsake is the wrong length for this letter.');
+  const k = a.map((x, i) => x ^ b[i]);
+  try {
+    const key = await crypto.subtle.importKey('raw', k, { name: 'AES-GCM' }, false, ['decrypt']);
+    const plain = await crypto.subtle.decrypt(
+      { name: 'AES-GCM', iv: fromBase64Url(letter.iv), additionalData: new TextEncoder().encode(FORMAT + ':' + letter.id) },
+      key,
+      fromBase64Url(letter.ciphertext),
+    );
+    const parsed = JSON.parse(new TextDecoder().decode(plain));
+    if (parsed.format !== FORMAT || typeof parsed.html !== 'string') throw new Error('unreadable');
+    return { title: parsed.title || '', html: parsed.html, from: parsed.from || '' };
+  } catch {
+    throw new Error('The seal will not break: the keepsake does not match this letter, or the export was altered.');
+  } finally {
+    k.fill(0);
+  }
+}
+
+/** Rebuilds the letter from allowed tags and text only, dropping every attribute, script and style. */
+function safeFragment(html) {
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  const copy = (node, into) => {
+    for (const child of node.childNodes) {
+      if (child.nodeType === 3) into.appendChild(document.createTextNode(child.textContent));
+      else if (child.nodeType === 1) {
+        if (ALLOWED.has(child.tagName)) copy(child, into.appendChild(document.createElement(child.tagName)));
+        else if (!['SCRIPT', 'STYLE', 'TEMPLATE', 'IFRAME', 'OBJECT'].includes(child.tagName)) copy(child, into);
+      }
+    }
+    return into;
+  };
+  return copy(doc.body, document.createDocumentFragment());
+}
+
+function wire() {
+  const $ = (id) => document.getElementById(id);
+  const form = $('open-form'), file = $('export-file'), select = $('letter'), keepsake = $('keepsake'), error = $('error');
+  $('blocked').hidden = true;
+  form.hidden = false;
+  let data = null;
+
+  file.addEventListener('change', async () => {
+    error.textContent = '';
+    select.innerHTML = '';
+    select.disabled = true;
+    data = null;
+    const f = file.files && file.files[0];
+    if (!f) return;
+    try {
+      data = readExport(await f.text());
+      if (data.letters.length === 0) throw new Error('This export holds no unopened letters.');
+      for (const l of data.letters) {
+        const option = document.createElement('option');
+        option.value = l.id;
+        option.textContent = 'For ' + l.recipientName + (l.custody === 'vault' ? ' (vault custody, no keepsake needed)' : '');
+        select.appendChild(option);
+      }
+      select.disabled = false;
+    } catch (e) {
+      data = null;
+      error.textContent = e instanceof SyntaxError ? 'That file is not a sealed export from Dead Man’s Switch.' : e.message;
+    }
+  });
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    error.textContent = '';
+    if (!data) { error.textContent = 'Choose the sealed export first.'; return; }
+    try {
+      const letter = await openFromExport(data, select.value, keepsake.value);
+      const author = data.authorName;
+      $('letter-title').textContent = letter.title || 'A letter from ' + author;
+      $('letter-body').replaceChildren(safeFragment(letter.html));
+      $('letter-from').textContent = letter.from ? '— ' + letter.from : '';
+      $('letter-view').hidden = false;
+      $('letter-view').focus();
+    } catch (err) {
+      error.textContent = err.message;
+    }
+  });
+
+  $('print').addEventListener('click', () => window.print());
+}
+
+if (typeof document !== 'undefined' && document.getElementById('open-form')) wire();
+</script>
+</body>
+</html>

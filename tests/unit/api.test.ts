@@ -163,6 +163,26 @@ describe('API lifecycle', () => {
     expect((await t.app.request('/api/vault')).status).toBe(401);
   });
 
+  it('exports each unopened letter as the vault holds it, never with a keepsake-custody half', async () => {
+    await t.createVault();
+    const theo = await sealFor({ name: 'Theo Whitlock', email: 'theo@example.com' }, 'keepsake', 'letter-theo-02');
+    const june = await sealFor({ name: 'June Okafor', email: 'june@example.com' }, 'vault', 'letter-june-02');
+    await t.call('POST', '/api/vault/letters', theo.body);
+    await t.call('POST', '/api/vault/letters', june.body);
+    expect((await t.call('GET', '/api/vault/export', undefined, false)).status).toBe(401);
+    const { status, body } = await t.call('GET', '/api/vault/export');
+    expect(status).toBe(200);
+    expect(body).toMatchObject({ format: 'dms-export-v1', authorName: 'Mara Whitlock' });
+    expect(body.letters.map((l: { id: string }) => l.id)).toEqual(['letter-theo-02', 'letter-june-02']);
+    const [keepsake, vault] = body.letters;
+    expect(keepsake.keepsakeHalf).toBeUndefined();
+    expect(JSON.stringify(body)).not.toContain(theo.keepsakeHalf);
+    expect(JSON.stringify(body)).not.toContain('@example.com');
+    // The export opens with the recipient's half, exactly as the release link would.
+    expect((await openLetter(keepsake.id, keepsake, theo.keepsakeHalf)).html).toContain('blue jar');
+    expect((await openLetter(vault.id, vault, vault.keepsakeHalf)).html).toContain('blue jar');
+  });
+
   it('burns a letter so it can never be released', async () => {
     await t.createVault();
     const keep = await sealFor({ name: 'Theo', email: 'theo@example.com' }, 'keepsake', 'letter-burn-01');
