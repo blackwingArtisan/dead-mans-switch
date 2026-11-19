@@ -508,6 +508,22 @@ body[data-relight] .atmosphere__warm {
 .btn--ghost {
   background: transparent;
 }
+.btn--link {
+  background: transparent;
+  border-color: transparent;
+  color: var(--flame);
+  font-family: var(--font-hand);
+  font-style: italic;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  text-decoration-thickness: 1px;
+  padding-left: 6px;
+  padding-right: 6px;
+}
+.btn--link:hover:not(:disabled) {
+  border-color: transparent;
+  color: #ffe3ad;
+}
 .btn--brass {
   border-color: var(--brass-deep);
   background: linear-gradient(180deg, rgba(201, 164, 92, 0.18), rgba(125, 100, 48, 0.12));

@@ -76,3 +76,37 @@ export const DEMO = {
     },
   ],
 };
+
+/** A second invented demo: a solo founder whose letters are about the accounts only she holds. */
+export const FOUNDER_DEMO: typeof DEMO = {
+  author: { name: 'Priya Raman', email: 'priya.raman@example.com' },
+  witnesses: [{ name: 'Noor Haddad', email: 'noor.haddad@example.com' }],
+  letters: [
+    {
+      recipient: { name: 'Tomás Rivera', email: 'tomas.rivera@example.com' },
+      custody: 'vault' as const,
+      content: {
+        title: 'Tomás, the keys to the company',
+        from: 'Priya',
+        html:
+          '<p>Tomás,</p><p>If this reached you, I have been quiet for too long, and Noor has confirmed it. Here is everything only I could open.</p>' +
+          '<ul><li><strong>Domain registrar:</strong> the login is in the company password manager under “Registrar”. Renewal is due every March; auto-renew is on.</li>' +
+          '<li><strong>Cloud root account:</strong> the recovery codes are in the sealed envelope in the office safe. The safe code is in the same password manager entry.</li>' +
+          '<li><strong>Payroll:</strong> you are already a second admin. Run the next cycle yourself; the schedule is pinned in the finance channel.</li>' +
+          '<li><strong>The password manager itself:</strong> its emergency kit is in the same envelope.</li></ul>' +
+          '<blockquote>Rotate every one of these the week you read this. Then keep shipping.</blockquote>',
+      },
+    },
+    {
+      recipient: { name: 'Anika Raman', email: 'anika.raman@example.com' },
+      custody: 'keepsake' as const,
+      content: {
+        title: 'For Anika',
+        from: 'Your big sister',
+        html:
+          '<p>Anika,</p><p>The company letter went to Tomás. This one is just for you.</p>' +
+          '<p>Thank you for every late-night call when the servers were down and I was too. You were right about taking the weekends.</p>',
+      },
+    },
+  ],
+};

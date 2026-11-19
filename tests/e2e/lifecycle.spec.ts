@@ -190,3 +190,15 @@ test('the demo guide says what to try next, and the room dies and relights with 
   await expect(page.getByRole('heading', { name: 'How the seal works' })).toBeVisible();
   await expect(page.locator('body')).not.toHaveAttribute('data-room', /.+/);
 });
+
+test("a founder's demo vigil seals Priya's letters and names her own witness in the guide", async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: 'or a founder’s vigil' }).click();
+  await expect(page.getByTestId('envelope')).toHaveCount(2);
+  await expect(page.getByText('The vigil of Priya Raman')).toBeVisible();
+  await expect(page.getByTestId('envelope').filter({ hasText: 'For Tomás Rivera' })).toContainText('Vault custody');
+  const tm = await openTimeMachine(page);
+  await tm.getByRole('button', { name: '+30 days' }).click();
+  await tm.getByRole('button', { name: '+7 days' }).click();
+  await expect(page.getByTestId('guide')).toContainText('“Witness asked” for Noor Haddad');
+});

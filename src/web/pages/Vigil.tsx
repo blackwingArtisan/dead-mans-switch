@@ -5,7 +5,7 @@ import { longDate, relative, shortDate, STAGES, STATE_COPY } from '../lib/format
 import { Link } from '../lib/router';
 import { relight, RELIGHT_MS, ROOM_LINE, useRoom } from '../lib/room';
 import { keepsakeLinkFor } from '../lib/seal';
-import { NEXT_STEP, tour, useTour } from '../lib/tour';
+import { nextStep, tour, useTour } from '../lib/tour';
 import { useFieldErrors, type FieldMessages } from '../lib/validate';
 import { Candle } from '../components/Candle';
 import { Flourish, Shell } from '../components/Chrome';
@@ -99,7 +99,12 @@ export function Vigil({ onLost }: { onLost: () => void }) {
         {announce}
       </p>
 
-      <Guide state={state} authorName={vault.author.name} />
+      <Guide
+        state={state}
+        authorName={vault.author.name}
+        witness={vault.witnesses[0]?.name ?? 'your witness'}
+        reader={(vault.letters.find((l) => l.custody === 'vault') ?? vault.letters[0])?.recipient.name ?? 'your reader'}
+      />
 
       <section className={`vigil vigil--${state}`} aria-labelledby="vigil-title">
         <div className="vigil__candle">
@@ -222,7 +227,7 @@ export function Vigil({ onLost }: { onLost: () => void }) {
   );
 }
 
-function Guide({ state, authorName }: { state: VaultView['state']; authorName: string }) {
+function Guide({ state, authorName, witness, reader }: { state: VaultView['state']; authorName: string; witness: string; reader: string }) {
   const { on } = useTour();
   if (!on) return null;
   return (
@@ -231,7 +236,7 @@ function Guide({ state, authorName }: { state: VaultView['state']; authorName: s
         This is {authorName.split(' ')[0]}’s vigil. Skip ahead in time and watch the room die with the candle.
       </p>
       <p className="guide__next">
-        <strong>Next:</strong> {NEXT_STEP[state]}
+        <strong>Next:</strong> {nextStep(state, witness, reader)}
       </p>
       <button type="button" className="icon-btn guide__close" aria-label="Dismiss the demo guide" onClick={tour.end}>
         ×

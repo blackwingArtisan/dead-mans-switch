@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { api, session } from '../lib/api';
 import { navigate } from '../lib/router';
-import { DEMO, sealAndStore } from '../lib/seal';
+import { DEMO, FOUNDER_DEMO, sealAndStore } from '../lib/seal';
 import { tour } from '../lib/tour';
 import { useFieldErrors, type FieldMessages } from '../lib/validate';
 import { Candle } from '../components/Candle';
@@ -22,7 +22,7 @@ export function Landing() {
   const [cadence, setCadence] = useState(30);
   const [grace, setGrace] = useState(7);
   const [error, setError] = useState('');
-  const [busy, setBusy] = useState<'' | 'create' | 'demo'>('');
+  const [busy, setBusy] = useState<'' | 'create' | 'demo' | 'founder'>('');
 
   const begin = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -40,14 +40,14 @@ export function Landing() {
     }
   };
 
-  const demo = async () => {
-    setBusy('demo');
+  const demo = async (which: typeof DEMO, label: 'demo' | 'founder') => {
+    setBusy(label);
     setError('');
     try {
-      const r = await api.createVault(DEMO.author, { cadenceDays: 30, graceDays: 7, reminderLeadDays: 3, witnessesRequired: 1 });
+      const r = await api.createVault(which.author, { cadenceDays: 30, graceDays: 7, reminderLeadDays: 3, witnessesRequired: 1 });
       session.save(r.ownerToken);
-      for (const w of DEMO.witnesses) await api.addWitness(w);
-      for (const l of DEMO.letters) await sealAndStore({ ...l, authorName: DEMO.author.name });
+      for (const w of which.witnesses) await api.addWitness(w);
+      for (const l of which.letters) await sealAndStore({ ...l, authorName: which.author.name });
       tour.start();
       navigate('/');
     } catch (err) {
@@ -75,8 +75,11 @@ export function Landing() {
             <a className="btn btn--wax" href="#begin">
               Begin your vigil
             </a>
-            <button type="button" className="btn btn--ghost" onClick={demo} disabled={busy !== ''}>
+            <button type="button" className="btn btn--ghost" onClick={() => demo(DEMO, 'demo')} disabled={busy !== ''}>
               {busy === 'demo' ? 'Summoning…' : 'Try a demo vigil'}
+            </button>
+            <button type="button" className="btn btn--link" onClick={() => demo(FOUNDER_DEMO, 'founder')} disabled={busy !== ''}>
+              {busy === 'founder' ? 'Summoning…' : 'or a founder’s vigil'}
             </button>
           </div>
           {error && busy === '' && (

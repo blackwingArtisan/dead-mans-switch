@@ -10,7 +10,7 @@ Loaded only when a file that seals, splits or opens a letter is in play.
 - Each letter gets a fresh random 256-bit key K and a fresh 96-bit IV, made with WebCrypto in the browser.
 - The letter is encrypted with AES-GCM and the letter id as additional data, so ciphertext cannot be moved onto another letter.
 - K is split: the keepsake half A is 32 random bytes; the vault half B is K xor A. Either half alone is noise.
-- The server stores the ciphertext, B and SHA-256 of A (the keepsake tag). Never A, never K, never plaintext.
+- The server stores the ciphertext, B and a domain-separated SHA-256 hash of A (the keepsake tag). Never A, never K, never plaintext.
 
 ## Rules
 - In keepsake custody, A must never be sent to the server, put in a query string, logged, or included in any email. It travels only in a URL fragment (`#k=`) or a printed code the author hands over.

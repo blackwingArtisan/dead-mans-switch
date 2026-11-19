@@ -21,7 +21,7 @@ Built for Kiroween 2026, Costume Contest category.
 
 **Mara, 58.** Mara wants her son Theo to know the deed is in the blue tin and that she was proud of him, and her best friend June to know where the password sheet is and that Biscuit lies about being fed. She will not hand those letters over today. She checks in once a month from her phone; if she ever stops, her witnesses are asked first, and only then do Theo and June each get their own letter.
 
-**Priya, a solo founder.** Priya is the only person holding the cloud root account, the domain registrar and the payroll login. A will does not cover that, and a shared password vault would hand everything over today. Her sealed letter tells her co-founder where each recovery code lives, released only if she goes quiet and her accountant, her named witness, confirms it.
+**Priya, a solo founder.** Priya is the only person holding the cloud root account, the domain registrar and the payroll login. A will does not cover that, and a shared password vault would hand everything over today. Her sealed letter tells her co-founder where each recovery code lives, released only if she goes quiet and her accountant, her named witness, confirms it. Press **or a founder's vigil** on the landing page to try hers.
 
 ## Why not the tools you already have?
 

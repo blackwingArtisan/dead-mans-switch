@@ -53,12 +53,20 @@ export function useTour(): { on: boolean; opened: boolean } {
   return state;
 }
 
-/** What to try next on the demo vigil, at each stage. */
-export const NEXT_STEP: Record<SwitchState, string> = {
-  alive: 'Open the Time machine (the hourglass, bottom right) and press +30 days to skip a missed check-in.',
-  reminder: 'Press +30 days in the Time machine to let the check-in pass.',
-  grace: 'The flame gutters and the room dims. Press +7 days to let the candle go out, or press the seal to relight it.',
-  confirm: 'The witnesses are asked. In the outbox, open “Witness asked” for Silas and confirm as him.',
-  released: 'In the outbox, open “Letter released” for June and break the seal.',
-  paused: 'Lift the glass to resume the vigil.',
-};
+/** What to try next on the demo vigil, at each stage, naming the demo's own witness and reader. */
+export function nextStep(state: SwitchState, witness: string, reader: string): string {
+  switch (state) {
+    case 'alive':
+      return 'Open the Time machine (the hourglass, bottom right) and press +30 days to skip a missed check-in.';
+    case 'reminder':
+      return 'Press +30 days in the Time machine to let the check-in pass.';
+    case 'grace':
+      return 'The flame gutters and the room dims. Press +7 days to let the candle go out, or press the seal to relight it.';
+    case 'confirm':
+      return `The witnesses are asked. In the outbox, open “Witness asked” for ${witness} and confirm.`;
+    case 'released':
+      return `In the outbox, open “Letter released” for ${reader} and break the seal.`;
+    case 'paused':
+      return 'Lift the glass to resume the vigil.';
+  }
+}
