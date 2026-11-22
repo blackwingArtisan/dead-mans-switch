@@ -1807,7 +1807,8 @@ form.terms fieldset {
 }
 .people__who {
   display: grid;
-  flex: 1;
+  /* Wide enough for a whole email address; on a narrow phone the state tag wraps below instead of splitting it. */
+  flex: 1 1 13rem;
   min-width: 0;
 }
 .people__name {
