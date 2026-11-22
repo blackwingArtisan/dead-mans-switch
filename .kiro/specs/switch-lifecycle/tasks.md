@@ -57,6 +57,7 @@
   - [x] 8.4 Security headers on every response, including Worker static assets (Req 11.1, 11.2, 11.4-11.10)
   - [x] 8.5 Time machine opt-in and refused for public origins (Req 9.4, 9.5)
   - [x] 8.6 Rate limiter swap point: a `RateLimiter` port with an in-memory default and a Cloudflare Workers Rate Limiting binding adapter, chosen in the Worker only when the binding is present (Req 11.3, 11.13-11.15)
+  - [x] 8.7 Check the commented rate-limit binding in `wrangler.toml` against the current Cloudflare docs via context7 and rewrite it in the documented `[[ratelimits]]` form; the adapter's `limit({ key }) -> { success }` already matched (Req 11.13-11.15)
 
 - [x] 9. Test and spec gaps found in the second review
   - [x] 9.1 Test that only the SHA-256 hash of the owner token is stored and the raw token is never in the vault (Req 1.4, 1.7)
@@ -73,3 +74,4 @@
   - [x] 9.12 Test that every Permissions-Policy and Cross-Origin-Opener-Policy header is sent, and that CSP blocks plugins and connect to other origins by directive (Req 11.4-11.10)
   - [x] 9.13 E2E: the core path by keyboard alone (demo vigil, check in, writing desk, Seal the letter) with a visible focus ring on every stop (Req 10.2, 10.6, 10.7)
   - [x] 9.14 "Seal the letter" glow is not clipped: only the unpressed stamp is clipped, and no ancestor of the button between it and `main` has overflow-x clip or hidden (Req 10.5)
+  - [x] 9.15 `openLetter` rejects an IV that is not 12 bytes with a SealError before decrypting; tested with a truncated and a 16-byte IV (Req 2.11)

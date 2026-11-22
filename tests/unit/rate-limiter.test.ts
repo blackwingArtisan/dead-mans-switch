@@ -26,6 +26,15 @@ describe('MemoryRateLimiter', () => {
 });
 
 describe('CloudflareRateLimiter', () => {
+  it('ships the binding example in the documented [[ratelimits]] form (Req 11.13)', async () => {
+    const { readFileSync } = await import('node:fs');
+    const toml = readFileSync('wrangler.toml', 'utf8');
+    expect(toml).toContain('# [[ratelimits]]');
+    expect(toml).toContain('# name = "DMS_RATE_LIMITER"');
+    expect(toml).toContain('#   [ratelimits.simple]');
+    expect(toml).not.toMatch(/^# \[\[unsafe\.bindings\]\]/m);
+  });
+
   it('passes the key to the binding and maps success to allowed', async () => {
     const limit = vi.fn(async (_o: { key: string }) => ({ success: true }));
     const result = await new CloudflareRateLimiter({ limit }).hit('203.0.113.7', T0);

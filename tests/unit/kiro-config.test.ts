@@ -95,6 +95,9 @@ describe('Kiro custom agent (.kiro/agents/dead-mans-switch.json)', () => {
   it('uses only V3 hook triggers and the MCP servers it names', () => {
     agent.hooks.forEach(checkHook);
     expect(agent.hooks.map((h) => h.trigger)).toEqual(['SessionStart']);
+    // Documented CLI V3 form (kiro.dev/docs/cli/v3/hooks-migration): an array of named hooks, not the 2.x object keyed by agentSpawn.
+    expect(Array.isArray(agent.hooks)).toBe(true);
+    expect(agent.hooks[0]!.action).toEqual({ type: 'command', command: 'node scripts/open-tasks.mjs' });
     const mcp = readJson('.kiro/settings/mcp.json').mcpServers as Record<string, { command?: string; url?: string }>;
     expect(agent.includeMcpJson).toBe(true);
     for (const tool of agent.tools.filter((t) => t.startsWith('@'))) {

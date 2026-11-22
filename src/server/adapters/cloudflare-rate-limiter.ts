@@ -1,9 +1,9 @@
 import type { RateLimitDecision, RateLimiter } from '../ports';
 
 /**
- * The shape of Cloudflare's Workers Rate Limiting binding (`[[unsafe.bindings]]`
- * with `type = "ratelimit"`). Typed here so we do not depend on a particular
- * version of @cloudflare/workers-types.
+ * The shape of Cloudflare's Workers Rate Limiting binding (`[[ratelimits]]` in
+ * wrangler.toml; `limit({ key })` resolves to `{ success }`). Typed here so we do
+ * not depend on a particular version of @cloudflare/workers-types.
  */
 export interface RateLimitBinding {
   limit(options: { key: string }): Promise<{ success: boolean }>;

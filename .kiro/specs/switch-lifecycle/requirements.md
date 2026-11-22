@@ -42,6 +42,7 @@ Criteria use EARS: `WHEN` (event), `WHILE` (state), `WHERE` (optional feature), 
 8. WHEN the author seals a letter THE SYSTEM SHALL encrypt it with AES-GCM in the browser.
 9. WHEN a letter is sealed THE SYSTEM SHALL upload only the ciphertext, the IV, B and a SHA-256 tag of A (plus A itself only where vault custody is chosen).
 10. THE SYSTEM SHALL NOT log letter plaintext, the key K or either key half.
+11. IF a sealed letter's IV does not decode to exactly 12 bytes THEN THE SYSTEM SHALL refuse to open it with the message "The letter is damaged: its seal is the wrong length." before attempting decryption.
 
 ## Requirement 3: Choose who keeps the other half
 

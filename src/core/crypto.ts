@@ -84,6 +84,16 @@ export async function openLetter(
   }
   const k = xorBytes(a, b);
   try {
+    // An AES-GCM IV here is always 96 bits. Refuse anything else before decrypting.
+    let iv: Uint8Array | null = null;
+    try {
+      iv = fromBase64Url(sealed.iv);
+    } catch {
+      iv = null; // undecodable: fall through to the generic failure below
+    }
+    if (iv && iv.length !== IV_BYTES) {
+      throw new SealError('The letter is damaged: its seal is the wrong length.');
+    }
     const key = await importKey(k);
     const pt = await crypto.subtle.decrypt(
       { name: 'AES-GCM', iv: fromBase64Url(sealed.iv) as BufferSource, additionalData: aad(letterId) },

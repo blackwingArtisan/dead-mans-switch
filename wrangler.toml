@@ -25,13 +25,19 @@ DMS_MAIL_FROM = "Dead Man's Switch <switch@example.com>"
 # characters below. Without this binding the Worker keeps its in-memory limiter,
 # which resets on every restart or new isolate.
 #
-# `limit` is requests per `period` seconds for one client key, and `period` must be
-# 10 or 60. The Worker answers 429 with Retry-After set to the period of 60 seconds.
-# Keep `limit = 60` and `period = 60` to match the default of 60 requests a minute.
-# `namespace_id` is any positive integer you choose, unique within your account.
+# Checked against the Cloudflare docs (Workers > Runtime APIs > Bindings > Rate Limiting):
+# the binding is a `[[ratelimits]]` table with a `[ratelimits.simple]` sub-table. The older
+# `[[unsafe.bindings]]` with `type = "ratelimit"` is not the documented form.
+# `limit` is the request threshold per `period` seconds for one key, counted per Cloudflare
+# location, and requests can exceed it. `period` must be 10 or 60. `namespace_id` is a string
+# holding a positive integer, unique within your account.
+# The Worker answers 429 with Retry-After set to `period`. Keep `limit = 60` and
+# `period = 60` to match the default of 60 requests a minute.
 #
-# [[unsafe.bindings]]
+# [[ratelimits]]
 # name = "DMS_RATE_LIMITER"
-# type = "ratelimit"
 # namespace_id = "1001"
-# simple = { limit = 60, period = 60 }
+#
+#   [ratelimits.simple]
+#   limit = 60
+#   period = 60

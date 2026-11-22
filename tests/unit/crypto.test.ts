@@ -61,6 +61,18 @@ describe('letter sealing', () => {
     await expect(openLetter('letter-abc123', sealed, '!!!')).rejects.toThrow(/not in a form/);
   });
 
+  it('refuses an IV that is not 12 bytes before trying to decrypt (Req 2.3)', async () => {
+    const { sealed, keepsakeHalf } = await sealLetter('letter-abc123', content);
+    const iv = fromBase64Url(sealed.iv);
+    const truncated = { ...sealed, iv: toBase64Url(iv.slice(0, 8)) };
+    const long = { ...sealed, iv: toBase64Url(crypto.getRandomValues(new Uint8Array(16))) };
+    for (const bad of [truncated, long]) {
+      const err = await openLetter('letter-abc123', bad, keepsakeHalf).catch((e: unknown) => e);
+      expect(err).toBeInstanceOf(SealError);
+      expect((err as SealError).message).toBe('The letter is damaged: its seal is the wrong length.');
+    }
+  });
+
   it('publishes a keepsake tag that matches only the right half', async () => {
     const { sealed, keepsakeHalf } = await sealLetter('letter-abc123', content);
     expect(await keepsakeTagOf(keepsakeHalf)).toBe(sealed.keepsakeTag);
