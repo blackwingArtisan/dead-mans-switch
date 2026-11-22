@@ -1,7 +1,7 @@
 # Kiro session 7: the costume polish (task group 10)
 
 - Tool: kiro-cli 3.5.0, v3 engine, non-interactive, agent `dead-mans-switch`
-- Command: `kiro-cli chat --v3 --no-interactive --trust-workspace --agent dead-mans-switch --trust-tools=fs_read,fs_write,run_command,@context7,@aws-docs "<prompt>" </dev/null` (not `--trust-all-tools`)
+- Command: `kiro-cli chat --v3 --no-interactive --trust-workspace --agent dead-mans-switch --trust-tools=fs_read,fs_write,run_command,@context7 "<prompt>" </dev/null` (not `--trust-all-tools`)
 - Date: 2026-11-22, 19:44 to 20:03 UTC. Duration: 18.8 min; exit code 0; credits used: 49.42 (account usage 480.56 before, 529.98 after)
 - Result: Vitest 144 of 144, Playwright 47 to 64 on its own run; commit `ed0ab49` (914 lines added, 86 removed)
 

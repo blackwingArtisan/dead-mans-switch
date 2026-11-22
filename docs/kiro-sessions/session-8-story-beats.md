@@ -1,7 +1,7 @@
 # Kiro session 8: story beats for "Play the whole story" (task group 11)
 
 - Tool: kiro-cli 3.5.0, v3 engine, non-interactive, agent `dead-mans-switch`
-- Command: `kiro-cli chat --v3 --no-interactive --trust-workspace --agent dead-mans-switch --trust-tools=fs_read,fs_write,run_command,@context7,@aws-docs "<prompt>" </dev/null` (not `--trust-all-tools`)
+- Command: `kiro-cli chat --v3 --no-interactive --trust-workspace --agent dead-mans-switch --trust-tools=fs_read,fs_write,run_command,@context7 "<prompt>" </dev/null` (not `--trust-all-tools`)
 - Date: 2026-11-22, 20:17 to 20:42 UTC. Duration: 25.1 min, stopped by the 25-minute session limit during its final full-suite run; credits used: 37.96 (account usage 566.38 before, 604.34 after)
 - Result: all five tasks (11.1 to 11.5) built and ticked; Vitest 144 to 150, Playwright 64 to 74; commit `a3d4774` (655 lines added, 77 removed)
 

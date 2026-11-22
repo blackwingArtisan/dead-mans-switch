@@ -1,7 +1,7 @@
 # Kiro session 10: the founder runbook, a spec written from scratch and built
 
 - Tool: kiro-cli 3.5.0, v3 engine, non-interactive, agent `dead-mans-switch`
-- Command: `kiro-cli chat --v3 --no-interactive --trust-workspace --agent dead-mans-switch --trust-tools=fs_read,fs_write,run_command,@context7,@aws-docs "<prompt>" </dev/null` (not `--trust-all-tools`)
+- Command: `kiro-cli chat --v3 --no-interactive --trust-workspace --agent dead-mans-switch --trust-tools=fs_read,fs_write,run_command,@context7 "<prompt>" </dev/null` (not `--trust-all-tools`)
 - Date: 2026-11-22, 21:44 to 21:56 UTC. Duration: 12.6 min; exit code 0; credits used: 26.36 (account usage 704.24 before, 730.60 after)
 - Result: a new spec, every task built and ticked; Vitest 151 to 179 (22 to 25 files), Playwright 77 to 82; commit `f49c053` (1,007 lines added, 15 removed)
 

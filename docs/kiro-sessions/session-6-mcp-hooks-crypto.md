@@ -1,7 +1,7 @@
 # Kiro session 6: Context7 docs check, an IV length check, and the hooks on the record (tasks 8.7, 9.15)
 
 - Tool: kiro-cli 3.5.0, v3 engine, non-interactive, agent `dead-mans-switch`
-- Command: `kiro-cli chat --v3 --no-interactive --trust-workspace --agent dead-mans-switch --trust-tools=fs_read,fs_write,run_command,@context7,@aws-docs "<prompt>" </dev/null` (not `--trust-all-tools`)
+- Command: `kiro-cli chat --v3 --no-interactive --trust-workspace --agent dead-mans-switch --trust-tools=fs_read,fs_write,run_command,@context7 "<prompt>" </dev/null` (not `--trust-all-tools`)
 - Date: 2026-11-22, 19:02 to 19:06 UTC. Duration: 3.6 min; exit code 0; credits used: 3.04 (account usage 428.32 before, 431.36 after)
 - Result: Vitest 142 to 144, Playwright 47 of 47 on its own run; commit `69975ba`
 

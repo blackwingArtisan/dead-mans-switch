@@ -1,7 +1,7 @@
 # Kiro session 11: the candle-out climax and the room's objects (task group 12)
 
 - Tool: kiro-cli 3.5.0, v3 engine, non-interactive, agent `dead-mans-switch`
-- Command: `kiro-cli chat --v3 --no-interactive --trust-workspace --agent dead-mans-switch --trust-tools=fs_read,fs_write,run_command,@context7,@aws-docs "<prompt>" </dev/null` (not `--trust-all-tools`)
+- Command: `kiro-cli chat --v3 --no-interactive --trust-workspace --agent dead-mans-switch --trust-tools=fs_read,fs_write,run_command,@context7 "<prompt>" </dev/null` (not `--trust-all-tools`)
 - Date: 2026-11-22, 21:56 to 22:08 UTC. Duration: 11.9 min; exit code 0; credits used: 22.64 (account usage 730.60 before, 753.24 after)
 - Result: tasks 12.1 to 12.5 built and ticked; Vitest 179 to 187 (26 files), Playwright 82 to 89; commit `ce21ee7` (436 lines added, 10 removed)
 

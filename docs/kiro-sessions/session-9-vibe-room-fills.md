@@ -1,7 +1,7 @@
 # Kiro session 9: "the room fills", a vibe-coded ending (no spec)
 
 - Tool: kiro-cli 3.5.0, v3 engine, non-interactive, agent `dead-mans-switch`
-- Command: `kiro-cli chat --v3 --no-interactive --trust-workspace --agent dead-mans-switch --trust-tools=fs_read,fs_write,run_command,@context7,@aws-docs "<prompt>" </dev/null` (not `--trust-all-tools`)
+- Command: `kiro-cli chat --v3 --no-interactive --trust-workspace --agent dead-mans-switch --trust-tools=fs_read,fs_write,run_command,@context7 "<prompt>" </dev/null` (not `--trust-all-tools`)
 - Date: 2026-11-22, 20:53 to 21:18 UTC. Duration: 25.2 min, stopped by the 25-minute session limit during its final full-suite run; credits used: 30.24 (account usage 625.83 before, 656.07 after)
 - Result: the ending built and tested; Vitest 151 of 151, Playwright 74 to 77; commit `768bee0` (234 lines added, 25 removed)
 
