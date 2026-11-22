@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Open a sealed letter offline</title>
-<meta name="description" content="Opens a Dead Man's Switch letter from a sealed export and a keepsake, with no server and no network.">
+<meta name="description" content="Opens a Last Candle letter from a sealed export and a keepsake, with no server and no network.">
 <style>
   :root {
     --bg: #120c08; --panel: #1d140e; --line: #4a3622; --text: #efe4cf; --muted: #c7b79a;
@@ -131,7 +131,7 @@ function parseKeepsake(input) {
 function readExport(json) {
   const data = typeof json === 'string' ? JSON.parse(json) : json;
   if (!data || data.format !== EXPORT_FORMAT || !Array.isArray(data.letters)) {
-    throw new Error('That file is not a sealed export from Dead Man’s Switch.');
+    throw new Error('That file is not a sealed export from Last Candle.');
   }
   return data;
 }
@@ -206,7 +206,7 @@ function wire() {
       select.disabled = false;
     } catch (e) {
       data = null;
-      error.textContent = e instanceof SyntaxError ? 'That file is not a sealed export from Dead Man’s Switch.' : e.message;
+      error.textContent = e instanceof SyntaxError ? 'That file is not a sealed export from Last Candle.' : e.message;
     }
   });
 

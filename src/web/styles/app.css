@@ -1,4 +1,4 @@
-/* Dead Man's Switch: candle-lit gothic, accessible first. */
+/* Last Candle: candle-lit gothic, accessible first. */
 
 :root {
   color-scheme: dark;
@@ -942,6 +942,27 @@ fieldset {
   font-style: italic;
   color: var(--flame);
 }
+.distinct__thesis {
+  margin: 0 0 8px;
+  font-family: var(--font-hand);
+  font-style: italic;
+  font-size: 1.1rem;
+  line-height: 1.4;
+  color: var(--parchment);
+}
+.stakes__pain {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--text);
+}
+.personas__projection ul {
+  margin: 4px 0 0;
+  padding-left: 1.3em;
+}
+.personas__projection p {
+  margin: 0;
+}
+.personas__cost,
 .personas__projection,
 .compare__sources {
   margin: 8px 0 0;

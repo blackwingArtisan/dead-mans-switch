@@ -1,8 +1,15 @@
 # Changelog
 
-Notable changes to Dead Man's Switch. Work done with Kiro is recorded call by call in [KIRO-LOG.md](KIRO-LOG.md).
+Notable changes to Last Candle (repository: dead-mans-switch). Work done with Kiro is recorded call by call in [KIRO-LOG.md](KIRO-LOG.md).
 
 ## Unreleased
+
+### Last Candle
+- **A name that says what it is.** The app is now "Last Candle: a dead man's switch for letters" in the masthead, the tab, the emails and the share card; the repository keeps its name.
+- **The pain first.** The stakes line now opens with the 1Password survey finding that 63% of people who carried out a will found the accounts harder to get into than they expected, then the CDC and Gallup figures.
+- **One thesis line.** "Every other dead man's switch is a timer. This one is a vigil..." sits above the three claims and is the share card's description.
+- **Bottom-up numbers.** The top-down founder projection is gone. In its place: MedPAC's 1.7 million hospice patients and one assumption per line, and what a vigil costs to keep (about 2 cents a year at published Cloudflare and Resend prices).
+- **Priya, consistent with the data.** She now runs a two-person company with no employees, so her letter is about contractor payouts, the domain and the cloud root account rather than payroll.
 
 ### Live demo
 - **A static build that needs no server.** `npm run build:static` runs the same Hono API inside the browser, with the time machine and the outbox, and keeps each visitor's demo in their own localStorage; outbox links opened in other tabs share it. Requests run one at a time across tabs, so none overwrites another. The build carries the server's security headers in a `_headers` file. It is live on Cloudflare Pages, linked at the top of the README.

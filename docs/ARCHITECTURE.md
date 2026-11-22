@@ -1,6 +1,6 @@
 # Architecture
 
-How Dead Man's Switch is put together: the layers, the state machine, the seal, the adapters behind each port, the deploy target and the security headers. The product overview is in the [README](../README.md); the full lifecycle spec is in [`.kiro/specs/switch-lifecycle`](../.kiro/specs/switch-lifecycle).
+How Last Candle is put together: the layers, the state machine, the seal, the adapters behind each port, the deploy target and the security headers. The product overview is in the [README](../README.md); the full lifecycle spec is in [`.kiro/specs/switch-lifecycle`](../.kiro/specs/switch-lifecycle).
 
 ## Layers
 

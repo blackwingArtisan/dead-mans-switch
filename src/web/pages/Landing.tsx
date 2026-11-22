@@ -7,7 +7,7 @@ import { tour } from '../lib/tour';
 import { useFieldErrors, type FieldMessages } from '../lib/validate';
 import { Candle } from '../components/Candle';
 import { Flourish, Shell } from '../components/Chrome';
-import { ComparisonTeaser, Distinct, MARKET, PROJECTION, Stakes } from '../components/Comparison';
+import { COST_PER_VIGIL, ComparisonTeaser, Distinct, HOSPICE_CHANNEL, MARKET, Stakes } from '../components/Comparison';
 import { FieldError } from '../components/FieldError';
 import { WaxSeal } from '../components/WaxSeal';
 
@@ -223,9 +223,10 @@ export function Landing() {
           <article className="persona">
             <h3>Priya, solo founder</h3>
             <p>
-              Priya is the only person who holds the cloud root account, the domain registrar and the payroll login. Then she is in
-              hospital for three weeks and payroll is due on Friday. Her accountant, her witness, confirms she cannot check in, and her
-              co-founder opens the letter that says where each recovery code lives. The company keeps running.
+              Priya and her co-owner Tomás run a two-person software company with no employees. Only Priya holds the cloud root
+              account, the domain registrar and the login that pays their contractors. Then she is in hospital for three weeks, the
+              contractors’ invoices are due on Friday and the domain renews in March. Her accountant, her witness, confirms she
+              cannot check in, and Tomás opens the letter that says where each recovery code lives. The company keeps running.
             </p>
             <p className="persona__plan">Founder plan: a flat $8 a month per business, with up to 5 recipients.</p>
           </article>
@@ -239,13 +240,28 @@ export function Landing() {
           </article>
         </div>
         <p className="personas__pricing">The paid plans are planned for after Kiroween; today every vigil is free.</p>
+        <p className="personas__cost" data-testid="cost-per-vigil">
+          {COST_PER_VIGIL}
+        </p>
         <p className="personas__market">
           <span className="stakes__figure">{MARKET.figure}</span> {MARKET.text}{' '}
           <a href={MARKET.href} target="_blank" rel="noopener noreferrer" className="stakes__source">
             ({MARKET.source})
           </a>
         </p>
-        <p className="personas__projection">{PROJECTION}</p>
+        <div className="personas__projection" data-testid="hospice-channel">
+          <p>
+            <strong>The hospice channel, one assumption per line.</strong> {HOSPICE_CHANNEL.fact}{' '}
+            <a href={HOSPICE_CHANNEL.href} target="_blank" rel="noopener noreferrer" className="stakes__source">
+              ({HOSPICE_CHANNEL.source})
+            </a>
+          </p>
+          <ul>
+            {HOSPICE_CHANNEL.steps.map((step) => (
+              <li key={step}>{step}</li>
+            ))}
+          </ul>
+        </div>
       </section>
 
       <ComparisonTeaser />

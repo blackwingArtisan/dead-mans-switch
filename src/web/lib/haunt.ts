@@ -7,7 +7,7 @@
 import { useEffect } from 'react';
 import type { SwitchState } from '../../core/types';
 
-export const BASE_TITLE = 'Dead Man’s Switch';
+export const BASE_TITLE = 'Last Candle';
 
 /** The tab title for a vigil in this state. */
 export function tabTitle(state: SwitchState | null): string {

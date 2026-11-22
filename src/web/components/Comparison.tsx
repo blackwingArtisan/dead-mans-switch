@@ -3,8 +3,15 @@
  * landing page and the honest page so both always say the same thing.
  */
 
-/** Every figure here was checked at its primary source on 2026-11-18; keep the README in step. */
+/**
+ * Every figure here was checked at its primary source (CDC and Gallup on 2026-11-18, the 1Password survey on
+ * 2026-11-22); keep the README in step. The pain line leads; the death and will figures follow.
+ */
 export const STAKES = {
+  painFigure: '63%',
+  painText: 'of people who had carried out a will said getting into the accounts of the person who died was harder than they expected.',
+  painSource: '1Password survey of 1,000 U.S. adults aged 25 to 40, 2021',
+  painHref: 'https://www.helpnetsecurity.com/2021/11/15/digital-handover/',
   figure: '3,072,666',
   text: 'people died in the U.S. in 2024.',
   source: 'CDC',
@@ -15,6 +22,10 @@ export const STAKES = {
   willHref: 'https://news.gallup.com/poll/351500/how-many-americans-have-will.aspx',
   aside: 'Not one of those wills tells your sister where the password sheet is.',
 };
+
+/** The one-breath thesis, shown above the claims and used as the og:description. Keep src/web/index.html in step. */
+export const THESIS =
+  'Every other dead man’s switch is a timer. This one is a vigil: a candle you keep lit, witnesses who can veto, and a key that is half on paper.';
 
 /** For the founder's wedge: small businesses whose owner is the whole company. */
 export const MARKET = {
@@ -27,6 +38,12 @@ export const MARKET = {
 export function Stakes() {
   return (
     <p className="stakes">
+      <span className="stakes__pain">
+        <span className="stakes__figure">{STAKES.painFigure}</span> {STAKES.painText}{' '}
+        <a href={STAKES.painHref} target="_blank" rel="noopener noreferrer" className="stakes__source">
+          ({STAKES.painSource})
+        </a>
+      </span>{' '}
       <span className="stakes__figure">{STAKES.figure}</span> {STAKES.text}{' '}
       <a href={STAKES.href} target="_blank" rel="noopener noreferrer" className="stakes__source">
         ({STAKES.source})
@@ -61,7 +78,7 @@ export function PaidComparables() {
           {i < PAID.length - 1 ? '; ' : '. '}
         </span>
       ))}
-      Those are places to file documents and accounts. Dead Man’s Switch is planned at <strong>$39 for ten years, then $5 a year</strong>, and
+      Those are places to file documents and accounts. Last Candle is planned at <strong>$39 for ten years, then $5 a year</strong>, and
       even we cannot read the letters.
     </p>
   );
@@ -83,6 +100,9 @@ export function Distinct() {
       <h2 id="distinct-title" className="distinct__title">
         What no one else does
       </h2>
+      <p className="distinct__thesis" data-testid="thesis">
+        {THESIS}
+      </p>
       <ol className="distinct__list">
         {DISTINCT.map((d) => (
           <li key={d.title}>
@@ -95,9 +115,27 @@ export function Distinct() {
   );
 }
 
-/** A bottom-up projection for the founder plan, labelled as one. */
-export const PROJECTION =
-  'Projection: if 1% of the 29.8 million solo businesses kept a founder vigil at $96 a year, that would be about $286 million a year.';
+/**
+ * The hospice channel, bottom up: one sourced figure, then one assumption per line. MedPAC checked at the
+ * source on 2026-11-22 (March 2025 report, chapter 9, 2023 data).
+ */
+export const HOSPICE_CHANNEL = {
+  source: 'MedPAC, March 2025',
+  href: 'https://medpac.gov/wp-content/uploads/2025/03/Mar25_Ch9_MedPAC_Report_To_Congress_SEC.pdf',
+  fact: 'More than 1.7 million Medicare patients received hospice care in 2023, from about 6,500 hospices.',
+  steps: [
+    'Assume 1 hospice in 100 hands families the keepsake kit: about 17,000 families a year.',
+    'Assume 1 family in 10 then keeps a vigil at $39: about 1,700 vigils, or about $66,000 a year.',
+    'A channel to test with a few hospices first, not a forecast.',
+  ],
+};
+
+/**
+ * What one vigil costs to keep, so "$39 for ten years" reads as a deliberate wedge. Published prices checked on
+ * 2026-11-22: Cloudflare Workers Paid and Workers KV, and Resend.
+ */
+export const COST_PER_VIGIL =
+  'What a vigil costs to keep: about 20 emails a year (Resend, $0.90 per 1,000 past the plan) and under 1 MB of sealed letters (Cloudflare Workers KV, $0.50 per GB-month), so about 2 cents a year, or about 20 cents over ten years, on top of about $25 a month in fixed plans (Workers Paid $5, Resend Pro $20).';
 
 /** The landing page's short version; the full table lives on the honest page. */
 export function ComparisonTeaser() {
@@ -178,7 +216,7 @@ export const ROWS: Row[] = [
     where: 'Its mobile app (safebeyond.com no longer resolves)',
   },
   {
-    name: 'Dead Man’s Switch',
+    name: 'Last Candle',
     hands: 'A sealed letter for each person, in your words',
     reads: 'No one in keepsake custody: the recipient holds half the key',
     checks: 'Witnesses you name. Any one of them can stop it',

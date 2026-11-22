@@ -66,7 +66,7 @@ const outbox = new OutboxMailer(clock, readJson<OutboxEntry[]>('outbox.json', []
 
 let mailer: Mailer = outbox;
 if (env.DMS_MAILER === 'resend') {
-  mailer = new ResendMailer(env.RESEND_API_KEY ?? '', env.DMS_MAIL_FROM ?? "Dead Man's Switch <switch@example.com>");
+  mailer = new ResendMailer(env.RESEND_API_KEY ?? '', env.DMS_MAIL_FROM ?? "Last Candle <switch@example.com>");
 }
 
 const dev = machine && mailer === outbox
@@ -119,7 +119,7 @@ const timer = setInterval(() => {
 }, tickEvery);
 
 const server = serve({ fetch: app.fetch, port }, () => {
-  console.log(`Dead Man's Switch is listening on ${baseUrl}`);
+  console.log(`Last Candle is listening on ${baseUrl}`);
   console.log(`  clock: ${machine ? 'time machine' : 'system'}, store: ${useFiles ? dataDir : 'memory'}, mail: ${mailer === outbox ? 'local outbox' : 'Resend'}`);
 });
 

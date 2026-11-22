@@ -96,7 +96,7 @@ function draft(effect: EmailEffect, baseUrl: string, checkInToken?: string): Dra
       return {
         subject: `${effect.authorName} named you a witness`,
         lines: [
-          `${effect.authorName} uses Dead Man's Switch to keep letters for the people they love, sealed until they can no longer check in.`,
+          `${effect.authorName} uses Last Candle to keep letters for the people they love, sealed until they can no longer check in.`,
           `They named you as a witness. You do not need to do anything now. If they ever miss a check-in and their grace period, we will ask you to confirm before anything is released${effect.witnessesRequired > 1 ? ` (${effect.witnessesRequired} witnesses must agree)` : ''}.`,
           'You cannot read their letters, and neither can we.',
         ],
@@ -131,7 +131,7 @@ export function renderEmail(effect: EmailEffect & { vaultId: string; checkInToke
   const d = draft(effect, baseUrl.replace(/\/$/, ''), effect.checkInToken);
   if (effect.checkInToken) d.lines.push('The button checks you in once and does nothing else: it cannot open your vault, read or change anything.');
   const greeting = `Dear ${effect.to.name},`;
-  const sign = "Dead Man's Switch";
+  const sign = "Last Candle";
   const text = [greeting, '', ...d.lines.flatMap((l) => [l, '']), d.link ? `${d.link.label}: ${d.link.href}\n` : '', sign]
     .join('\n')
     .trim();

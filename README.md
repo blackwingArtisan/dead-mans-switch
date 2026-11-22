@@ -1,10 +1,12 @@
-# Dead Man's Switch
+# Last Candle: a dead man's switch for letters
 
-**Live demo: [dead-mans-switch-ce1.pages.dev](https://dead-mans-switch-ce1.pages.dev)**
+**[Live demo](https://dead-mans-switch-ce1.pages.dev) · [Judge's 60-second path](#judges-60-second-path) · [Kiro log](KIRO-LOG.md)**
 
 The live demo runs entirely in your browser and keeps its data in this browser's storage; real email delivery needs the Node server or the Cloudflare Worker.
 
 **Write letters for the people you love, sealed until you can no longer check in.**
+
+*Every other dead man's switch is a timer. This one is a vigil: a candle you keep lit, witnesses who can veto, and a key that is half on paper.*
 
 > **What no one else does**
 > 1. **The recipient holds half the key.** In keepsake custody the vault never holds enough to read a letter, so not even we can.
@@ -34,11 +36,12 @@ The live demo runs entirely in your browser and keeps its data in this browser's
 
 ## Why it matters
 
+- **[63% of people who had carried out a will said getting into the dead person's accounts was harder than they expected](https://www.helpnetsecurity.com/2021/11/15/digital-handover/)** (1Password survey of 1,000 U.S. adults aged 25 to 40, 2021). The missing piece is rarely money; it is the note that says where things are.
 - **[3,072,666 people died in the U.S. in 2024](https://www.cdc.gov/nchs/fastats/deaths.htm)** (CDC), and **[only 46% of U.S. adults have a will](https://news.gallup.com/poll/351500/how-many-americans-have-will.aspx)** (Gallup, 2021). Not one of those wills tells your sister where the password sheet is.
 - **[29.8 million U.S. small businesses have no employees](https://advocacy.sba.gov/wp-content/uploads/2026/02/FINAL_FAQsAboutSmallBusiness_2026_012826.pdf)** (SBA Office of Advocacy, 2026, from 2022 data). In each one, a single person holds every account.
-- **People already pay for a place to leave things behind:** [Everplans Premium](https://www.everplans.com/pricing) is $99.99 a year, [Trustworthy](https://www.trustworthy.com/pricing) starts at $10 a month billed yearly, and [GoodTrust](https://mygoodtrust.com/pricing) lists $149 for a will or trust. Figures checked at each linked source on 2026-11-18.
+- **People already pay for a place to leave things behind:** [Everplans Premium](https://www.everplans.com/pricing) is $99.99 a year, [Trustworthy](https://www.trustworthy.com/pricing) starts at $10 a month billed yearly, and [GoodTrust](https://mygoodtrust.com/pricing) lists $149 for a will or trust. Figures checked at each linked source on 2026-11-18; the 1Password survey was checked on 2026-11-22.
 
-**Who keeps a vigil:** Mara, 58, writing to her son and her best friend; Priya, a solo founder whose co-founder needs the recovery codes if she is in hospital when payroll is due; and Ruth, a hospice social worker who hands families a printed keepsake kit.
+**Who keeps a vigil:** Mara, 58, writing to her son and her best friend; Priya, who runs a two-person company with no employees and whose co-owner needs the recovery codes if she is in hospital when the contractors' invoices and the domain renewal fall due; and Ruth, a hospice social worker who hands families a printed keepsake kit.
 
 ## Why not the tools you already have?
 
@@ -51,7 +54,7 @@ The live demo runs entirely in your browser and keeps its data in this browser's
 | [GoodTrust Future Messages](https://mygoodtrust.com/future-message) | Video, photo or text messages | GoodTrust stores them (AES-256; not stated as end-to-end) | No one: they go out on dates you choose | Email or your social accounts |
 | [Everplans letters](https://www.everplans.com/blog/keep-things-private-until-after-youre-gone) (Sharing After Death) | A "Letters to Family & Friends" section of your plan | Everplans stores the plan | One deputy reports your death; only you can block it, by email, within up to 30 days | Everplans members and their deputies |
 | [SafeBeyond](https://www.prnewswire.com/news-releases/safebeyond-launches-the-worlds-first-posthumous-message-delivery-platform-300150111.html) | Messages, videos and files on a date, event or place | Stored in its cloud; encryption not stated | Trustees you name report your death | Its mobile app (safebeyond.com no longer resolves) |
-| **Dead Man's Switch** | **A sealed letter for each person, in your words** | **No one in keepsake custody: the recipient holds half the key** | **Witnesses you name; any one of them can stop it** | **Any browser, any email** |
+| **Last Candle** | **A sealed letter for each person, in your words** | **No one in keepsake custody: the recipient holds half the key** | **Witnesses you name; any one of them can stop it** | **Any browser, any email** |
 
 The big platforms hand over accounts. This hands over the words, and even we cannot read them. The three posthumous-message rows were checked at each product's own pages on 2026-11-19.
 
@@ -80,7 +83,12 @@ Wax seals carry each recipient's initial, the check-in is a seal you press, and 
 - **Free** for one vigil with a few letters. Today every vigil is free.
 - **Keepsake, $39 for ten years of vigil, then $5 a year:** more letters and witnesses, and a printed keepsake kit, one card per person. Hospice social workers and estate attorneys are the referrers.
 - **Founder, a flat $8 a month per business, with up to 5 recipients:** a bus-factor plan where the letter is the runbook for the accounts only one person holds.
-- **Projection, not a result:** if 1% of the 29.8 million solo businesses kept a founder vigil at $96 a year, that would be about $286 million a year.
+- **What a vigil costs to keep:** about 20 emails a year ([Resend](https://resend.com/pricing), $0.90 per 1,000 past the plan) and under 1 MB of sealed letters ([Cloudflare Workers KV](https://developers.cloudflare.com/kv/platform/pricing/), $0.50 per GB-month): about 2 cents a year, or about 20 cents over ten years, on top of about $25 a month in fixed plans ([Workers Paid](https://developers.cloudflare.com/workers/platform/pricing/) $5, Resend Pro $20). That is why $39 for ten years is a deliberate wedge, not a loss. Prices checked on 2026-11-22.
+- **The hospice channel, one assumption per line:**
+  1. More than 1.7 million Medicare patients received hospice care in 2023, from about 6,500 hospices ([MedPAC, March 2025](https://medpac.gov/wp-content/uploads/2025/03/Mar25_Ch9_MedPAC_Report_To_Congress_SEC.pdf), checked 2026-11-22).
+  2. Assume 1 hospice in 100 hands families the keepsake kit: about 17,000 families a year.
+  3. Assume 1 family in 10 then keeps a vigil at $39: about 1,700 vigils, or about $66,000 a year.
+  4. A channel to test with a few hospices first, not a forecast.
 - **Built to outlive us:** MIT-licensed and self-hostable, a stated sunset policy, a sealed export of every letter, and [`offline-open.html`](src/web/public/offline-open.html), which opens a letter and its keepsake with no server. Details in [docs/FEATURES.md](docs/FEATURES.md).
 
 ## Run and test it

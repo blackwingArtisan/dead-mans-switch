@@ -50,7 +50,7 @@ export function Shell({ children, wide = false }: { children: ReactNode; wide?: 
           <span className="masthead__mark" aria-hidden="true">
             ✝
           </span>
-          Dead Man’s Switch
+          Last Candle
         </Link>
         <span className="masthead__tag">letters that wait</span>
       </header>

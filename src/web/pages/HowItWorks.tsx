@@ -83,7 +83,7 @@ export function HowItWorks() {
         <h2>If this service ends before you do</h2>
         <p>
           A vigil can last years, longer than many web services. So the code is MIT-licensed and runs on a free hosting plan, and
-          the policy is plain: if Dead Man’s Switch ever closes, every author gets at least 90 days’ notice and a sealed export of
+          the policy is plain: if Last Candle ever closes, every author gets at least 90 days’ notice and a sealed export of
           their letters, released letters stay openable until the notice ends, and nothing is deleted silently.
         </p>
         <p>

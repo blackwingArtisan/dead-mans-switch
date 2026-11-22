@@ -370,7 +370,7 @@ test('the demo guide says what to try next, and the room dies and relights with 
   await expect(page.locator('body')).toHaveAttribute('data-room', 'alive');
   await expect(page.locator('.tm-toggle')).toHaveClass(/tm-toggle--pulse/);
   // The haunted tab: a lit candle and the plain name while the vigil is kept.
-  await expect(page).toHaveTitle('Dead Man’s Switch');
+  await expect(page).toHaveTitle('Last Candle');
   const icon = page.locator('link[rel="icon"]');
   const litIcon = await icon.getAttribute('href');
   expect(litIcon).toMatch(/^data:image\/svg\+xml,/);
@@ -399,7 +399,7 @@ test('the demo guide says what to try next, and the room dies and relights with 
   await expect(page.locator('.tm-toggle')).not.toHaveClass(/tm-toggle--pulse/);
   await travel(page, '+30 days');
   await expect(page.locator('body')).toHaveAttribute('data-room', 'grace');
-  await expect(page).toHaveTitle('(!) Your candle gutters · Dead Man’s Switch');
+  await expect(page).toHaveTitle('(!) Your candle gutters · Last Candle');
   // In grace, the device that opted in is warned once.
   await expect
     .poll(() => page.evaluate(() => (window as unknown as { shownNotices: string[] }).shownNotices))
@@ -411,7 +411,7 @@ test('the demo guide says what to try next, and the room dies and relights with 
   await travel(page, '+7 days');
   await expect(page.locator('body')).toHaveAttribute('data-room', 'confirm');
   await expect(page.getByRole('status').filter({ hasText: 'The room has gone dark' })).toBeAttached();
-  await expect(page).toHaveTitle('The candle is out · Dead Man’s Switch');
+  await expect(page).toHaveTitle('The candle is out · Last Candle');
   await expect(guide).toContainText('Witness asked');
   // The guide names Silas, so his is the first "Witness asked" in the outbox.
   const panel = await openTimeMachine(page);
@@ -427,7 +427,7 @@ test('the demo guide says what to try next, and the room dies and relights with 
   await page.getByRole('link', { name: 'How the seal works' }).click();
   await expect(page.getByRole('heading', { name: 'How the seal works' })).toBeVisible();
   await expect(page.locator('body')).not.toHaveAttribute('data-room', /.+/);
-  await expect(page).toHaveTitle('Dead Man’s Switch');
+  await expect(page).toHaveTitle('Last Candle');
   await expect(icon).toHaveAttribute('href', '/favicon.svg');
 });
 

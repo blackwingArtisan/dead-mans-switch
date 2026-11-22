@@ -23,7 +23,7 @@ export function checkInCalendar(opts: { dueAt: number; cadenceDays: number; appU
   const lines = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
-    'PRODID:-//Dead Mans Switch//Check-in reminder//EN',
+    'PRODID:-//Last Candle//Check-in reminder//EN',
     'CALSCALE:GREGORIAN',
     'BEGIN:VEVENT',
     `UID:${opts.uid}`,

@@ -1,6 +1,6 @@
 # Features
 
-Everything Dead Man's Switch does today, in more detail than the [README](../README.md). Running and testing it is in [RUNNING.md](RUNNING.md); layers, the state machine and the seal are in [ARCHITECTURE.md](ARCHITECTURE.md).
+Everything Last Candle does today, in more detail than the [README](../README.md). Running and testing it is in [RUNNING.md](RUNNING.md); layers, the state machine and the seal are in [ARCHITECTURE.md](ARCHITECTURE.md).
 
 ## What works today
 
@@ -19,7 +19,7 @@ Everything Dead Man's Switch does today, in more detail than the [README](../REA
 - **Play the whole story** (local only): a captioned, hands-off run from a lit candle to a letter read by candlelight.
 - **The room follows the candle**: glow, embers, smoke, moonlight and palette change with the state, and a check-in relights it.
 - **Their candle, your light**: the opened letter starts dark, with a wide warm light on its first lines that then follows the reader's pointer or finger, and the room lights itself after eight seconds. Beside it stands the author's own candle, at the wax height and date of their last check-in: "This is the candle Mara kept until ...". It is the closing shot of Play the whole story.
-- **Two demo vigils**: Mara writing to her family, and Priya, a founder, writing to her co-founder about the accounts only she holds.
+- **Two demo vigils**: Mara writing to her family, and Priya, a founder, writing to her co-owner about the accounts only she holds.
 - A demo guide that says what to try next at each stage.
 - An honest "How the seal works" page, with one drawing of the key's journey (made and split in your browser, half A with the recipient, half B in the vault, joined only in the recipient's browser) and what the vault can and cannot see.
 
