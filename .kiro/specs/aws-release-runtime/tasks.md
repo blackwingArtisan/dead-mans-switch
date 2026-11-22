@@ -8,10 +8,10 @@
   - [x] 1.5 Unit tests including two writers racing with exactly one winner (AWS Req 2.3, 2.8, 9.1)
 
 - [ ] 2. Service retry
-  - [ ] 2.1 `SwitchService` re-reads, re-applies and saves again on `StoreConflictError`, up to 3 attempts, 409 after (AWS Req 4.1-4.4)
+  - [x] 2.1 `SwitchService` re-reads, re-applies and saves again on `StoreConflictError`, up to 3 attempts, 409 after (AWS Req 4.1-4.4)
 
 - [ ] 3. Mailer
-  - [ ] 3.1 `SesMailer` against a fake SES client (AWS Req 5.1-5.5)
+  - [x] 3.1 `SesMailer` against a fake SES client (AWS Req 5.1-5.5)
 
 - [ ] 4. Runtime
   - [ ] 4.1 `src/aws/config.ts`: environment variables, adapter selection (AWS Req 8.1-8.4)

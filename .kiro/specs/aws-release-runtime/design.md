@@ -46,8 +46,12 @@ interface DynamoDocLike {
 }
 ```
 
-### Later components (not built in this session)
-`SesMailer`, `src/aws/config.ts`, `src/aws/http.ts` (`handle(createApp(...))` from `@hono/aws-lambda`, a separate package from `hono`), `src/aws/tick.ts`, a `rate(15 minutes)` schedule description, and the retry in `SwitchService`.
+### Built in session 14
+- Retry: `SwitchService.runNow` repeats `runOnce` (load, tick, mutate, save, mail) on `StoreConflictError`, up to `MAX_SAVE_ATTEMPTS` (3), then throws `HttpError(409)`. Mail follows the save, so a discarded attempt sends none.
+- `SesMailer` takes a `SesClientLike { sendEmail(input) }` shaped like SES v2 `SendEmail`. Errors carry only the SES error name.
+
+### Later components (not built yet)
+`src/aws/config.ts`, `src/aws/http.ts` (`handle(createApp(...))` from `@hono/aws-lambda`, a separate package from `hono`), `src/aws/tick.ts`, a `rate(15 minutes)` schedule description, and the retry in `SwitchService`.
 
 ## Data model
 
@@ -110,10 +114,9 @@ Read through the aws-docs MCP server (`search_documentation`, `read_documentatio
 - "TransactWriteItems" (API Reference): up to 100 actions, one action per item, atomic, aggregate 4 MB, item over 400 KB rejected, rejection when a condition fails or another operation is updating the same item.
 - "CancellationReason" (API Reference): the list is ordered like `TransactItems`; each entry has `Code`, `Message`, `Item`.
 - "Amazon DynamoDB transactions: How it works" (Developer Guide, `transaction-apis.html`; section "Error handling for writing" and "Transaction conflict handling in DynamoDB"): `TransactionCanceledException`, `TransactionConflictException` for single-item writes, SDKs do not retry a cancelled transaction, `ConditionalCheckFailed` as a cancellation reason, client-token idempotency window.
-- Search results only, not read in full: "ConditionalCheckFailedException" usage examples (Python and JavaScript item-operation guides) for the single-item conditional put error name.
 - "SendEmail" (SES API Reference v2): `Content.Simple.{Subject, Body.Html, Body.Text}` with `Charset` and `Data`, `Destination.ToAddresses`, `FromEmailAddress` (must be verified), optional `ConfigurationSetName`.
 - "Schedule types in EventBridge Scheduler" (User Guide): `rate(value unit)` with units minutes, hours or days; 60-second precision.
-- "Invoke a Lambda Event Function on a schedule" (Lambda Developer Guide): Scheduler invokes the function asynchronously and needs an execution role; with no payload it sends an empty event.
+- "Invoke a Lambda Event Function on a schedule" (Lambda Developer Guide): asynchronous invoke, needs an execution role.
 
 Read through context7 (`/honojs/website`): the Lambda adapter is `handle` from `@hono/aws-lambda` (a separate package), exported as `handler`; the Lambda event and context are available as `c.env.event` and `c.env.lambdaContext`.
 

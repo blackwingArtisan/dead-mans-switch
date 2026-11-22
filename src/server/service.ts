@@ -19,7 +19,7 @@ import {
   type VaultView,
 } from '../core/vault';
 import { CHECK_IN_TEMPLATES, renderEmail } from './emails';
-import type { Clock, Mailer, TokenKind, VaultStore } from './ports';
+import { StoreConflictError, type Clock, type Mailer, type TokenKind, type VaultStore } from './ports';
 
 export class HttpError extends Error {
   constructor(
@@ -44,6 +44,8 @@ type Mutation<T> = (vault: Vault, ctx: MachineContext) => { vault: Vault; effect
 const B64U = /^[A-Za-z0-9_-]+$/;
 /** Older check-in links beyond this many are dropped, newest kept. */
 const MAX_CHECK_IN_LINKS = 6;
+/** How many times a change is tried when the store reports a conflicting write (AWS Req 4.1). */
+export const MAX_SAVE_ATTEMPTS = 3;
 const LETTER_ID = /^[A-Za-z0-9_-]{8,32}$/;
 
 export class SwitchService {
@@ -410,7 +412,24 @@ export class SwitchService {
     return this.exclusive(vaultId, () => this.runNow(vaultId, mutate));
   }
 
+  /**
+   * Saves can lose a race on a store that checks versions (DynamoDB). The losing attempt sent no
+   * mail, so it is discarded whole: re-read, re-apply the same change and save again.
+   */
   private async runNow<T>(vaultId: string, mutate: Mutation<T>): Promise<{ result: T; effects: Effect[] }> {
+    for (let attempt = 1; ; attempt++) {
+      try {
+        return await this.runOnce(vaultId, mutate);
+      } catch (err) {
+        if (!(err instanceof StoreConflictError)) throw err;
+        if (attempt >= MAX_SAVE_ATTEMPTS) {
+          throw new HttpError(409, 'This vigil was changed by someone else at the same moment. Please try again.');
+        }
+      }
+    }
+  }
+
+  private async runOnce<T>(vaultId: string, mutate: Mutation<T>): Promise<{ result: T; effects: Effect[] }> {
     const loaded = await this.mustGet(vaultId);
     const cycle = loaded.cycle;
     const ctx: MachineContext = { now: this.now(), mint: await tokenPool(loaded.witnesses.length + loaded.letters.length + 4) };
@@ -452,10 +471,17 @@ export class SwitchService {
       }
     }
     if (failures.length) {
-      const v = await this.deps.store.get(vaultId);
-      if (!v) return;
-      for (const f of failures) v.history.push({ at: this.now(), kind: 'mail-failed', note: `Mail failed (${f}).` });
-      await this.deps.store.put(v);
+      for (let attempt = 1; attempt <= MAX_SAVE_ATTEMPTS; attempt++) {
+        const v = await this.deps.store.get(vaultId);
+        if (!v) return;
+        for (const f of failures) v.history.push({ at: this.now(), kind: 'mail-failed', note: `Mail failed (${f}).` });
+        try {
+          await this.deps.store.put(v);
+          return;
+        } catch (err) {
+          if (!(err instanceof StoreConflictError)) throw err;
+        }
+      }
     }
   }
 }
