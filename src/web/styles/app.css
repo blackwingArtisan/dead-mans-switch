@@ -2714,6 +2714,11 @@ form.terms fieldset {
   align-items: stretch;
   width: min(100%, 560px);
 }
+.witness__note {
+  width: min(100%, 560px);
+  margin: 18px auto 0;
+  text-align: left;
+}
 .witness__confirm {
   width: min(100%, 600px);
   padding: 18px;
@@ -3286,6 +3291,16 @@ form.terms fieldset {
   border-radius: var(--radius);
   background: rgba(10, 7, 5, 0.92);
   box-shadow: 0 16px 50px rgba(0, 0, 0, 0.7);
+}
+.story__body {
+  flex: 1;
+  min-width: 0;
+}
+.story__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 12px;
 }
 .story__caption {
   margin: 0;

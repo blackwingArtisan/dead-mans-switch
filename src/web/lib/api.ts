@@ -66,6 +66,10 @@ export const keepsakes = {
   get: (letterId: string) => local.get(`dms.keepsake.${letterId}`),
 };
 
+let failedRequests = 0;
+/** How many requests have failed so far (no answer, or a 5xx). The story compares it before and after to notice a demo that went quiet. */
+export const failedRequestCount = (): number => failedRequests;
+
 async function request<T>(method: string, path: string, body?: unknown, auth = false): Promise<T> {
   const headers: Record<string, string> = {};
   if (body !== undefined) headers['Content-Type'] = 'application/json';
@@ -75,9 +79,11 @@ async function request<T>(method: string, path: string, body?: unknown, auth = f
   try {
     res = await fetch(path, { method, headers, body: body === undefined ? undefined : JSON.stringify(body) });
   } catch {
+    failedRequests += 1;
     throw new ApiError(0, 'The crypt is unreachable. Check your connection and try again.');
   }
   const data = (await res.json().catch(() => ({}))) as { error?: string };
+  if (res.status >= 500) failedRequests += 1;
   if (!res.ok) throw new ApiError(res.status, data.error ?? `Request failed (${res.status}).`);
   return data as T;
 }
@@ -154,8 +160,11 @@ export const api = {
   exportSealed: () => request<SealedExport>('GET', '/api/vault/export', undefined, true),
   burnLetter: (id: string) => request<VaultView>('DELETE', `/api/vault/letters/${encodeURIComponent(id)}`, undefined, true),
   witness: (token: string) => request<WitnessInfo>('GET', `/api/witness/${encodeURIComponent(token)}`),
-  witnessRespond: (token: string, response: 'confirm' | 'deny') =>
-    request<{ state: string; response: string }>('POST', `/api/witness/${encodeURIComponent(token)}`, { response }),
+  witnessRespond: (token: string, response: 'confirm' | 'deny', note?: string) =>
+    request<{ state: string; response: string }>('POST', `/api/witness/${encodeURIComponent(token)}`, {
+      response,
+      ...(note ? { note } : {}),
+    }),
   checkInLink: (token: string) => request<CheckInLinkInfo>('GET', `/api/check-in/${encodeURIComponent(token)}`),
   checkInByLink: (token: string) => request<CheckInLinkResult>('POST', `/api/check-in/${encodeURIComponent(token)}`, {}),
   openInfo: (token: string) => request<OpenInfo>('GET', `/api/open/${encodeURIComponent(token)}`),

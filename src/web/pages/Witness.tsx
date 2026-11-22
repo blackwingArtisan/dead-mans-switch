@@ -6,6 +6,8 @@ import { Shell } from '../components/Chrome';
 import { DriftingEnvelopes } from '../components/SealCeremony';
 import { WaxSeal } from '../components/WaxSeal';
 
+const NOTE_MAX = 200;
+
 export function Witness({ token }: { token: string }) {
   const [info, setInfo] = useState<WitnessInfo | null>(null);
   const [error, setError] = useState('');
@@ -13,6 +15,7 @@ export function Witness({ token }: { token: string }) {
   const [released, setReleased] = useState(false);
   const [asking, setAsking] = useState<'' | 'confirm'>('');
   const [busy, setBusy] = useState(false);
+  const [note, setNote] = useState('');
 
   useEffect(() => {
     api.witness(token).then(setInfo, (err) => setError(err instanceof Error ? err.message : 'This link could not be read.'));
@@ -21,7 +24,7 @@ export function Witness({ token }: { token: string }) {
   const answer = async (response: 'confirm' | 'deny') => {
     setBusy(true);
     try {
-      const r = await api.witnessRespond(token, response);
+      const r = await api.witnessRespond(token, response, response === 'deny' ? note.trim() : undefined);
       setDone(response === 'confirm' ? 'confirmed' : 'denied');
       setReleased(r.state === 'released');
     } catch (err) {
@@ -119,6 +122,22 @@ export function Witness({ token }: { token: string }) {
                 </div>
               </div>
             ) : (
+              <>
+              <div className="field witness__note">
+                <label htmlFor="witness-note">A note for {first} (optional)</label>
+                <input
+                  id="witness-note"
+                  data-testid="witness-note"
+                  maxLength={NOTE_MAX}
+                  autoComplete="off"
+                  value={note}
+                  onChange={(e) => setNote(e.target.value)}
+                  aria-describedby="witness-note-hint"
+                />
+                <p id="witness-note-hint" className="hint">
+                  Sent with the email that asks {first} to check in, only if you press “{first} still lives”. Up to {NOTE_MAX} characters.
+                </p>
+              </div>
               <div className="witness__actions">
                 <button type="button" className="btn btn--wax" disabled={busy} onClick={() => setAsking('confirm')} data-testid="witness-confirm">
                   I confirm {first} has passed away or can no longer check in
@@ -127,6 +146,7 @@ export function Witness({ token }: { token: string }) {
                   {first} still lives: stop the release
                 </button>
               </div>
+              </>
             )}
             {error && (
               <p className="form-error" role="alert">

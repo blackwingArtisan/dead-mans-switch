@@ -91,11 +91,12 @@ test('witness, recipient and opened-letter pages have no WCAG AA violations', as
   await expect(page.getByTestId('witness-done')).toBeVisible();
   await audit(page);
 
-  await page.goto(await linkFor('release', 'Theo Whitlock'));
+  // June's letter is in keepsake custody and asks for her keepsake; Theo's is in vault custody and opens from its link.
+  await page.goto(await linkFor('release', 'June Okafor'));
   await expect(page.getByLabel('Your keepsake')).toBeVisible();
   await audit(page);
 
-  await page.goto(await linkFor('release', 'June Okafor'));
+  await page.goto(await linkFor('release', 'Theo Whitlock'));
   await page.getByTestId('break-seal').click();
   await expect(page.getByTestId('opened-letter')).toBeVisible();
   // Opening a letter ends the demo guide.

@@ -132,6 +132,34 @@ describe('API lifecycle', () => {
     expect(t.outbox.list().find((m) => m.kind === 'denied')?.to.email).toBe('mara@example.com');
   });
 
+  it('a witness note reaches the author in the denial email and the ledger (Req 6.18)', async () => {
+    await t.createVault();
+    await t.call('POST', '/api/vault/witnesses', { name: 'Silas Crane', email: 'silas@example.com' });
+    await t.call('POST', '/api/dev/clock', { days: 40 });
+    const witness = t.linkFrom('witness-ask', 'silas@example.com');
+    const r = await t.call('POST', `/api/witness/${witness.token}`, { response: 'deny', note: '  Mara was hiking  ' }, false);
+    expect(r.body.state).toBe('grace');
+    expect(t.outbox.list().find((m) => m.kind === 'denied')?.text).toContain('Mara was hiking');
+    const ledger = (await t.call('GET', '/api/vault')).body.history.map((h: { note: string }) => h.note).join('\n');
+    expect(ledger).toContain('Mara was hiking');
+  });
+
+  it('refuses a witness note that is not text or is over 200 characters, and changes nothing (Req 6.19)', async () => {
+    await t.createVault();
+    await t.call('POST', '/api/vault/witnesses', { name: 'Silas Crane', email: 'silas@example.com' });
+    await t.call('POST', '/api/dev/clock', { days: 40 });
+    const witness = t.linkFrom('witness-ask', 'silas@example.com');
+    for (const note of ['x'.repeat(201), 42, { a: 1 }]) {
+      const r = await t.call('POST', `/api/witness/${witness.token}`, { response: 'deny', note }, false);
+      expect(r.status).toBe(400);
+      expect(r.body.error).toContain('200 characters');
+    }
+    expect((await t.call('GET', '/api/vault')).body.state).toBe('confirm');
+    // The link still works afterwards, and the longest allowed note is accepted.
+    const ok = await t.call('POST', `/api/witness/${witness.token}`, { response: 'deny', note: 'x'.repeat(200) }, false);
+    expect(ok.status).toBe(200);
+  });
+
   it('"to next event" jumps straight to the next threshold', async () => {
     await t.createVault({ cadenceDays: 10, reminderLeadDays: 2 });
     const r = await t.call('POST', '/api/dev/clock', { to: 'next' });

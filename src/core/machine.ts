@@ -16,7 +16,7 @@ export type SwitchEvent =
   | { type: 'pause' }
   | { type: 'resume' }
   | { type: 'witnessConfirm'; witnessId: string }
-  | { type: 'witnessDeny'; witnessId: string };
+  | { type: 'witnessDeny'; witnessId: string; /** An optional line from the witness to the author, already trimmed. */ note?: string };
 
 export type EmailEffect =
   | { template: 'reminder'; to: Person; dueAt: number }
@@ -25,7 +25,7 @@ export type EmailEffect =
   | { template: 'witness-ask'; to: Person; authorName: string; lastCheckInAt: number; witnessToken: string }
   | { template: 'witnesses-asked'; to: Person; witnessCount: number }
   | { template: 'stand-down'; to: Person; authorName: string }
-  | { template: 'denied'; to: Person; witnessName: string; graceEndsAt: number }
+  | { template: 'denied'; to: Person; witnessName: string; graceEndsAt: number; witnessNote?: string }
   | { template: 'witness-named'; to: Person; authorName: string; witnessesRequired: number }
   | { template: 'candle-lit'; to: Person; authorName: string; from: string; line: string }
   | {
@@ -125,7 +125,7 @@ export function step(input: Vault, event: SwitchEvent, ctx: MachineContext): Ste
         if (confirmations(vault) >= requiredConfirmations(vault)) release(vault, ctx, emit, log, 'Witnesses confirmed.');
       } else {
         witness.response = 'denied';
-        deny(vault, witness.name, ctx, emit, log);
+        deny(vault, witness.name, event.note, ctx, emit, log);
       }
       break;
     }
@@ -249,15 +249,18 @@ function enterConfirm(vault: Vault, ctx: MachineContext, emit: Emit, log: Log): 
   );
 }
 
-function deny(vault: Vault, witnessName: string, ctx: MachineContext, emit: Emit, log: Log): void {
+function deny(vault: Vault, witnessName: string, note: string | undefined, ctx: MachineContext, emit: Emit, log: Log): void {
   const graceEndsAt = ctx.now + vault.settings.graceDays * 24 * 60 * 60 * 1000;
   vault.state = 'grace';
   vault.stateSince = ctx.now;
   vault.graceEndsOverride = graceEndsAt;
   vault.confirmStartedAt = null;
   for (const w of vault.witnesses) w.tokenHash = null;
-  emit({ template: 'denied', to: vault.author, witnessName, graceEndsAt });
-  log('witness-denied', `${witnessName} says you still live. The release was stopped and a new grace period began.`);
+  emit({ template: 'denied', to: vault.author, witnessName, graceEndsAt, ...(note ? { witnessNote: note } : {}) });
+  log(
+    'witness-denied',
+    `${witnessName} says you still live${note ? ` and left a note: “${note}”` : ''}. The release was stopped and a new grace period began.`,
+  );
 }
 
 function release(vault: Vault, ctx: MachineContext, emit: Emit, log: Log, reason: string): void {

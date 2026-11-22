@@ -65,7 +65,7 @@ async function demoVigil(page) {
   await page.getByTestId('witness-confirm').click();
   await page.getByTestId('witness-confirm-final').click();
   await page.getByTestId('witness-done').waitFor();
-  await page.goto(await linkFor('release', 'June Okafor'));
+  await page.goto(await linkFor('release', 'Theo Whitlock'));
   await page.getByTestId('break-seal').click();
   const sheet = page.getByTestId('letter-page');
   await sheet.waitFor();

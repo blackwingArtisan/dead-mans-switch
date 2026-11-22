@@ -149,6 +149,18 @@ Errors are JSON `{ error }`: 400 validation, 401 owner token, 404 unknown link, 
 
 Design tokens live on `:root`: night `#0c0908`, parchment `#efe3c8`, oxblood wax `#8e1b1b`, brass `#c9a45c`, flame `#ffcf7a`. Type: Cinzel Decorative for display, Cormorant Garamond for body, IM Fell English for handwriting. `prefers-reduced-motion` disables all animation.
 
+## The whole story
+
+`src/web/lib/story.ts` is a list of beats. Each beat has a caption and a `run` that uses the real app: the API client, `navigate`, and clicks on the buttons a person would press. Captions are shown by `StoryCaptions`, a polite live region. `?story-pace=0.2` scales every wait; `?story=1` on the landing page starts the story once `/api/health` reports the time machine.
+
+Beats, in order: set up Mara's vigil; a month passes; the candle goes out; **the false alarm**; a second month and a second candle out; Silas confirms; **the keepsake card**; June breaks her seal; she reads by candle; the room is lit.
+
+- **False alarm.** The witness page has an optional note field (200 characters). Silas types "Mara was hiking" and presses "They still live". The note travels as `note` on `POST /api/witness/:token`, through `step(vault, { type: 'witnessDeny', witnessId, note? })`, into the ledger entry and the `denied` email (`witnessNote`). Denial returns the vigil to `grace` (Req 6.4), not `alive`, so Mara's own check-in is a separate beat: the story opens her vigil and presses the real check-in button, which plays the existing match-strike relight. The clock then moves on again. The outbox is newest first, so the second round's witness link is the one the story finds.
+- **Keepsake card.** June's letter is sealed in keepsake custody and Theo's in vault custody (`DEMO` in `lib/seal.ts`). Before June's link is opened the story shows the existing keepsake page for her letter, built from the link `sealAndStore` returned. That page already remembers half A in this browser, so the release link then opens with the keepsake found, and the seal breaks through the normal open page. No change to custody rules: A is never sent to the server.
+- **Failure.** `api.ts` counts failed requests (network errors and 5xx). A story beat that throws an `ApiError`, or that sees the count change while it waits, stops with `failed: true`. The caption reads "The demo stopped responding." and offers "Reset the demo" and "Play it again". Reset calls `/api/dev/reset`; if that does not answer it removes the static demo's `localStorage` key (`STATIC_DEMO_KEY`, kept in `lib/static-demo-key.ts` so the story does not import the in-browser server). The Node server and the static build share this wording because both come back to the same two actions.
+- **Duration.** `STORY_SECONDS` in `story.ts` is the label on the button. A unit test keeps it within 5 s of the sum of the beats' declared holds, and an end-to-end run at pace 1 keeps it within 5 s of the measured time.
+- **Motion.** Beats add no animation of their own. The relight already has a reduced-motion path in `app.css`, and the note field is plain text input.
+
 ## Error handling
 
 Every route validates input and returns a message that says what to do. The UI shows errors in `role="alert"` regions and never loses a typed letter on failure. A 401 on the vigil clears the stored owner token and returns to the landing page.

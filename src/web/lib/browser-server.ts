@@ -26,7 +26,8 @@ interface DemoState {
   offsetMs: number;
 }
 
-export const STATIC_DEMO_KEY = 'dms.static-demo';
+import { STATIC_DEMO_KEY } from './static-demo-key';
+export { STATIC_DEMO_KEY };
 const TICK_MS = 3_000;
 const LOCK_NAME = 'dms.static-demo';
 

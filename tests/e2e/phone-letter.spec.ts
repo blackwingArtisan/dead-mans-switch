@@ -16,7 +16,7 @@ test('on a 390 px phone the reading-light flame stays off the letter title and t
   expect((await request.post('/api/dev/clock', { data: { days: 38 } })).ok()).toBe(true);
   expect((await request.post('/api/dev/clock', { data: { days: 15 } })).ok()).toBe(true);
   const { messages } = (await (await request.get('/api/dev/outbox')).json()) as { messages: { kind: string; to: { name: string }; text: string }[] };
-  const release = messages.find((m) => m.kind === 'release' && m.to.name === 'June Okafor')!;
+  const release = messages.find((m) => m.kind === 'release' && m.to.name === 'Theo Whitlock')!;
   const link = release.text.match(/https?:\/\/\S+/)![0];
 
   await page.goto(link);

@@ -107,6 +107,8 @@ Criteria use EARS: `WHEN` (event), `WHILE` (state), `WHERE` (optional feature), 
 15. IF a witness answers while the vigil is not in `confirm` THEN THE SYSTEM SHALL refuse with a plain message.
 16. IF a witness uses an invalidated link THEN THE SYSTEM SHALL refuse with a plain message.
 17. WHEN the vigil moves to `confirm` THE SYSTEM SHALL start the silence window from the moment witnesses were asked, not from a back-dated threshold.
+18. WHEN a witness answers "they still live" with a note of up to 200 characters THE SYSTEM SHALL show that note to the author in the denial email and in the ledger.
+19. IF the note sent with a witness answer is not text or is longer than 200 characters THEN THE SYSTEM SHALL refuse it with a message naming the limit and change nothing.
 
 ## Requirement 7: Release and one-time opening
 
@@ -200,3 +202,22 @@ Criteria use EARS: `WHEN` (event), `WHILE` (state), `WHERE` (optional feature), 
 13. WHERE a Cloudflare Workers Rate Limiting binding is configured THE SYSTEM SHALL count witness and letter link requests through that binding.
 14. WHERE no rate-limiting binding is configured THE SYSTEM SHALL count requests in memory, per process or isolate.
 15. IF the rate-limiting binding fails THEN THE SYSTEM SHALL allow the request.
+
+## Requirement 12: The whole story
+
+**User story:** As a visitor or presenter, I want a hands-off, captioned run of the demo that includes a false alarm and ends with a letter opened for real, so that I can see why witnesses matter and how a keepsake works without clicking through it myself.
+
+#### Acceptance criteria
+1. WHILE the story plays THE SYSTEM SHALL drive every beat through the same routes, buttons and API a person would use.
+2. WHEN the candle first goes out in the story THE SYSTEM SHALL show the witness Silas pressing "They still live" on his witness page with the note "Mara was hiking", so that the vigil returns to `grace` through the witness-denial path.
+3. WHEN Silas's answer is recorded THE SYSTEM SHALL show Mara pressing "I still walk among the living" on her vigil, which relights the candle with the match-strike relight.
+4. WHEN the candle has been relit THE SYSTEM SHALL move the clock on until the candle goes out a second time, and Silas shall then confirm.
+5. WHEN each beat of the false alarm begins THE SYSTEM SHALL state in plain words what is happening in a caption announced to screen readers.
+6. THE SYSTEM SHALL seal June's demo letter in keepsake custody and Theo's in vault custody, so that the demo still shows both custody modes.
+7. WHEN June is about to break her seal in the story THE SYSTEM SHALL show her keepsake card with its printed code and a caption, and then open her release link with that keepsake remembered, so that the seal breaks for real.
+8. IF any API call fails while the story plays THEN THE SYSTEM SHALL stop and show "The demo stopped responding." with the buttons "Reset the demo" and "Play it again", both reachable by keyboard.
+9. WHEN "Reset the demo" is chosen THE SYSTEM SHALL reset through the dev reset route when it answers and otherwise clear the static demo's stored state, using wording that fits both the Node server and the static build.
+10. WHEN "Play it again" is chosen THE SYSTEM SHALL start the story from the first beat.
+11. WHEN the landing page is opened with `?story=1` and the time machine is available THE SYSTEM SHALL start the story, and WHILE it plays THE SYSTEM SHALL keep sound muted unless the visitor turned it on.
+12. THE SYSTEM SHALL label the "Play the whole story" button with the story's real running time in seconds at normal pace, within 5 seconds of the measured time.
+13. WHILE the user prefers reduced motion THE SYSTEM SHALL show every new beat's end state at once, with no animation.

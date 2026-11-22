@@ -253,13 +253,14 @@ export class SwitchService {
     });
   }
 
-  async witnessRespond(token: string, response: unknown) {
+  async witnessRespond(token: string, response: unknown, rawNote?: unknown) {
     if (response !== 'confirm' && response !== 'deny') throw new ValidationError('Answer "confirm" or "deny".');
+    const note = cleanWitnessNote(rawNote);
     const { vaultId, hash } = await this.lookup('witness', token, 'This witness link has expired or was never valid.');
     return this.transact(vaultId, (vault, ctx) => {
       const w = vault.witnesses.find((x) => x.tokenHash === hash);
       if (!w) throw new HttpError(410, 'This witness link is no longer needed.');
-      const r = step(vault, { type: response === 'confirm' ? 'witnessConfirm' : 'witnessDeny', witnessId: w.id }, ctx);
+      const r = step(vault, response === 'confirm' ? { type: 'witnessConfirm', witnessId: w.id } : { type: 'witnessDeny', witnessId: w.id, ...(note ? { note } : {}) }, ctx);
       return { vault: r.vault, effects: r.effects, result: { state: r.vault.state, response: response === 'confirm' ? 'confirmed' : 'denied' } };
     });
   }
@@ -462,6 +463,17 @@ export class SwitchService {
 type OutgoingEmail = Effect & { checkInToken?: string };
 
 const CHECK_IN_LINK_SPENT = 'This check-in link has been used or has expired. Open your vigil on your own device to check in.';
+
+export const MAX_WITNESS_NOTE = 200;
+
+/** A witness's optional note to the author: text only, trimmed, at most 200 characters; blank means none. */
+function cleanWitnessNote(raw: unknown): string | undefined {
+  if (raw === undefined || raw === null) return undefined;
+  if (typeof raw !== 'string' || raw.trim().length > MAX_WITNESS_NOTE) {
+    throw new ValidationError(`A note must be text of at most ${MAX_WITNESS_NOTE} characters.`);
+  }
+  return raw.trim() || undefined;
+}
 
 function editable(vault: Vault): void {
   if (vault.state === 'released') {

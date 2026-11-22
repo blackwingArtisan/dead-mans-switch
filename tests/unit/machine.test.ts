@@ -158,6 +158,16 @@ describe('every cancel path', () => {
     expect(again.vault.witnesses.every((w) => w.response === 'pending')).toBe(true);
   });
 
+  it('a witness note travels in the denial email and the ledger, and no note leaves both as before (Req 6.18)', () => {
+    const noted = step(toConfirm(), { type: 'witnessDeny', witnessId: 'w1', note: 'Mara was hiking' }, ctxAt(at(38)));
+    const mail = noted.effects[0];
+    expect(mail?.template === 'denied' && mail.witnessNote).toBe('Mara was hiking');
+    expect(noted.vault.history.at(-1)?.note).toContain('Mara was hiking');
+    const plain = step(toConfirm(), { type: 'witnessDeny', witnessId: 'w1' }, ctxAt(at(38)));
+    expect(plain.effects[0]).not.toHaveProperty('witnessNote');
+    expect(plain.vault.history.at(-1)?.note).not.toContain('note');
+  });
+
   it('a denial sends a new last call before the restarted grace ends', () => {
     const denied = step(toConfirm(), { type: 'witnessDeny', witnessId: 'w1' }, ctxAt(at(38))).vault;
     expect(templates(tick(denied, 44).effects)).toEqual(['last-call']);

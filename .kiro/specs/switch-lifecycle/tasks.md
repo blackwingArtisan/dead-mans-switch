@@ -85,3 +85,10 @@
   - [x] 10.6 Phone letter page: the reading-light flame is off the title and the hint pill sits above the page at 390 px (Req 10.17)
   - [x] 10.7 Grace room is a sickly yellow-green with a slow edge flicker, AA text contrast, and no animation under reduced motion (Req 10.18, 10.1, 10.3)
   - [x] 10.8 Brass buttons get the pill radius and the terms form rows get a row gap (Req 10.19, 10.20)
+
+- [x] 11. The whole story: story beats for "Play the whole story" (the "room fills" ending is a later session)
+  - [x] 11.1 The false alarm: a witness note on the denial path, then Silas denies with "Mara was hiking", Mara relights the candle, the clock moves on and Silas confirms (Req 6.18, 6.19, 12.1-12.5, 12.13)
+  - [x] 11.2 The keepsake card: June's letter in keepsake custody and Theo's in vault custody, the card on screen before the seal breaks (Req 12.6, 12.7)
+  - [x] 11.3 An honest failure state with "Reset the demo" and "Play it again" (Req 12.8-12.10)
+  - [x] 11.4 Start from a link: `?story=1` on the landing page (Req 12.11)
+  - [x] 11.5 Relabel the duration from the measured running time, with a test that keeps the label true (Req 12.12)

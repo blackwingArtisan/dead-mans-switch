@@ -88,6 +88,7 @@ function draft(effect: EmailEffect, baseUrl: string, checkInToken?: string): Dra
         subject: `${effect.witnessName} says you still live: please check in`,
         lines: [
           `${effect.witnessName} stopped the release of your letters.`,
+          ...(effect.witnessNote ? [`${effect.witnessName} left you a note: “${effect.witnessNote}”`] : []),
           `A new grace period runs until ${formatDate(effect.graceEndsAt)}. Check in to reset your candle.`,
         ],
         link: checkIn,

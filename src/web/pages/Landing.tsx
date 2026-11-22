@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type FormEvent, type PointerEvent } from '
 import { api, session } from '../lib/api';
 import { navigate } from '../lib/router';
 import { DEMO, FOUNDER_DEMO, sealAndStore } from '../lib/seal';
-import { playStory, useStoryAvailable } from '../lib/story';
+import { playStory, STORY_SECONDS, useStoryAvailable } from '../lib/story';
 import { tour } from '../lib/tour';
 import { useFieldErrors, type FieldMessages } from '../lib/validate';
 import { Candle } from '../components/Candle';
@@ -114,6 +114,16 @@ export function Landing() {
   const [grace, setGrace] = useState(7);
   const [error, setError] = useState('');
   const storyAvailable = useStoryAvailable();
+  const autoStarted = useRef(false);
+
+  // A link with ?story=1 (a README link, say) plays the story once the page knows the time machine is there.
+  // Sound is not touched: it stays muted unless the visitor turned it on.
+  useEffect(() => {
+    if (!storyAvailable || autoStarted.current) return;
+    if (new URLSearchParams(window.location.search).get('story') !== '1') return;
+    autoStarted.current = true;
+    void playStory();
+  }, [storyAvailable]);
   const [busy, setBusy] = useState<'' | 'create' | 'demo' | 'founder'>('');
 
   const begin = async (e: FormEvent<HTMLFormElement>) => {
@@ -166,7 +176,7 @@ export function Landing() {
           <div className="hero__actions">
             {storyAvailable && (
               <button type="button" className="btn btn--wax" onClick={() => void playStory()} disabled={busy !== ''} data-testid="play-story">
-                ▶ Play the whole story (40 s)
+                ▶ Play the whole story ({STORY_SECONDS} s)
               </button>
             )}
             <button

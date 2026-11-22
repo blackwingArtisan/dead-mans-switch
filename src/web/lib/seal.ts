@@ -41,7 +41,10 @@ export async function sealAndStore(args: {
   };
 }
 
-/** Invented sample people and letters for the one-click demo vigil. */
+/**
+ * Invented sample people and letters for the one-click demo vigil. Theo's letter is in vault custody (his link opens on its
+ * own); June's is in keepsake custody (she brings half the key), so the demo shows both modes and the story can show the card.
+ */
 export const DEMO = {
   author: { name: 'Mara Whitlock', email: 'mara.whitlock@example.com' },
   witnesses: [
@@ -51,7 +54,7 @@ export const DEMO = {
   letters: [
     {
       recipient: { name: 'Theo Whitlock', email: 'theo.whitlock@example.com' },
-      custody: 'keepsake' as const,
+      custody: 'vault' as const,
       content: {
         title: 'For Theo, when the lights go out',
         from: 'Mum',
@@ -64,7 +67,7 @@ export const DEMO = {
     },
     {
       recipient: { name: 'June Okafor', email: 'june.okafor@example.com' },
-      custody: 'vault' as const,
+      custody: 'keepsake' as const,
       content: {
         title: 'June, the passwords and the cat',
         from: 'Mara',

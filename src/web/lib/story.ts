@@ -1,13 +1,15 @@
 /**
- * "Play the whole story": a captioned, hands-off run of the demo, about 40 seconds long. It needs
+ * "Play the whole story": a captioned, hands-off run of the demo. It runs for STORY_SECONDS (54 s measured at normal
+ * pace: the sum of the HOLD pauses is about 51 s, and page loads and clicks add about 3 s). It needs
  * the local time machine, so it only appears when the server runs with dev tools. It drives the
  * real app (the same routes, buttons and API a person would use), which also makes it a clean
  * take for a demo video. `?story-pace=0.2` in the URL plays it five times faster (used by tests and the media script).
  */
 import { useEffect, useState } from 'react';
-import { api, requestRefresh, session } from './api';
+import { api, ApiError, failedRequestCount, local, requestRefresh, session } from './api';
 import { navigate } from './router';
 import { DEMO, sealAndStore } from './seal';
+import { STATIC_DEMO_KEY } from './static-demo-key';
 import { tour } from './tour';
 
 export interface StoryState {
@@ -15,10 +17,13 @@ export interface StoryState {
   caption: string;
   step: number;
   steps: number;
+  /** True when a call to the demo failed and the story stopped; the captions then offer a reset or a replay. */
+  failed: boolean;
 }
 
 const EVENT = 'dms:story';
-const IDLE: StoryState = { playing: false, caption: '', step: 0, steps: 0 };
+const IDLE: StoryState = { playing: false, caption: '', step: 0, steps: 0, failed: false };
+export const STORY_FAILED = 'The demo stopped responding.';
 let state: StoryState = IDLE;
 let stopRequested = false;
 let currentPace = 1;
@@ -39,6 +44,16 @@ export function useStory(): StoryState {
 }
 
 class Stopped extends Error {}
+/** A request to the demo failed while the story played. */
+class DemoDown extends Error {}
+
+let failuresAtStart = 0;
+
+/** Throws as soon as the story is stopped or any request (the story's own or a page's) has failed since it began. */
+function checkpoint(): void {
+  if (stopRequested) throw new Stopped();
+  if (failedRequestCount() !== failuresAtStart) throw new DemoDown();
+}
 
 function readPace(): number {
   const p = Number(new URLSearchParams(window.location.search).get('story-pace'));
@@ -50,7 +65,7 @@ const pace = () => currentPace;
 async function wait(ms: number): Promise<void> {
   const end = Date.now() + ms * pace();
   while (Date.now() < end) {
-    if (stopRequested) throw new Stopped();
+    checkpoint();
     await new Promise((r) => setTimeout(r, Math.min(100, end - Date.now())));
   }
 }
@@ -58,7 +73,7 @@ async function wait(ms: number): Promise<void> {
 async function until<T>(find: () => T | null | undefined, timeoutMs = 8000): Promise<T> {
   const end = Date.now() + timeoutMs;
   for (;;) {
-    if (stopRequested) throw new Stopped();
+    checkpoint();
     const found = find();
     if (found) return found;
     if (Date.now() > end) throw new Error('The story lost its place. Reset the demo and try again.');
@@ -67,6 +82,17 @@ async function until<T>(find: () => T | null | undefined, timeoutMs = 8000): Pro
 }
 
 const byTestId = (id: string) => () => document.querySelector<HTMLElement>(`[data-testid="${id}"]`);
+
+/** Types into a React-controlled input the way a keyboard would: one character, one input event. */
+async function typeInto(input: HTMLInputElement, text: string, perCharMs: number): Promise<void> {
+  const setValue = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!;
+  input.focus();
+  for (let i = 1; i <= text.length; i++) {
+    setValue.call(input, text.slice(0, i));
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    await wait(perCharMs);
+  }
+}
 
 async function linkFor(kind: string, name: string): Promise<URL> {
   const { messages } = await api.dev.outbox();
@@ -88,7 +114,7 @@ async function readByCandle(ms: number): Promise<void> {
   const rows = 4;
   const frames = Math.max(10, Math.round((ms * pace()) / 60));
   for (let i = 0; i <= frames; i++) {
-    if (stopRequested) throw new Stopped();
+    checkpoint();
     const t = i / frames;
     const row = Math.min(rows - 1, Math.floor(t * rows));
     const along = (t * rows) % 1;
@@ -99,6 +125,44 @@ async function readByCandle(ms: number): Promise<void> {
   }
 }
 
+/** The keepsake link of each keepsake-custody letter, by recipient. It stays in this browser; it is never sent anywhere. */
+const keepsakeLinks = new Map<string, string>();
+
+/** True in the static build (`npm run build:static`), where the whole API runs in this browser. */
+const STATIC_BUILD = import.meta.env.VITE_STATIC_DEMO === '1';
+
+const FALSE_ALARM_NOTE = 'Mara was hiking';
+const NOTE_CHAR_MS = 45;
+
+/**
+ * Every pause the story makes on purpose, in milliseconds at normal pace (`?story-pace` scales them). The label on the
+ * button is checked against their sum by a unit test, and against a real run by an end-to-end test.
+ */
+const HOLD = {
+  vigil: 5000,
+  guttering: 6500,
+  out: 6500,
+  beforeNote: 700,
+  note: FALSE_ALARM_NOTE.length * NOTE_CHAR_MS,
+  beforeDeny: 600,
+  afterDeny: 1400,
+  beforeRelight: 1000,
+  relit: 2400,
+  secondGuttering: 1500,
+  secondOut: 2500,
+  beforeConfirm: 1800,
+  afterConfirm: 3000,
+  keepsakeCard: 3500,
+  opened: 1500,
+  reading: 7000,
+  endCard: 5500,
+} as const;
+
+export const STORY_HOLD_MS: number = Object.values(HOLD).reduce((sum, ms) => sum + ms, 0);
+
+/** The running time on the button, in seconds at normal pace: measured end to end, rounded. Keep it true: tests compare it. */
+export const STORY_SECONDS = 54;
+
 const STEPS: { caption: string; run: () => Promise<void> }[] = [
   {
     caption: 'Mara keeps a vigil. Two sealed letters, two witnesses, and one tap a month keeps the candle lit.',
@@ -107,11 +171,16 @@ const STEPS: { caption: string; run: () => Promise<void> }[] = [
       const r = await api.createVault(DEMO.author, { cadenceDays: 30, graceDays: 7, reminderLeadDays: 3, witnessesRequired: 1 });
       session.save(r.ownerToken);
       for (const w of DEMO.witnesses) await api.addWitness(w);
-      for (const l of DEMO.letters) await sealAndStore({ ...l, authorName: DEMO.author.name });
+      keepsakeLinks.clear();
+      for (const l of DEMO.letters) {
+        const sealed = await sealAndStore({ ...l, authorName: DEMO.author.name });
+        // Keepsake custody only: the link with half A in its fragment, for the card Mara hands over.
+        if (l.custody === 'keepsake') keepsakeLinks.set(l.recipient.name, sealed.keepsakeLink);
+      }
       tour.end();
       navigate('/');
       await until(byTestId('state-title'));
-      await wait(5000);
+      await wait(HOLD.vigil);
     },
   },
   {
@@ -119,7 +188,7 @@ const STEPS: { caption: string; run: () => Promise<void> }[] = [
     run: async () => {
       await api.dev.travel({ days: 30 });
       requestRefresh();
-      await wait(6500);
+      await wait(HOLD.guttering);
     },
   },
   {
@@ -127,36 +196,85 @@ const STEPS: { caption: string; run: () => Promise<void> }[] = [
     run: async () => {
       await api.dev.travel({ days: 7 });
       requestRefresh();
-      await wait(6500);
+      await wait(HOLD.out);
     },
   },
   {
-    caption: 'Silas, her witness, confirms. A lost phone could never get this far: any witness can stop it.',
+    caption: 'False alarm. Silas knows Mara is out hiking, so he leaves her a note, “Mara was hiking”, and presses “Mara still lives”. Any one witness can stop a release.',
+    run: async () => {
+      const link = await linkFor('witness-ask', 'Silas Crane');
+      navigate(link.pathname);
+      const note = await until(byTestId('witness-note'));
+      await wait(HOLD.beforeNote);
+      await typeInto(note as HTMLInputElement, FALSE_ALARM_NOTE, NOTE_CHAR_MS);
+      await wait(HOLD.beforeDeny);
+      (await until(byTestId('witness-deny'))).click();
+      await until(byTestId('witness-done'));
+      await wait(HOLD.afterDeny);
+    },
+  },
+  {
+    caption: 'The release stops and a new grace period begins. Mara sees the note and taps “I still walk among the living”. The candle relights.',
+    run: async () => {
+      navigate('/');
+      const checkIn = await until(byTestId('check-in'));
+      await wait(HOLD.beforeRelight);
+      checkIn.click();
+      await wait(HOLD.relit);
+    },
+  },
+  {
+    caption: 'Time moves on, and this time nobody taps. The candle goes out a second time.',
+    run: async () => {
+      await api.dev.travel({ days: 30 });
+      requestRefresh();
+      await wait(HOLD.secondGuttering);
+      await api.dev.travel({ days: 7 });
+      requestRefresh();
+      await wait(HOLD.secondOut);
+    },
+  },
+  {
+    caption: 'Silas is asked again. This time he confirms. A lost phone could never get this far: any witness can stop it.',
     run: async () => {
       const link = await linkFor('witness-ask', 'Silas Crane');
       navigate(link.pathname);
       (await until(byTestId('witness-confirm'))).click();
-      await wait(1800);
+      await wait(HOLD.beforeConfirm);
       (await until(byTestId('witness-confirm-final'))).click();
       await until(byTestId('witness-done'));
-      await wait(3000);
+      await wait(HOLD.afterConfirm);
     },
   },
   {
-    caption: 'June receives a one-time link. The letter is decrypted in her browser, and the vault forgets its copy.',
+    caption: 'Mara handed June a keepsake long ago: half of a key, printed on a card. June brings it. Half a key opens nothing, and the vault never held it.',
+    run: async () => {
+      const link = keepsakeLinks.get('June Okafor');
+      if (!link) throw new Error('The story lost its place. Reset the demo and try again.');
+      const url = new URL(link);
+      navigate(url.pathname + url.hash);
+      const code = await until(byTestId('keepsake-code'));
+      code.scrollIntoView({ block: 'center' });
+      await wait(HOLD.keepsakeCard);
+    },
+  },
+  {
+    caption: 'June receives a one-time link. Her keepsake is found on this device, the letter is decrypted in her browser, and the vault forgets its copy.',
     run: async () => {
       const link = await linkFor('release', 'June Okafor');
       navigate(link.pathname + link.hash);
+      // The keepsake page remembered half A, so the open page finds it: the link itself carries no key.
+      await until(byTestId('keepsake-ready'));
       (await until(byTestId('break-seal'))).click();
       await until(byTestId('letter-page'));
-      await wait(1500);
+      await wait(HOLD.opened);
     },
   },
   {
     caption: 'She reads it by her last candle.',
     run: async () => {
       // The room lights itself after eight seconds in the dark; the hand moves for seven.
-      await readByCandle(7000);
+      await readByCandle(HOLD.reading);
     },
   },
   {
@@ -174,16 +292,18 @@ const STEPS: { caption: string; run: () => Promise<void> }[] = [
       const beside = page && keeper && keeper.getBoundingClientRect().right <= page.getBoundingClientRect().left;
       if (keeper && !beside) keeper.scrollIntoView({ block: 'center', behavior: 'smooth' });
       else if (page) window.scrollTo({ top: Math.max(0, page.getBoundingClientRect().top + window.scrollY - 24), behavior: 'smooth' });
-      await wait(5500);
+      await wait(HOLD.endCard);
     },
   },
 ];
 
-export async function playStory(): Promise<void> {
+/** Plays the story. `samePace` replays at the pace of the last run (the page address no longer carries `?story-pace`). */
+export async function playStory(samePace = false): Promise<void> {
   if (state.playing) return;
   stopRequested = false;
-  currentPace = readPace();
-  emit({ playing: true, step: 0, steps: STEPS.length, caption: '' });
+  currentPace = samePace ? currentPace : readPace();
+  failuresAtStart = failedRequestCount();
+  emit({ playing: true, step: 0, steps: STEPS.length, caption: '', failed: false });
   try {
     for (const [i, step] of STEPS.entries()) {
       emit({ step: i + 1, caption: step.caption });
@@ -193,8 +313,35 @@ export async function playStory(): Promise<void> {
     emit({ ...IDLE, caption: STEPS[STEPS.length - 1]!.caption });
   } catch (err) {
     if (err instanceof Stopped) emit({ ...IDLE });
+    // A call to the demo failed: say so plainly and offer a way out, instead of leaving the story half-played.
+    else if (err instanceof DemoDown || err instanceof ApiError) emit({ ...IDLE, failed: true, caption: STORY_FAILED });
     else emit({ ...IDLE, caption: err instanceof Error ? err.message : 'The story stopped.' });
   }
+}
+
+/**
+ * Puts the demo back to empty. The dev reset route does it when it answers (the Node server, and the static build's
+ * in-browser server). When it does not, the static demo's stored state is cleared, which is all a static demo has.
+ * Either way this browser forgets its owner key. Says what happened in the caption.
+ */
+export async function resetDemo(): Promise<void> {
+  let answered = true;
+  try {
+    await api.dev.reset();
+  } catch {
+    answered = false;
+    local.remove(STATIC_DEMO_KEY);
+  }
+  if (!answered && !STATIC_BUILD) {
+    // A stopped Node server cannot be reset from the page; say so, and leave the buttons for another try.
+    emit({ ...IDLE, failed: true, caption: 'The demo is not answering, so it could not be reset. Start it again, then choose Reset the demo or Play it again.' });
+    return;
+  }
+  session.clear();
+  tour.end();
+  keepsakeLinks.clear();
+  navigate('/');
+  emit({ ...IDLE, caption: 'The demo was reset. Play the whole story whenever you like.' });
 }
 
 export function stopStory(): void {

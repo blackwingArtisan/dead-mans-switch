@@ -197,16 +197,16 @@ test('a vault-custody letter opens from its link alone', async ({ page, browser 
   await travel(page, '+30 days'); // silence window passes
   await expect(page.getByTestId('state-title')).toHaveText('The letters are delivered');
 
-  const href = await outboxLink(page, 'release', 'June Okafor');
+  const href = await outboxLink(page, 'release', 'Theo Whitlock');
   expect(href).toContain('#k=');
-  // With motion allowed, June reads by candlelight: the page starts dark, the light follows her pointer,
+  // With motion allowed, Theo reads by candlelight: the page starts dark, the light follows her pointer,
   // and "Light the room" shows it all. The text is in the page throughout for assistive technology.
   const ctx = await browser.newContext({ reducedMotion: 'no-preference' });
-  const june = await ctx.newPage();
+  const june = await ctx.newPage(); // the reader of this vault-custody letter (named June in older runs), now Theo
   await june.goto(href);
   await expect(june.getByTestId('keepsake-ready')).toContainText('carries its own key');
   await june.getByTestId('break-seal').click();
-  await expect(june.getByTestId('opened-letter')).toContainText('Biscuit eats twice a day');
+  await expect(june.getByTestId('opened-letter')).toContainText('I am so proud of you');
   const sheet = june.getByTestId('letter-page');
   await expect(sheet).toHaveClass(/letter__page--dark/);
   // The hint and "Light the room" sit above the sheet (not on it), above the fold, and the first light is wide.
@@ -232,14 +232,14 @@ test('a vault-custody letter opens from its link alone', async ({ page, browser 
   await expect(sheet).toHaveClass(/letter__page--lit/);
   await expect(june.locator('.letter__from')).toHaveClass(/letter__from--signed/);
   // A candle lit back: one line, once, and the author's headstone carries it.
-  await june.getByLabel(/Leave one line for the others who loved Mara/).fill('I found the password sheet. Biscuit is fed.');
+  await june.getByLabel(/Leave one line for the others who loved Mara/).fill('I found the blue tin. The foxgloves go in this spring.');
   await june.getByTestId('light-candle').click();
   await expect(june.getByTestId('candle-mine')).toContainText('Your candle is lit.');
-  await expect(june.getByTestId('candles-lit')).toContainText('I found the password sheet. Biscuit is fed.');
+  await expect(june.getByTestId('candles-lit')).toContainText('I found the blue tin. The foxgloves go in this spring.');
   await expect(june.getByLabel(/Leave one line/)).toHaveCount(0);
   await page.reload();
-  await expect(page.getByTestId('epitaph-candles')).toContainText('June Okafor');
-  // The witnesses and Theo are told by email, since their links are spent by now.
+  await expect(page.getByTestId('epitaph-candles')).toContainText('Theo Whitlock');
+  // The witnesses and June are told by email, since their links are spent by now.
   const panel = await openTimeMachine(page);
   await expect(panel.locator('.outbox__item[data-kind="candle-lit"]')).toHaveCount(3);
   // With motion allowed the page chars from its edges before it turns to ash.
@@ -259,7 +259,7 @@ test('an opened letter can be downloaded as a file and printed as the letter alo
   expect((await request.post('/api/dev/clock', { data: { days: 38 } })).ok()).toBe(true);
   expect((await request.post('/api/dev/clock', { data: { days: 15 } })).ok()).toBe(true);
   const { messages } = (await (await request.get('/api/dev/outbox')).json()) as { messages: { kind: string; to: { name: string }; text: string }[] };
-  const release = messages.find((m) => m.kind === 'release' && m.to.name === 'June Okafor');
+  const release = messages.find((m) => m.kind === 'release' && m.to.name === 'Theo Whitlock');
   expect(release).toBeTruthy();
   const href = release!.text.match(/https?:\/\/\S+/)![0];
 
@@ -275,14 +275,14 @@ test('an opened letter can be downloaded as a file and printed as the letter alo
   await reader.goto(href);
   await reader.getByTestId('break-seal').click();
   const letter = reader.getByTestId('opened-letter');
-  await expect(letter).toContainText('Biscuit eats twice a day');
+  await expect(letter).toContainText('I am so proud of you');
 
   // Req 7.8: the letter downloads as a standalone page with its title, text and sign-off, and no script.
   const [file] = await Promise.all([reader.waitForEvent('download'), reader.getByRole('button', { name: 'Keep this letter (download)' }).click()]);
   expect(file.suggestedFilename()).toBe('letter-from-mara-whitlock.html');
   const saved = await (await import('node:fs/promises')).readFile((await file.path())!, 'utf8');
-  expect(saved).toContain('<h1>June, the passwords and the cat</h1>');
-  expect(saved).toContain('Biscuit eats twice a day');
+  expect(saved).toContain('<h1>For Theo, when the lights go out</h1>');
+  expect(saved).toContain('I am so proud of you');
   expect(saved).not.toMatch(/<script/i);
 
   // Req 7.16: Print asks the browser to print, and the print layout is the letter without the page's controls.
@@ -290,7 +290,7 @@ test('an opened letter can be downloaded as a file and printed as the letter alo
   await reader.getByRole('button', { name: 'Print', exact: true }).click();
   expect(await reader.evaluate(() => (window as unknown as { printCalls: number }).printCalls)).toBe(1);
   await reader.emulateMedia({ media: 'print' });
-  await expect(letter).toContainText('Biscuit eats twice a day');
+  await expect(letter).toContainText('I am so proud of you');
   await expect(reader.locator('.letter__after')).toBeHidden();
   await expect(reader.getByRole('button', { name: 'Print', exact: true })).toBeHidden();
   await expect(reader.locator('header.masthead')).toBeHidden();
@@ -448,12 +448,12 @@ test('"Play the whole story" runs the lifecycle hands-off, with captions, to an 
   await page.getByTestId('play-story').click();
   const caption = page.getByTestId('story');
   await expect(caption).toContainText('Mara keeps a vigil');
-  await expect(caption).toContainText('Silas, her witness, confirms', { timeout: 20_000 });
-  await expect(caption).toContainText('She reads it by her last candle', { timeout: 20_000 });
+  await expect(caption).toContainText('This time he confirms', { timeout: 30_000 });
+  await expect(caption).toContainText('She reads it by her last candle', { timeout: 30_000 });
   await expect(page.getByTestId('opened-letter')).toContainText('Biscuit eats twice a day');
   // The last caption stays as an end card until it is closed.
-  await expect(caption).toContainText('Some words should wait', { timeout: 20_000 });
-  await expect(caption).not.toContainText('of 7');
+  await expect(caption).toContainText('Some words should wait', { timeout: 30_000 });
+  await expect(caption).not.toContainText(/\d+ of \d+/);
   // The story ends on the whole letter in full light, signature included.
   await expect(page.getByTestId('letter-page')).toHaveClass(/letter__page--lit/);
   await expect(page.locator('.letter__from')).toHaveClass(/letter__from--signed/);
@@ -549,10 +549,10 @@ test('the sealed export and the saved offline page open a letter with no server'
   const sealed = JSON.parse(await (await import('node:fs/promises')).readFile(exportPath, 'utf8')) as {
     letters: { id: string; recipientName: string; keepsakeHalf?: string }[];
   };
-  const theo = sealed.letters.find((l) => l.recipientName === 'Theo Whitlock')!;
+  const june = sealed.letters.find((l) => l.recipientName === 'June Okafor')!;
   // A keepsake-custody letter leaves its half with the author's browser and the recipient, never in the export.
-  expect(theo.keepsakeHalf).toBeUndefined();
-  const theoHalf = (await page.evaluate((id) => localStorage.getItem(`dms.authored.${id}`), theo.id))!;
+  expect(june.keepsakeHalf).toBeUndefined();
+  const juneHalf = (await page.evaluate((id) => localStorage.getItem(`dms.authored.${id}`), june.id))!;
 
   // Years later, with the service gone: a fresh browser with no network opens the saved page from disk.
   const offline = await browser.newContext({ offline: true });
@@ -564,23 +564,23 @@ test('the sealed export and the saved offline page open a letter with no server'
   await reader.goto(`file://${pagePath}`);
   await expect(reader.getByRole('heading', { name: 'Open a sealed letter offline' })).toBeVisible();
   await reader.getByLabel('1. The sealed export').setInputFiles(exportPath);
-  await reader.getByLabel('2. The letter').selectOption({ label: 'For Theo Whitlock' });
+  await reader.getByLabel('2. The letter').selectOption({ label: 'For June Okafor' });
 
   // The wrong keepsake breaks nothing.
   await reader.getByLabel('3. The keepsake').fill('0000-0000-0000-0000-0000-0000-0000-0000-0000-0000-0000-0000-0000');
   await reader.getByRole('button', { name: 'Break the seal' }).click();
   await expect(reader.getByRole('alert')).toContainText('The seal will not break');
 
-  await reader.getByLabel('3. The keepsake').fill(`https://vigil.example.com/keepsake/${theo.id}#k=${theoHalf}`);
-  await reader.getByRole('button', { name: 'Break the seal' }).click();
-  await expect(reader.getByRole('heading', { name: 'For Theo, when the lights go out' })).toBeVisible();
-  await expect(reader.getByText('The deed to the cottage is in the blue tin')).toBeVisible();
-
-  // June's vault-custody letter needs no keepsake.
-  await reader.getByLabel('3. The keepsake').fill('');
-  await reader.getByLabel('2. The letter').selectOption({ label: 'For June Okafor (vault custody, no keepsake needed)' });
+  await reader.getByLabel('3. The keepsake').fill(`https://vigil.example.com/keepsake/${june.id}#k=${juneHalf}`);
   await reader.getByRole('button', { name: 'Break the seal' }).click();
   await expect(reader.getByRole('heading', { name: 'June, the passwords and the cat' })).toBeVisible();
+  await expect(reader.getByText('Biscuit eats twice a day')).toBeVisible();
+
+  // Theo's vault-custody letter needs no keepsake.
+  await reader.getByLabel('3. The keepsake').fill('');
+  await reader.getByLabel('2. The letter').selectOption({ label: 'For Theo Whitlock (vault custody, no keepsake needed)' });
+  await reader.getByRole('button', { name: 'Break the seal' }).click();
+  await expect(reader.getByRole('heading', { name: 'For Theo, when the lights go out' })).toBeVisible();
   expect(requests).toEqual([]);
   await offline.close();
 });
