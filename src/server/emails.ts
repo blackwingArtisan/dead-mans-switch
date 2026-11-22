@@ -1,5 +1,6 @@
 /** Email templates. Every message has a plain-text body and a matching HTML body. */
 import type { EmailEffect } from '../core/machine';
+import { describeAge, REVIEW_AFTER_DAYS } from '../core/review';
 import type { MailMessage } from './ports';
 
 export function formatDate(at: number): string {
@@ -36,6 +37,11 @@ function draft(effect: EmailEffect, baseUrl: string, checkInToken?: string): Dra
         lines: [
           `Your next check-in is due by ${formatDate(effect.dueAt)}.`,
           'One tap is enough to tell us you still walk among the living.',
+          ...(effect.reviewAgeDays !== undefined && effect.reviewAgeDays >= REVIEW_AFTER_DAYS
+            ? [
+                `Your oldest letter was sealed ${describeAge({ years: Math.floor(effect.reviewAgeDays / REVIEW_AFTER_DAYS), days: effect.reviewAgeDays % REVIEW_AFTER_DAYS })} ago. Please open your vigil and review your letters: accounts, phone numbers and renewal dates change.`,
+              ]
+            : []),
         ],
         link: checkIn,
       };

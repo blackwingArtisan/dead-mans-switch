@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react'
 import type { VaultView } from '../../core/vault';
 import { api, ApiError, authored, REFRESH_EVENT, session } from '../lib/api';
 import { longDate, relative, shortDate, STAGES, STATE_COPY } from '../lib/format';
+import { describeAge } from '../../core/review';
 import { Link } from '../lib/router';
 import { enableGraceNotice, graceNoticeAvailable, graceNoticeOn, useGraceNotice, useHauntedTab } from '../lib/haunt';
 import { relight, RELIGHT_MS, ROOM_LINE, useRoom } from '../lib/room';
@@ -257,6 +258,21 @@ export function Vigil({ onLost }: { onLost: () => void }) {
       </section>
 
       <Flourish className="divider" />
+
+      {vault.review && (
+        <section className="review-note parchment" aria-labelledby="review-title" data-testid="review-note">
+          <h2 id="review-title" className="section-title">
+            Review your letters
+          </h2>
+          <p>
+            Your oldest letter was sealed {describeAge(vault.review)} ago. Open each one and check that the accounts, phone numbers and
+            renewal dates still tell the truth. Sealing a new letter and burning the old one starts the count again.
+          </p>
+          <Link href="/write" className="btn btn--ghost btn--small">
+            Open the writing desk
+          </Link>
+        </section>
+      )}
 
       <div className="grid">
         <Letters vault={vault} onChange={apply} onError={setError} />

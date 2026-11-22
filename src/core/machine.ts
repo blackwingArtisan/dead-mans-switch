@@ -8,6 +8,7 @@
  *   pause (any live state) -> paused -> resume -> alive
  */
 import type { HistoryKind, Person, Vault } from './types';
+import { reviewOf } from './review';
 import { scheduleOf, sentKey } from './time';
 
 export type SwitchEvent =
@@ -19,7 +20,7 @@ export type SwitchEvent =
   | { type: 'witnessDeny'; witnessId: string; /** An optional line from the witness to the author, already trimmed. */ note?: string };
 
 export type EmailEffect =
-  | { template: 'reminder'; to: Person; dueAt: number }
+  | { template: 'reminder'; to: Person; dueAt: number; /** Set when the oldest sealed letter is a year old: the email asks the author to review. */ reviewAgeDays?: number }
   | { template: 'grace'; to: Person; dueAt: number; graceEndsAt: number }
   | { template: 'last-call'; to: Person; graceEndsAt: number }
   | { template: 'witness-ask'; to: Person; authorName: string; lastCheckInAt: number; witnessToken: string }
@@ -187,7 +188,10 @@ function runTick(vault: Vault, ctx: MachineContext, emit: Emit, log: Log): void 
 
     if (vault.state === 'alive' && now >= s.reminderAt) {
       moveTo('reminder');
-      if (once('reminder')) emit({ template: 'reminder', to: vault.author, dueAt: s.dueAt });
+      if (once('reminder')) {
+        const review = reviewOf(vault, now);
+        emit({ template: 'reminder', to: vault.author, dueAt: s.dueAt, ...(review ? { reviewAgeDays: review.ageDays } : {}) });
+      }
       log('reminder', 'The candle burns low. A reminder was sent.');
       continue;
     }

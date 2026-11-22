@@ -2,6 +2,7 @@
 import type { CandleBack, CandleLine, Custody, HistoryEntry, Letter, Person, Schedule, Settings, SwitchState, Vault, Witness } from './types';
 import { DEFAULT_SETTINGS } from './types';
 import { confirmations, requiredConfirmations } from './machine';
+import { reviewOf, type ReviewNote } from './review';
 import { nextEventAt, scheduleOf } from './time';
 
 export class ValidationError extends Error {
@@ -132,6 +133,8 @@ export interface VaultView {
   letters: LetterView[];
   history: HistoryEntry[];
   releasedAt: number | null;
+  /** Set when the oldest sealed letter is a year old or more: the vigil shows "Review your letters". */
+  review: ReviewNote | null;
 }
 
 export function viewOf(vault: Vault, now: number): VaultView {
@@ -165,5 +168,6 @@ export function viewOf(vault: Vault, now: number): VaultView {
     })),
     history: vault.history.slice(-60).reverse(),
     releasedAt: vault.releasedAt,
+    review: reviewOf(vault, now),
   };
 }

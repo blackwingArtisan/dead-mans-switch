@@ -3831,3 +3831,50 @@ html:has(body[data-story]) {
     display: none;
   }
 }
+
+/* Founder runbook on the writing desk */
+.desk__modes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 4px 0 14px;
+}
+.runbook {
+  display: grid;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+.runbook__section {
+  border: 1px solid var(--brass-dim, rgba(201, 164, 92, 0.4));
+  border-radius: var(--radius);
+  padding: 12px 14px 14px;
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+.runbook__section legend {
+  color: var(--brass, #c9a45c);
+  padding: 0 8px;
+}
+.runbook__add {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+.secret-warning ul {
+  margin: 6px 0 0;
+  padding-left: 1.2em;
+}
+.secret-warning p {
+  margin: 0;
+}
+
+/* The yearly review note on the vigil */
+.review-note {
+  margin: 0 0 24px;
+  padding: 16px 20px;
+}
+.review-note p {
+  margin: 0 0 10px;
+}

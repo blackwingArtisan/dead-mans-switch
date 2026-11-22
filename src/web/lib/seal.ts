@@ -1,6 +1,7 @@
 /** Browser-side sealing: encrypt, upload only what the vault may hold, remember the keepsake. */
 import { sealLetter } from '../../core/crypto';
 import { randomId } from '../../core/encoding';
+import { newRunbook, runbookHtml } from '../../core/runbook';
 import type { Custody, LetterContent, Person } from '../../core/types';
 import type { VaultView } from '../../core/vault';
 import { api, authored } from './api';
@@ -80,6 +81,39 @@ export const DEMO = {
   ],
 };
 
+/**
+ * Priya's letter to Tomás, written from the Founder runbook template. Two people, no employees: no payroll, and no bank
+ * section. Each field says where something is kept, never the secret itself.
+ */
+function founderRunbookHtml(): string {
+  const wanted = ['cloud', 'registrar', 'payments', 'password-manager'];
+  const sections = newRunbook().filter((s) => wanted.includes(s.kind));
+  const fill = (kind: string, fields: { where?: string; who?: string; due?: string }) => Object.assign(sections.find((s) => s.kind === kind)!, fields);
+  fill('cloud', {
+    where: 'The recovery codes are in the sealed envelope in the office safe.',
+    who: 'Noor Haddad, 555-0142, knows the safe is in the back office',
+  });
+  fill('registrar', {
+    where: 'The login is in the company password manager under “Registrar”.',
+    who: 'The registrar’s support line, 555-0143',
+    due: 'Renews every March; auto-renew is on',
+  });
+  fill('payments', {
+    where: 'You are already a second admin on the payments account; the payout schedule is pinned in the finance channel.',
+    who: 'The contractors are paid by invoice: pay the open ones yourself',
+    due: 'Invoices fall due on the 1st of each month',
+  });
+  fill('password-manager', {
+    where: 'Its emergency kit is in the same envelope as the cloud recovery codes.',
+    who: 'Noor Haddad, 555-0142',
+  });
+  return (
+    '<p>Tomás,</p><p>If this reached you, I have been quiet for too long, and Noor has confirmed it. Below is everything only I could open. It says where things are kept, never the secrets themselves.</p>' +
+    runbookHtml(sections) +
+    '<blockquote>Rotate every one of these the week you read this. Then keep shipping.</blockquote>'
+  );
+}
+
 /** A second invented demo: a solo founder whose letters are about the accounts only she holds. */
 export const FOUNDER_DEMO: typeof DEMO = {
   author: { name: 'Priya Raman', email: 'priya.raman@example.com' },
@@ -91,13 +125,7 @@ export const FOUNDER_DEMO: typeof DEMO = {
       content: {
         title: 'Tomás, the keys to the company',
         from: 'Priya',
-        html:
-          '<p>Tomás,</p><p>If this reached you, I have been quiet for too long, and Noor has confirmed it. Here is everything only I could open.</p>' +
-          '<ul><li><strong>Domain registrar:</strong> the login is in the company password manager under “Registrar”. Renewal is due every March; auto-renew is on.</li>' +
-          '<li><strong>Cloud root account:</strong> the recovery codes are in the sealed envelope in the office safe. The safe code is in the same password manager entry.</li>' +
-          '<li><strong>Contractor payouts:</strong> you are already a second admin on the payments account. Pay the open invoices yourself; the schedule is pinned in the finance channel.</li>' +
-          '<li><strong>The password manager itself:</strong> its emergency kit is in the same envelope.</li></ul>' +
-          '<blockquote>Rotate every one of these the week you read this. Then keep shipping.</blockquote>',
+        html: founderRunbookHtml(),
       },
     },
     {

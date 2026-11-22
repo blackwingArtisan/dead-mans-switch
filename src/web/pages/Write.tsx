@@ -1,5 +1,6 @@
-import { useEffect, useState, type FormEvent } from 'react';
+import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import { fromBase64Url, groupCode, toBase32 } from '../../core/encoding';
+import { findLikelySecrets, htmlToPlainText, newRunbook, runbookHtml, runbookIsBlank, type RunbookSection } from '../../core/runbook';
 import type { Custody } from '../../core/types';
 import type { VaultView } from '../../core/vault';
 import { api } from '../lib/api';
@@ -11,6 +12,8 @@ import { Editor } from '../components/Editor';
 import { FieldError } from '../components/FieldError';
 import { KeepsakeQr } from '../components/KeepsakeQr';
 import { KeySplit } from '../components/KeySplit';
+import { RunbookBuilder } from '../components/RunbookBuilder';
+import { SecretWarning } from '../components/SecretWarning';
 import { SealCeremony } from '../components/SealCeremony';
 import { WaxSeal } from '../components/WaxSeal';
 
@@ -26,6 +29,8 @@ export function Write() {
   const [recipientEmail, setRecipientEmail] = useState('');
   const [title, setTitle] = useState('');
   const [html, setHtml] = useState('');
+  const [mode, setMode] = useState<'blank' | 'runbook'>('blank');
+  const [sections, setSections] = useState<RunbookSection[]>(newRunbook);
   const [from, setFrom] = useState('');
   const [custody, setCustody] = useState<Custody>('keepsake');
   const [error, setError] = useState('');
@@ -42,12 +47,20 @@ export function Write() {
       .catch(() => navigate('/'));
   }, []);
 
+  const body = mode === 'runbook' ? runbookHtml(sections) : html;
+  // The check runs here in the browser on the draft as it stands, and never sends or stores it.
+  const findings = useMemo(() => findLikelySecrets(htmlToPlainText(body)), [body]);
+
   const seal = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!fields.validate(e)) return;
-    const text = html.replace(/<[^>]*>/g, '').trim();
-    if (!text) {
-      setError('The page is still blank. Write a few words before sealing.');
+    const blank = mode === 'runbook' ? runbookIsBlank(sections) : !html.replace(/<[^>]*>/g, '').trim();
+    if (blank) {
+      setError(
+        mode === 'runbook'
+          ? 'The page is still blank. Write where one account lives before sealing.'
+          : 'The page is still blank. Write a few words before sealing.',
+      );
       return;
     }
     if (!vault) return;
@@ -57,7 +70,7 @@ export function Write() {
       const r = await sealAndStore({
         recipient: { name: recipientName, email: recipientEmail },
         custody,
-        content: { title: title.trim(), html, from: from.trim() },
+        content: { title: title.trim(), html: body, from: from.trim() },
         authorName: vault.author.name,
       });
       // Let the seal finish pressing before the keepsake appears.
@@ -119,7 +132,20 @@ export function Write() {
             <input id="l-title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="For when the lights go out" />
           </div>
 
-          <Editor label="Your letter" onChange={setHtml} />
+          <div role="group" aria-label="How to start" className="desk__modes">
+            <button type="button" className={`btn btn--small ${mode === 'blank' ? 'btn--wax' : 'btn--ghost'}`} aria-pressed={mode === 'blank'} onClick={() => setMode('blank')}>
+              Start from a blank page
+            </button>
+            <button type="button" className={`btn btn--small ${mode === 'runbook' ? 'btn--wax' : 'btn--ghost'}`} aria-pressed={mode === 'runbook'} onClick={() => setMode('runbook')}>
+              Start from the Founder runbook
+            </button>
+          </div>
+
+          {mode === 'runbook' && <RunbookBuilder sections={sections} onChange={setSections} />}
+          <div hidden={mode === 'runbook'}>
+            <Editor label="Your letter" onChange={setHtml} />
+          </div>
+          <SecretWarning findings={findings} />
 
           <div className="field field--signoff">
             <label htmlFor="l-from">Signed</label>
