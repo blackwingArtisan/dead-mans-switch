@@ -17,7 +17,7 @@ crons = ["*/15 * * * *"]
 
 [vars]
 DMS_BASE_URL = "https://dead-mans-switch.example.workers.dev"
-DMS_MAIL_FROM = "Dead Man's Switch <switch@example.com>"
+DMS_MAIL_FROM = "Last Candle <switch@example.com>"
 # RESEND_API_KEY is a secret: wrangler secret put RESEND_API_KEY
 
 # Optional: a rate limit on witness and letter links that survives restarts and is
