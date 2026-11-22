@@ -1,5 +1,9 @@
 # Dead Man's Switch
 
+**Live demo: [dead-mans-switch-ce1.pages.dev](https://dead-mans-switch-ce1.pages.dev)**
+
+The live demo runs entirely in your browser and keeps its data in this browser's storage; real email delivery needs the Node server or the Cloudflare Worker.
+
 **Write letters for the people you love, sealed until you can no longer check in.**
 
 > **What no one else does**
@@ -21,7 +25,7 @@
 
 > ### Judge's 60-second path
 >
-> `npm install && npm run demo`, open http://localhost:3140 and press **▶ Play the whole story**: a captioned, hands-off run from a lit candle to a letter read by candlelight, in about 40 seconds. To drive it yourself instead:
+> Open the [live demo](https://dead-mans-switch-ce1.pages.dev) (or run `npm install && npm run demo` and open http://localhost:3140) and press **▶ Play the whole story**: a captioned, hands-off run from a lit candle to a letter read by candlelight, in about 40 seconds. To drive it yourself instead:
 >
 > 1. Press **Try a demo vigil**. You are Mara, with two sealed letters and two witnesses.
 > 2. Open the **Time machine** (the hourglass) and press **+30 days**: the flame gutters, the tab reads "(!) Your candle gutters" and the grace email lands in the outbox.
@@ -81,7 +85,7 @@ Wax seals carry each recipient's initial, the check-in is a seal you press, and 
 
 ## Run and test it
 
-Node 20 or newer. `npm install && npm run demo` serves everything on http://localhost:3140 with the time machine on; `npm run check` runs the typecheck, the unit suite, a production build and Playwright. Current suite: <!-- test-counts -->136 unit tests in 20 files, all passing, and 47 end-to-end runs (desktop and phone) in 6 Playwright files.<!-- /test-counts -->
+Node 20 or newer. `npm install && npm run demo` serves everything on http://localhost:3140 with the time machine on; `npm run check` runs the typecheck, the unit suite, a production build and Playwright. Current suite: <!-- test-counts -->142 unit tests in 21 files, all passing, and 47 end-to-end runs (desktop and phone) in 6 Playwright files.<!-- /test-counts -->
 
 The end-to-end suite seals a letter, lets the candle go out, confirms as a witness and opens the letter once in a fresh browser, and runs an axe WCAG 2.2 AA audit of every page and state. More in [docs/RUNNING.md](docs/RUNNING.md).
 

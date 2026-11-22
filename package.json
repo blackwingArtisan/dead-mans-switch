@@ -14,6 +14,7 @@
     "dev:api": "tsx watch src/server/node.ts",
     "dev:web": "vite",
     "build": "vite build",
+    "build:static": "VITE_STATIC_DEMO=1 vite build",
     "start": "tsx src/server/node.ts",
     "demo": "npm run build && tsx src/server/node.ts --time-machine",
     "test": "vitest run",

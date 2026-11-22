@@ -4,6 +4,9 @@ Notable changes to Dead Man's Switch. Work done with Kiro is recorded call by ca
 
 ## Unreleased
 
+### Live demo
+- **A static build that needs no server.** `npm run build:static` runs the same Hono API inside the browser, with the time machine and the outbox, and keeps each visitor's demo in their own localStorage; outbox links opened in other tabs share it. Requests run one at a time across tabs, so none overwrites another. The build carries the server's security headers in a `_headers` file. It is live on Cloudflare Pages, linked at the top of the README.
+
 ### Round three
 - **What no one else does, above the fold.** Three lines under the hero's buttons and at the top of the README: the recipient holds half the key, any witness can veto, and the room is the state machine. "Twelve taps a year is the whole job."
 - **A fuller comparison.** GoodTrust Future Messages, Everplans letters (Sharing After Death) and SafeBeyond join the table, each checked at the product's own pages, with the sources linked under it.

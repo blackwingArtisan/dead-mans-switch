@@ -19,6 +19,14 @@ Local data lives in `./data` (`vaults.json`, `outbox.json`, `clock.json`). Delet
 
 For a screen recording, add `?presenter=1` to the address: the demo guide and the outbox badge disappear and the Time machine button fades until you hover or tab to it (`?presenter=0` brings them back).
 
+### Static demo (no server)
+
+```bash
+npm run build:static  # dist/web, ready for any static host such as Cloudflare Pages
+```
+
+This build runs the same Hono API inside the browser ([`src/web/lib/browser-server.ts`](../src/web/lib/browser-server.ts)) with the time machine and the outbox on. Each visitor gets a private demo kept in their own localStorage, and links opened from the outbox in another tab share it. No email leaves the browser. The build also writes a `_headers` file with the server's security headers. The live demo is this build on Cloudflare Pages: `npx wrangler pages deploy dist/web --project-name dead-mans-switch`.
+
 To refresh the README media, start `npm run demo` and run `node scripts/capture-media.mjs` (the GIF needs ffmpeg).
 
 ## Test it

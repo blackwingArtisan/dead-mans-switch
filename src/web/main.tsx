@@ -14,8 +14,17 @@ import { initPresenter } from './lib/presenter';
 
 initPresenter();
 
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <App />
-  </StrictMode>,
-);
+async function boot(): Promise<void> {
+  // Static hosting has no server: run the API in this browser instead (see lib/browser-server.ts).
+  if (import.meta.env.VITE_STATIC_DEMO === '1') {
+    const { installBrowserServer } = await import('./lib/browser-server');
+    installBrowserServer();
+  }
+  createRoot(document.getElementById('root')!).render(
+    <StrictMode>
+      <App />
+    </StrictMode>,
+  );
+}
+
+void boot();
