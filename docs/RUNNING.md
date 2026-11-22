@@ -37,6 +37,7 @@ npm run e2e           # Playwright: builds and starts a fresh server on :3142 (o
 npm run typecheck     # web + server, and the Cloudflare Worker against Workers types
 npm run check         # all of the above plus a production build
 node scripts/sync-counts.mjs   # refresh the counts below from a real run (--check to verify)
+npm run smoke:live    # 3 checks on desktop and phone against the live demo (LIVE_URL to point elsewhere); not part of check
 ```
 
 Current suite (kept in step with the README by `scripts/sync-counts.mjs`): see the README's **Test it** line.
