@@ -4,6 +4,19 @@ Notable changes to Last Candle (repository: dead-mans-switch). Work done with Ki
 
 ## Unreleased
 
+### Built with Kiro, round four
+Each of these was built by Kiro in a logged session; see [KIRO-LOG.md](KIRO-LOG.md).
+- **The costume, polished (session 7).** Two hero buttons and a quiet line, a one-second match-strike intro (skipped under reduced motion), the phone toast below the masthead, the story caption kept clear of the stage track and the letter controls, and a sickly green grace room measured for WCAG AA with a slow edge flicker.
+- **The story, with beats (session 8).** A false alarm in which Silas leaves the note "Mara was hiking" and stops the release through the real witness-denial path, June's printed keepsake card before her seal breaks, an honest "The demo stopped responding." state with reset and replay, `?story=1` to start it from a link, and a button label measured from the real running time.
+- **A witness note.** A witness who answers "they still live" can leave a short note; it reaches the author in the email and the ledger.
+- **The room fills (session 9, vibe-coded).** The story ends with June and Theo each lighting a candle back, "Biscuit is fed." and "I found the blue tin.", and the line "One went out. Two were lit." The story now runs about 68 seconds.
+- **The founder runbook (session 10).** A second spec, written by Kiro from a feature description: a "Founder runbook" template on the writing desk, a warning when a draft looks like it holds a password or recovery code, Priya's demo letter built from it, and a yearly "Review your letters" nudge.
+- **The climax and the room's objects (session 11).** The candle keeps its height while its wax pools at the base; a short blackout and a smoke plume when it goes out; the ledger as a handwritten book page; witnesses as small named candles; the terms on a brass plaque.
+
+### Fixes
+- **Rate limiting after a demo reset.** The in-memory limiter now opens a fresh window when the clock moves backwards, so a reset demo no longer meets 429s on witness and letter links.
+- **Witness emails on narrow phones.** The address stays whole and the state tag wraps below it.
+
 ### Last Candle
 - **A name that says what it is.** The app is now "Last Candle: a dead man's switch for letters" in the masthead, the tab, the emails and the share card; the repository keeps its name.
 - **The pain first.** The stakes line now opens with the 1Password survey finding that 63% of people who carried out a will found the accounts harder to get into than they expected, then the CDC and Gallup figures.
