@@ -1,6 +1,6 @@
 # Last Candle: a dead man's switch for letters
 
-**[Live demo](https://dead-mans-switch-ce1.pages.dev) · [Judge's 60-second path](#judges-60-second-path) · [Evidence map](docs/JUDGES.md) · [Kiro log](KIRO-LOG.md)**
+**[Live demo](https://dead-mans-switch-ce1.pages.dev) · [Play the whole story](https://dead-mans-switch-ce1.pages.dev/?story=1) · [Judge's 60-second path](#judges-60-second-path) · [Evidence map](docs/JUDGES.md) · [Kiro log](KIRO-LOG.md)**
 
 The live demo runs entirely in your browser and keeps its data in this browser's storage; real email delivery needs the Node server or the Cloudflare Worker.
 
