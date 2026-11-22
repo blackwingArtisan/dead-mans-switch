@@ -12,6 +12,7 @@ Each of these was built by Kiro in a logged session; see [KIRO-LOG.md](KIRO-LOG.
 - **The room fills (session 9, vibe-coded).** The story ends with June and Theo each lighting a candle back, "Biscuit is fed." and "I found the blue tin.", and the line "One went out. Two were lit." The story now runs about 68 seconds.
 - **The founder runbook (session 10).** A second spec, written by Kiro from a feature description: a "Founder runbook" template on the writing desk, a warning when a draft looks like it holds a password or recovery code, Priya's demo letter built from it, and a yearly "Review your letters" nudge.
 - **The climax and the room's objects (session 11).** The candle keeps its height while its wax pools at the base; a short blackout and a smoke plume when it goes out; the ledger as a handwritten book page; witnesses as small named candles; the terms on a brass plaque.
+- **An AWS runtime, specified and partly built (sessions 12 and 13).** A third spec, `aws-release-runtime`, written from the AWS documentation through the aws-docs MCP server, and its first three task groups built against fakes: a DynamoDB store with conditional versioned writes, a service that retries a lost write race, and an SES v2 mailer. Nothing is deployed; the Lambda handlers, schedule and real SDK wrapper are still to do.
 
 ### Fixes
 - **Rate limiting after a demo reset.** The in-memory limiter now opens a fresh window when the clock moves backwards, so a reset demo no longer meets 429s on witness and letter links.
