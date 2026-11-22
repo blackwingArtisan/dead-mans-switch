@@ -23,6 +23,14 @@ describe('MemoryRateLimiter', () => {
     expect((await limiter.hit('a', T0 + 59_999)).allowed).toBe(false);
     expect((await limiter.hit('a', T0 + 60_000)).allowed).toBe(true);
   });
+
+  it('starts a fresh window when the clock moves backwards, as after a demo reset (Req 11.12)', async () => {
+    const limiter = new MemoryRateLimiter({ limit: 1, windowMs: 60_000 });
+    const later = T0 + 37 * 24 * 60 * 60 * 1000;
+    await limiter.hit('a', later);
+    expect((await limiter.hit('a', later)).allowed).toBe(false);
+    expect((await limiter.hit('a', T0)).allowed).toBe(true);
+  });
 });
 
 describe('CloudflareRateLimiter', () => {

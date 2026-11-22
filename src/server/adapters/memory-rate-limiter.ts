@@ -18,7 +18,8 @@ export class MemoryRateLimiter implements RateLimiter {
   async hit(key: string, now: number): Promise<RateLimitDecision> {
     const { limit, windowMs } = this.opts;
     let w = this.windows.get(key);
-    if (!w || now - w.start >= windowMs) {
+    // A clock that moved backwards (the demo's time machine resetting) also starts a fresh window.
+    if (!w || now - w.start >= windowMs || now < w.start) {
       w = { start: now, count: 0 };
       this.windows.set(key, w);
     }
