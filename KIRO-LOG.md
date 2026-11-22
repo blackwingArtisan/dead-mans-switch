@@ -2,7 +2,7 @@
 
 How Kiro was used on Last Candle (repository `dead-mans-switch`), session by session, with the evidence for each. Tools: `kiro-cli 3.4.0` for the first spec calls and Pass 2, `kiro-cli 3.5.0` (V3 engine) from session 3 on.
 
-**In short.** Kiro reviewed the spec against working code, rewrote every acceptance criterion in strict EARS form and found 12 untested behaviors. It then built all 12 and the tasks it added on the way, caught and fixed 2 real app defects, checked a Cloudflare binding against current docs through the Context7 MCP server, ran under the project's custom agent with its hooks firing on the record, gave the costume its final polish, measuring the grace room's colours against WCAG AA itself, scripted the story's false alarm and keepsake beats through the real witness and keepsake paths, and, from a single vibe prompt with no spec, built the story's ending. Every session below lists its prompt, minutes, credits, files and test results. The first build and the security hardening came earlier, from Claude Code working from the Kiro steering files and a spec in Kiro's format (see [Who wrote what](#who-wrote-what)).
+**In short.** Kiro reviewed the spec against working code, rewrote every acceptance criterion in strict EARS form and found 12 untested behaviors. It then built all 12 and the tasks it added on the way, caught and fixed 2 real app defects, checked a Cloudflare binding against current docs through the Context7 MCP server, ran under the project's custom agent with its hooks firing on the record, gave the costume its final polish, measuring the grace room's colours against WCAG AA itself, scripted the story's false alarm and keepsake beats through the real witness and keepsake paths, built the story's ending from a single vibe prompt with no spec, and wrote and built a second spec, the founder runbook, from a feature description. Every session below lists its prompt, minutes, credits, files and test results. The first build and the security hardening came earlier, from Claude Code working from the Kiro steering files and a spec in Kiro's format (see [Who wrote what](#who-wrote-what)).
 
 ## Sessions
 
@@ -17,7 +17,8 @@ How Kiro was used on Last Candle (repository `dead-mans-switch`), session by ses
 | [7](docs/kiro-sessions/session-7-costume-polish.md) | Group 10, the costume polish it wrote into the spec: two hero buttons, a match-strike intro, the phone toast, the story caption and stage track kept clear, the reading light off the title, a green grace room it measured for contrast | `ed0ab49` | 18.8 | 49.42 | 914 | Vitest 144, Playwright 64 |
 | [8](docs/kiro-sessions/session-8-story-beats.md) | Group 11, the story beats: a false alarm with a witness note through the real denial path, June's keepsake card before her seal breaks, an honest failure state, `?story=1`, and a measured 54-second label. Stopped by the 25-minute limit during its final test run, with every task built and ticked | `a3d4774` | 25.1 | 37.96 | 655 | Vitest 150, Playwright 74 |
 | [9](docs/kiro-sessions/session-9-vibe-room-fills.md) | A vibe prompt with no spec: the story now ends as the room fills, with June and Theo each lighting a candle back and the line "One went out. Two were lit."; label re-measured at 68 s. Stopped by the 25-minute limit during its final test run | `768bee0` | 25.2 | 30.24 | 234 | Vitest 151, Playwright 77 |
-| **Total** | | | **99.6** | **144.34** | **3,074** | |
+| [10](docs/kiro-sessions/session-10-founder-runbook.md) | A second spec written from scratch, `founder-runbook` (5 requirements, 42 EARS criteria, 6 tasks), then built: the runbook template, the secret warning, Priya's demo letter and a yearly review nudge through the existing state machine | `f49c053` | 12.6 | 26.36 | 1,007 | Vitest 179, Playwright 82 |
+| **Total** | | | **112.2** | **170.70** | **4,081** | |
 
 Kiro's lines are the lines it added in each commit, counted with `git show --numstat`, leaving out the lockfile and the session excerpts the developer copied into `docs/kiro-sessions/`.
 
@@ -25,7 +26,7 @@ Kiro's lines are the lines it added in each commit, counted with `git show --num
 
 | Who | What |
 |---|---|
-| Kiro | Everything in the sessions table: the EARS spec review, 29 tasks it wrote into the spec and built (9.1 to 9.15, 8.7, 10.1 to 10.8 and 11.1 to 11.5), tasks 8.6 and 6.11, two app fixes, and every test those tasks needed |
+| Kiro | Everything in the sessions table: the EARS spec review, 29 tasks it wrote into the spec and built (9.1 to 9.15, 8.7, 10.1 to 10.8 and 11.1 to 11.5), tasks 8.6 and 6.11, the whole founder-runbook spec and its 6 tasks, two app fixes, and every test those tasks needed |
 | Claude Code | The first build and the security hardening (before Pass 2), the copy, the README and these logs, running the shell and the commits, and 22 lines in two small fixes around Kiro's work. First, 11 lines in Kiro's own change: a screenshot at 360 px showed Kiro's width fix clipped the seal button's glow (sent back to Kiro as 9.14), and Kiro's fix for that clipped the stamp's sides on desktop, so the clip was limited to screens of 520 px or less (`3d3394e`, 7 lines added, 4 removed). Second, a separate commit before session 8's (`b4bac7f`, 10 lines added, 1 removed): the in-memory rate limiter never reopened its window after the demo clock was reset, which the longer suite after session 8 exposed as 429s |
 | The developer | The idea, the product decisions, and review of each commit |
 
@@ -33,10 +34,10 @@ Kiro's lines are the lines it added in each commit, counted with `git show --num
 
 | Feature | Where | Evidence |
 |---|---|---|
-| **Specs** | [`.kiro/specs/switch-lifecycle/`](.kiro/specs/switch-lifecycle) | Pass 2 rewrote it into EARS form; sessions 3 to 6 built its tasks and added 9.13, 9.14, 9.15 and 8.7 |
+| **Specs** | [`.kiro/specs/switch-lifecycle/`](.kiro/specs/switch-lifecycle) and [`.kiro/specs/founder-runbook/`](.kiro/specs/founder-runbook) | Pass 2 rewrote the first into EARS form, and sessions 3 to 8 built its tasks and added groups 10 and 11. Kiro wrote the second from a feature description in session 10 and built it in the same session |
 | **Steering** | [`.kiro/steering/`](.kiro/steering) | `product.md`, `tech.md` and `structure.md` load in every session. `crypto.md` and `a11y.md` load only when a matching file is in play; they were in the workspace from sessions 3 to 5, and in session 6 Kiro reported `crypto.md` arriving when it read `src/core/crypto.ts` |
 | **Hooks** | [`.kiro/hooks/`](.kiro/hooks) and the agent's SessionStart hook | Session 6's log: `hooks.reload.loaded {"read":4,"registered":4}` and 8 `ContextualHookInvoked` events. By hook: SessionStart (open tasks) 1, quoted by Kiro; `crypto-guard` 1, quoted by Kiro; `test-on-save` 5, each just after a save to `src/` or `tests/unit/`; `verify-before-stop` 1, as the turn ended. `spec-drift` (PostTaskExec) has not fired in a CLI session yet |
-| **Custom agent** | [`.kiro/agents/dead-mans-switch.json`](.kiro/agents/dead-mans-switch.json) | Ran sessions 3 to 9; Kiro checked its hook format against the Kiro CLI v3 docs in session 6 |
+| **Custom agent** | [`.kiro/agents/dead-mans-switch.json`](.kiro/agents/dead-mans-switch.json) | Ran sessions 3 to 10; Kiro checked its hook format against the Kiro CLI v3 docs in session 6 |
 | **MCP** | [`.kiro/settings/mcp.json`](.kiro/settings/mcp.json) | Session 6: both servers connected (`mcp.connect.ok` for `context7` and `aws-docs`); 4 Context7 calls (2 `resolve-library-id`, 2 `query-docs`) for the Workers Rate Limiting binding and the Kiro agent hook format |
 | **Vibe coding** | [Session 9](docs/kiro-sessions/session-9-vibe-room-fills.md) | One conversational prompt with no spec, IDs or task list built the story's ending, tests included, to show the other way of working beside spec-driven sessions |
 | **Prompts on file** | [`.kiro/prompts/`](.kiro/prompts) and each session excerpt | Every prompt is kept verbatim, so each call can be re-run |
