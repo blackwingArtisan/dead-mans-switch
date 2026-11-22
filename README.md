@@ -1,6 +1,6 @@
 # Last Candle: a dead man's switch for letters
 
-**[Live demo](https://dead-mans-switch-ce1.pages.dev) · [Judge's 60-second path](#judges-60-second-path) · [Kiro log](KIRO-LOG.md)**
+**[Live demo](https://dead-mans-switch-ce1.pages.dev) · [Judge's 60-second path](#judges-60-second-path) · [Evidence map](docs/JUDGES.md) · [Kiro log](KIRO-LOG.md)**
 
 The live demo runs entirely in your browser and keeps its data in this browser's storage; real email delivery needs the Node server or the Cloudflare Worker.
 
@@ -23,7 +23,7 @@ The live demo runs entirely in your browser and keeps its data in this browser's
 
 **Costume Contest: the candle is the state machine, and the whole room wears it.** Built for Kiroween 2026. Not an account handover: a letter, in your words, that nobody (not even us) can open until the people you trust agree you are gone.
 
-[Judge's 60-second path](#judges-60-second-path) · [Why not Google or Apple?](#why-not-the-tools-you-already-have) · [The costume](#the-costume) · [Built with Kiro](#built-with-kiro) · [Features](docs/FEATURES.md) · [Running and testing](docs/RUNNING.md) · [Architecture](docs/ARCHITECTURE.md) · [Kiro log](KIRO-LOG.md) · [Changelog](CHANGELOG.md)
+[Judge's 60-second path](#judges-60-second-path) · [Why not Google or Apple?](#why-not-the-tools-you-already-have) · [The costume](#the-costume) · [Built with Kiro](#built-with-kiro) · [Evidence map](docs/JUDGES.md) · [Features](docs/FEATURES.md) · [Running and testing](docs/RUNNING.md) · [Architecture](docs/ARCHITECTURE.md) · [Kiro log](KIRO-LOG.md) · [Changelog](CHANGELOG.md)
 
 > ### Judge's 60-second path
 >
@@ -103,18 +103,28 @@ React and Vite in the browser, a Hono API, and a pure state machine shared by bo
 
 ## Built with Kiro
 
-The initial build and the security hardening were done with Claude Code, working from the Kiro steering files and a spec written in Kiro's format. Kiro then reviewed the spec against the code, rewrote every criterion in EARS form and found 12 untested behaviors. **Kiro then built all of them itself**, plus two tasks it added on the way, in three kiro-cli sessions: 830 lines of tests and fixes, 16 new unit tests and 16 new end-to-end runs, and two real app defects caught and fixed (a 360 px overflow and a ledger the keyboard could not reach). Every task in the spec's test groups is now ticked. Every call is in **[KIRO-LOG.md](KIRO-LOG.md)** with its prompt, duration, credits, files and test results, and Kiro's own output is in [docs/kiro-sessions/](docs/kiro-sessions).
+**Kiro reviewed the spec, found 12 untested behaviors, built all 12 plus 4 tasks it added, caught 2 real app defects, checked a Cloudflare binding against live docs through MCP, and wrote 1,271 lines of tests, code and spec in 5 logged sessions.** Every session is in **[KIRO-LOG.md](KIRO-LOG.md)** with its prompt, minutes, credits, files and test results, and Kiro's own output is in [docs/kiro-sessions/](docs/kiro-sessions). The evidence for each judging criterion is mapped in [docs/JUDGES.md](docs/JUDGES.md).
 
-| Kiro feature | Where | What it produced | Tests right after that pass |
-|---|---|---|---|
-| Spec-driven build (sessions 3 to 5) | [`.kiro/specs/switch-lifecycle/tasks.md`](.kiro/specs/switch-lifecycle/tasks.md) group 9 | 14 test tasks built and ticked by Kiro under the custom agent, 2 app defects fixed | Vitest 136 of 136, Playwright 47 of 47, 0 axe violations in every room |
-| Spec review (Pass 2) | [`.kiro/specs/switch-lifecycle`](.kiro/specs/switch-lifecycle) | EARS criteria for Requirements 1 to 11, 12 new gap tasks, tasks checked only where a test exists | Vitest 79 of 79, Playwright 11 of 11, 0 axe violations |
-| Spec-driven tasks (Pass 2) | `tasks.md` 8.6 and 6.11 | The `RateLimiter` port and both adapters; a single-glyph wax seal; three test files | Same run |
-| Steering | [`.kiro/steering`](.kiro/steering) | Five files: product, tech and structure rules every session reads first, plus `crypto.md` and `a11y.md`, which load only when a matching file is in play (added after Pass 2) | n/a |
-| Hooks | [`.kiro/hooks`](.kiro/hooks) | Four hooks in the v1 schema that Kiro IDE 1.x and CLI V3 share: unit tests on save, typecheck and tests before the agent stops, a crypto-custody review when `crypto.ts` changes, and a spec-drift review after each spec task | `tests/unit/kiro-config.test.ts` checks every trigger, matcher and command |
-| Custom agent | [`.kiro/agents/dead-mans-switch.json`](.kiro/agents/dead-mans-switch.json) | A builder agent that loads the steering and specs, works one task per session, and lists the open spec tasks when a session starts (`scripts/open-tasks.mjs`) | Same test |
-| MCP | [`.kiro/settings/mcp.json`](.kiro/settings/mcp.json) | AWS Documentation and Context7 servers, so API details are checked against current docs | Same test |
-| Prompts | [`.kiro/prompts`](.kiro/prompts) | The exact prompts, so each call can be re-run | n/a |
+**Who wrote what**
+
+| Who | What | Lines |
+|---|---|---|
+| Kiro (kiro-cli 3.4.0 and 3.5.0, custom agent) | The EARS review of the spec and its 16 gap tasks; the `RateLimiter` port and adapters; every test in group 9; two app fixes; the rate-limit binding checked against Cloudflare's docs; the IV length check | 1,271 added, across 5 commits marked `Built-with: Kiro` |
+| Claude Code | The first build and the security hardening, from the Kiro steering files and a spec in Kiro's format; the copy, the README and the logs; 11 lines changed in Kiro's work after a screenshot review | Everything else |
+| The developer | The idea, the product decisions, and review of every commit | |
+
+**Kiro feature checklist**
+
+| Feature | Used | Evidence |
+|---|---|---|
+| Specs | Yes: the switch-lifecycle spec, reviewed into EARS form by Kiro, with 16 tasks Kiro added and built | [`.kiro/specs/switch-lifecycle/`](.kiro/specs/switch-lifecycle), [session 3](docs/kiro-sessions/session-3-unit-and-api-gaps.md) to [session 5](docs/kiro-sessions/session-5-dashboard-and-keyboard.md) |
+| Steering | Yes: 3 files always loaded, plus `crypto.md` and `a11y.md`, which load only when a matching file is in play; Kiro reported `crypto.md` arriving when it opened `crypto.ts` | [`.kiro/steering/`](.kiro/steering), [session 6](docs/kiro-sessions/session-6-mcp-hooks-crypto.md) |
+| Hooks | Yes: 4 workspace hooks plus the agent's SessionStart hook; 8 runs recorded in Kiro's session log in session 6, with the open-task list and the crypto-custody reminder quoted by Kiro | [`.kiro/hooks/`](.kiro/hooks), [session 6](docs/kiro-sessions/session-6-mcp-hooks-crypto.md) |
+| Custom agent | Yes: `dead-mans-switch` ran sessions 3 to 6 | [`.kiro/agents/dead-mans-switch.json`](.kiro/agents/dead-mans-switch.json) |
+| MCP | Yes: Context7 called 4 times in session 6 to check the Workers Rate Limiting binding and the Kiro agent hook format | [`.kiro/settings/mcp.json`](.kiro/settings/mcp.json), [session 6](docs/kiro-sessions/session-6-mcp-hooks-crypto.md) |
+| Vibe coding | Not yet | |
+
+`tests/unit/kiro-config.test.ts` keeps the hooks, the agent and the MCP settings valid, and every new test Kiro wrote names the criterion it proves, such as "(Req 10.5)".
 
 ## Accessibility
 
