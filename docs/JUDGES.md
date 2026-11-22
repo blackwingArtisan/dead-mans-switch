@@ -28,11 +28,11 @@ No install needed for a first look: the [live demo](https://dead-mans-switch-ce1
 |---|---|
 | Real cryptography, split key | `src/core/crypto.ts`: AES-GCM-256, a fresh 96-bit IV, the letter id as additional data, K split into A and B = K xor A; `tests/unit/crypto.test.ts` covers round trip, tamper, wrong half and wrong IV length |
 | The server never holds enough to read a keepsake letter | `tests/unit/api.test.ts` and task 9.11: no release email in keepsake custody carries A; `tests/e2e/lifecycle.spec.ts` (Req 3.6, 3.8, 3.9): the keepsake page never sends A |
-| A pure state machine behind ports | `src/core/machine.ts` with `tests/unit/machine.test.ts`; four ports in `src/server/ports.ts`, filled by Node, Cloudflare Worker and in-browser adapters |
+| A pure state machine behind ports | `src/core/machine.ts` with `tests/unit/machine.test.ts`; four ports in `src/server/ports.ts`, filled by Node, Cloudflare Worker and in-browser adapters, plus a DynamoDB store with conditional versioned writes (`tests/unit/dynamodb-store.test.ts`, a two-writer race where exactly one wins) |
 | Hardened responses | `src/server/security.ts` (CSP, Permissions-Policy, COOP, rate limits) with `tests/unit/security.test.ts` |
-| Spec-driven, traceable | Two specs, [`switch-lifecycle`](../.kiro/specs/switch-lifecycle) and [`founder-runbook`](../.kiro/specs/founder-runbook); every EARS criterion has an ID, and tests name the criteria they prove, such as "(Req 10.5)" or "(Founder Req 2.3)" |
+| Spec-driven, traceable | Three specs, [`switch-lifecycle`](../.kiro/specs/switch-lifecycle), [`founder-runbook`](../.kiro/specs/founder-runbook) and [`aws-release-runtime`](../.kiro/specs/aws-release-runtime); every EARS criterion has an ID, and tests name the criteria they prove, such as "(Req 10.5)" or "(Founder Req 2.3)" |
 | Kiro built and checked real parts | [KIRO-LOG.md](../KIRO-LOG.md) and [docs/kiro-sessions/](kiro-sessions); commits marked `Built-with: Kiro` (`git log --grep "Built-with: Kiro"`) |
-| Hooks and MCP ran on the record | [Session 6](kiro-sessions/session-6-mcp-hooks-crypto.md): 8 hook runs and 4 Context7 calls, quoted from Kiro's own session log; 17 hook runs across sessions 6 to 11 |
+| Hooks and MCP ran on the record | [Session 6](kiro-sessions/session-6-mcp-hooks-crypto.md): 8 hook runs and 4 Context7 calls, quoted from Kiro's own session log; 24 hook runs across sessions 6 to 12; [session 12](kiro-sessions/session-12-aws-runtime-spec.md): 11 AWS documentation calls behind the AWS spec |
 | Spec work and vibe work side by side | [Session 10](kiro-sessions/session-10-founder-runbook.md): Kiro wrote a spec from a feature description and built it in one session; [session 9](kiro-sessions/session-9-vibe-room-fills.md): one chat-style prompt with no spec built the story's ending |
 
 ## Design
