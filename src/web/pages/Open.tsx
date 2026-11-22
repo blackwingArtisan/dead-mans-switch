@@ -295,6 +295,14 @@ function OpenedLetter({ token, info, letter, safeHtml }: { token: string; info: 
   return (
     <Shell>
       <article className="letter" aria-labelledby="letter-title" data-testid="opened-letter">
+        {dark ? (
+          <p className="letter__hint" data-testid="candle-hint">
+            <span>Move your light over the page.</span>{' '}
+            <button type="button" className="btn btn--ghost btn--small" onClick={lightRoom} data-testid="light-room">
+              Light the room
+            </button>
+          </p>
+        ) : null}
         <div className="letter__seal-halves" aria-hidden="true">
           <WaxSeal size={84} cracked mark={info.authorName.trim()[0]} />
         </div>
@@ -305,14 +313,6 @@ function OpenedLetter({ token, info, letter, safeHtml }: { token: string; info: 
           onPointerDown={follow}
           data-testid="letter-page"
         >
-          {dark ? (
-            <p className="letter__hint" data-testid="candle-hint">
-              <span>Move your light over the page.</span>{' '}
-              <button type="button" className="btn btn--ghost btn--small" onClick={lightRoom} data-testid="light-room">
-                Light the room
-              </button>
-            </p>
-          ) : null}
           <p className="letter__eyebrow">
             From {info.authorName} · sealed {longDate(info.sealedAt)}
           </p>

@@ -7,7 +7,7 @@ import { tour } from '../lib/tour';
 import { useFieldErrors, type FieldMessages } from '../lib/validate';
 import { Candle } from '../components/Candle';
 import { Flourish, Shell } from '../components/Chrome';
-import { COST_PER_VIGIL, ComparisonTeaser, Distinct, HOSPICE_CHANNEL, MARKET, Stakes } from '../components/Comparison';
+import { COST_PER_VIGIL, ComparisonTeaser, Distinct, HOSPICE_CHANNEL, MARKET, Stakes, Thesis } from '../components/Comparison';
 import { FieldError } from '../components/FieldError';
 import { WaxSeal } from '../components/WaxSeal';
 
@@ -15,6 +15,19 @@ const BEGIN_MESSAGES: Record<string, FieldMessages> = {
   'author-name': { missing: 'Write your name, as your witnesses and recipients know you.' },
   'author-email': { missing: 'Add an email for your reminders.', type: 'That email does not look complete. Check it for an @ and a domain.' },
 };
+
+const INTRO_KEY = 'dms.intro';
+/** Keep in step with the strike-catch animation in app.css. */
+const INTRO_MS = 1000;
+
+function shouldStrike(): boolean {
+  try {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return false;
+    return window.sessionStorage.getItem(INTRO_KEY) === null;
+  } catch {
+    return false;
+  }
+}
 
 /**
  * The landing candle answers the visitor: the flame leans toward the pointer and its glow follows,
@@ -26,6 +39,20 @@ function HeroCandle() {
   const [remaining, setRemaining] = useState(0.92);
   const [snuffed, setSnuffed] = useState(false);
   const [relighting, setRelighting] = useState(false);
+  const [intro, setIntro] = useState(shouldStrike);
+
+  // The match-strike plays once per browser session and never under reduced motion. It only restyles the candle:
+  // no overlay, no disabled button, so everything on the page stays usable while it runs.
+  useEffect(() => {
+    if (!intro) return;
+    try {
+      window.sessionStorage.setItem(INTRO_KEY, '1');
+    } catch {
+      // Storage may be blocked; the intro then simply plays again next time.
+    }
+    const t = window.setTimeout(() => setIntro(false), INTRO_MS);
+    return () => window.clearTimeout(t);
+  }, [intro]);
 
   useEffect(() => {
     let frame = 0;
@@ -65,7 +92,15 @@ function HeroCandle() {
   };
 
   return (
-    <div ref={ref} className="hero__candle" aria-hidden="true" onPointerDown={snuff} data-testid="hero-candle">
+    <div
+      ref={ref}
+      className="hero__candle"
+      aria-hidden="true"
+      onPointerDown={snuff}
+      data-testid="hero-candle"
+      data-intro={intro ? 'strike' : undefined}
+    >
+      {intro && <span className="hero__spark" />}
       <Candle remaining={remaining} state={snuffed ? 'confirm' : 'alive'} size={340} relighting={relighting} />
     </div>
   );
@@ -142,14 +177,18 @@ export function Landing() {
             >
               {busy === 'demo' ? 'Summoning…' : 'Try a demo vigil'}
             </button>
-            <a className="btn btn--link" href="#begin">
-              Begin your vigil
-            </a>
-            <button type="button" className="btn btn--link" onClick={() => demo(FOUNDER_DEMO, 'founder')} disabled={busy !== ''}>
-              {busy === 'founder' ? 'Summoning…' : 'or a founder’s vigil'}
-            </button>
           </div>
-          <Distinct />
+          <p className="hero__more" data-testid="hero-more">
+            or{' '}
+            <a className="hero__more-link" href="#begin">
+              begin your own
+            </a>{' '}
+            ·{' '}
+            <button type="button" className="hero__more-link" onClick={() => demo(FOUNDER_DEMO, 'founder')} disabled={busy !== ''}>
+              {busy === 'founder' ? 'Summoning…' : 'a founder’s vigil'}
+            </button>
+          </p>
+          <Thesis />
           <Stakes />
           {error && busy === '' && (
             <p className="form-error" role="alert">
@@ -206,6 +245,8 @@ export function Landing() {
           </li>
         </ul>
       </section>
+
+      <Distinct />
 
       <section className="personas" aria-labelledby="personas-title">
         <h2 id="personas-title" className="section-title">

@@ -145,16 +145,63 @@ a:hover {
 .atmosphere__moon,
 .atmosphere__smoke,
 .atmosphere__cold,
-.atmosphere__flare {
+.atmosphere__flare,
+.atmosphere__flicker {
   position: absolute;
   inset: 0;
   transition: opacity 1.2s ease;
 }
-/* Grace: a sickly green-grey creeps into the room. */
+/* Grace: a sickly yellow-green creeps into the room. It stays dark enough that the muted text colour keeps 4.5:1 on it
+   (tests/e2e/grace-room.spec.ts measures the room itself, since axe cannot see these layers). */
 .atmosphere__sick {
   opacity: 0;
-  background: radial-gradient(900px 640px at 24% 30%, rgba(150, 172, 112, 0.26), transparent 70%),
-    linear-gradient(180deg, rgba(66, 88, 54, 0.62), rgba(34, 46, 30, 0.68));
+  background: radial-gradient(900px 640px at 24% 30%, rgba(160, 172, 40, 0.1), transparent 70%),
+    linear-gradient(180deg, rgba(64, 74, 12, 0.66), rgba(38, 44, 8, 0.72));
+}
+/* Grace only: a pale yellow-green light at the very edges of the viewport that gutters like a failing flame. It sits above
+   the vignette, is transparent across the middle, and changes only opacity, so it costs no repaint. */
+.atmosphere__flicker {
+  opacity: 0;
+  z-index: 2;
+  background: radial-gradient(ellipse at 50% 50%, transparent 62%, rgba(150, 168, 28, 0.2) 90%, rgba(170, 186, 34, 0.32) 100%);
+}
+body[data-room='grace'] .atmosphere__flicker {
+  opacity: 0.7;
+}
+@media (prefers-reduced-motion: no-preference) {
+  body[data-room='grace'] .atmosphere__flicker {
+    animation: edge-flicker 6.4s linear infinite;
+  }
+}
+@keyframes edge-flicker {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  8% {
+    opacity: 0.95;
+  }
+  14% {
+    opacity: 0.4;
+  }
+  31% {
+    opacity: 0.75;
+  }
+  37% {
+    opacity: 0.3;
+  }
+  52% {
+    opacity: 1;
+  }
+  58% {
+    opacity: 0.5;
+  }
+  74% {
+    opacity: 0.85;
+  }
+  81% {
+    opacity: 0.35;
+  }
 }
 /* The candle is out: the room goes a cold blue-black. */
 .atmosphere__deep {
@@ -411,6 +458,11 @@ body[data-relight] .atmosphere__warm {
   color: var(--faint);
   font-size: 1rem;
 }
+/* The footer and the masthead tag sit straight on the room; the olive grace room is lighter than night, so its text steps up to the muted tone. */
+body[data-room='grace'] .colophon,
+body[data-room='grace'] .masthead__tag {
+  color: var(--muted);
+}
 .colophon__small {
   font-size: 0.9rem;
   letter-spacing: 0.08em;
@@ -583,7 +635,6 @@ body[data-relight] .atmosphere__warm {
   border-color: var(--brass-deep);
   background: linear-gradient(180deg, rgba(201, 164, 92, 0.18), rgba(125, 100, 48, 0.12));
   color: #f3dfb2;
-  border-radius: var(--radius);
   font-size: 1.02rem;
   min-height: 42px;
   padding: 8px 12px;
@@ -716,6 +767,11 @@ fieldset {
   padding: 0;
   min-width: 0;
 }
+/* A fieldset lays out its own children: without a grid they stack with no gap, so rows of fields touched. */
+form.terms fieldset {
+  display: grid;
+  gap: 18px;
+}
 .field--check {
   display: flex;
   align-items: center;
@@ -759,6 +815,7 @@ fieldset {
 /* The landing candle leans toward the pointer; its warm light follows across the page. */
 .hero__candle {
   cursor: pointer;
+  position: relative;
 }
 .hero__candle .candle__flame-inner {
   rotate: var(--lean, 0deg);
@@ -771,6 +828,67 @@ fieldset {
   }
   .hero__candle .candle--alive .candle__glow {
     animation: hero-draught-glow 10s ease-in-out 4s infinite;
+  }
+}
+/* The match-strike, once per session: the wick starts dark, a spark jumps, the flame catches in one second.
+   Gated on no-preference, and Landing never sets data-intro under reduced motion. */
+.hero__spark {
+  display: none;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .hero__candle[data-intro='strike'] .candle--alive .candle__flame,
+  .hero__candle[data-intro='strike'] .candle--alive .candle__glow {
+    animation: strike-catch 1s ease-out both;
+  }
+  .hero__candle[data-intro='strike'] .hero__spark {
+    display: block;
+    position: absolute;
+    left: 50%;
+    top: 17%;
+    width: 10px;
+    height: 10px;
+    margin: -5px 0 0 -5px;
+    border-radius: 50%;
+    background: radial-gradient(circle, #fffbe8 0%, #ffcf7a 40%, rgba(255, 160, 70, 0) 70%);
+    pointer-events: none;
+    animation: strike-spark 1s ease-out both;
+  }
+}
+@keyframes strike-catch {
+  0%,
+  35% {
+    opacity: 0;
+    scale: 0.1;
+  }
+  55% {
+    opacity: 1;
+    scale: 1.25 1.4;
+  }
+  75% {
+    scale: 0.9 0.85;
+  }
+  100% {
+    opacity: 1;
+    scale: 1;
+  }
+}
+@keyframes strike-spark {
+  0% {
+    opacity: 0;
+    transform: translate(-30px, 18px) scale(0.5);
+  }
+  15% {
+    opacity: 1;
+    transform: translate(-6px, 4px) scale(1.4);
+  }
+  40% {
+    opacity: 1;
+    transform: scale(2.2);
+  }
+  55%,
+  100% {
+    opacity: 0;
+    transform: scale(0.4);
   }
 }
 @keyframes hero-draught {
@@ -905,50 +1023,85 @@ fieldset {
 
 /* ── stakes, personas, comparison ───────────── */
 
-/* What no one else does: three short lines under the hero's buttons. */
+/* What no one else does: a strip of three wax seals below the rooms strip. */
 .distinct {
-  margin: 22px 0 18px;
-  max-width: 38em;
-  padding: 12px 16px 10px;
-  border-left: 2px solid var(--wax-hi);
-  background: linear-gradient(90deg, rgba(142, 27, 27, 0.14), transparent 80%);
-}
-.distinct__title {
-  margin: 0 0 6px;
-  font-family: var(--font-body);
-  font-size: 0.85rem;
-  font-weight: 600;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--brass);
+  margin: 8px 0 0;
 }
 .distinct__list {
+  list-style: none;
   margin: 0;
-  padding-left: 1.3em;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 28px clamp(16px, 3vw, 36px);
+}
+.distinct__item {
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  gap: 8px;
+  text-align: center;
+}
+.distinct__item h3 {
+  margin: 4px 0 0;
+  font-family: var(--font-heading);
+  font-size: 1.2rem;
+  line-height: 1.3;
+  color: var(--parchment);
+}
+.distinct__item p {
+  margin: 0;
+  max-width: 24em;
   font-size: 1.05rem;
   line-height: 1.45;
   color: var(--muted);
 }
-.distinct__list li + li {
-  margin-top: 4px;
-}
-.distinct__list strong {
-  color: var(--parchment);
-  font-weight: 600;
-}
 .distinct__taps {
-  margin: 8px 0 0;
+  margin: 22px 0 0;
+  text-align: center;
   font-family: var(--font-hand);
   font-style: italic;
+  font-size: 1.2rem;
   color: var(--flame);
 }
-.distinct__thesis {
-  margin: 0 0 8px;
+/* The thesis stays in the hero, under one quiet line that offers the other two ways in. */
+.hero__thesis {
+  margin: 18px 0 14px;
+  max-width: 38em;
+  padding: 8px 16px;
+  border-left: 2px solid var(--wax-hi);
+  background: linear-gradient(90deg, rgba(142, 27, 27, 0.14), transparent 80%);
   font-family: var(--font-hand);
   font-style: italic;
   font-size: 1.1rem;
   line-height: 1.4;
   color: var(--parchment);
+}
+.hero__more {
+  margin: 14px 0 0;
+  font-family: var(--font-hand);
+  font-style: italic;
+  font-size: 1.1rem;
+  color: var(--muted);
+}
+.hero__more-link {
+  display: inline;
+  padding: 2px 0;
+  border: 0;
+  background: transparent;
+  color: var(--flame);
+  font: inherit;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  text-decoration-thickness: 1px;
+  cursor: pointer;
+}
+.hero__more-link:hover:not(:disabled) {
+  color: #ffe3ad;
+}
+.hero__more-link:disabled {
+  opacity: 0.55;
+  cursor: progress;
 }
 .stakes__pain {
   display: block;
@@ -1355,6 +1508,15 @@ fieldset {
   display: flex;
   justify-content: center;
 }
+/* A column, so the stage track can sit under the lede on a wide screen (above the fold) and drop to the end on a phone,
+   where the check-in must stay above the fold. Items still stretch like blocks; only buttons keep their own width. */
+.vigil__status {
+  display: flex;
+  flex-direction: column;
+}
+.vigil__status > .btn {
+  align-self: flex-start;
+}
 .deadlines {
   display: grid;
   gap: 10px;
@@ -1482,7 +1644,7 @@ fieldset {
   list-style: none;
   display: grid;
   grid-template-columns: repeat(5, 1fr);
-  margin: 48px 0 0;
+  margin: 20px 0 6px;
   padding: 0;
   position: relative;
 }
@@ -2716,8 +2878,9 @@ fieldset {
   --candle-r: 330px;
   --y: 230px;
 }
-/* The reading hint sits on the sheet itself, above the fold, and follows the reader down the page. */
-.letter__page > .letter__hint {
+/* The reading hint sits above the sheet, never on it, and follows the reader down the page so "Light the room" is
+   always in reach. It is the article's first child; the sticky offset keeps it on screen while the letter scrolls. */
+.letter > .letter__hint {
   position: sticky;
   top: 12px;
   z-index: 6;
@@ -2728,7 +2891,7 @@ fieldset {
   gap: 4px 10px;
   width: fit-content;
   max-width: 100%;
-  margin: -14px auto 18px;
+  margin: 0 auto 14px;
   padding: 6px 8px 6px 16px;
   border: 1px solid rgba(201, 164, 92, 0.5);
   border-radius: 999px;
@@ -2737,7 +2900,7 @@ fieldset {
   font-family: var(--font-hand);
   font-style: italic;
   font-size: 1.02rem;
-  cursor: auto;
+  text-align: center;
 }
 .letter__hint .btn {
   color: var(--parchment);
@@ -2818,7 +2981,9 @@ fieldset {
   transform-origin: 50% 100%;
   animation: reader-flame 0.9s ease-in-out infinite alternate;
 }
-.letter__page--lit > .letter__flame {
+.letter__page--lit > .letter__flame,
+.letter__page--first-light > .letter__flame {
+  /* Until the light is moved there is no "where": the marker would only sit on the title. */
   display: none;
 }
 @keyframes reader-flame {
@@ -3138,6 +3303,17 @@ fieldset {
   text-transform: uppercase;
   color: var(--brass);
 }
+/* The page keeps room for the caption while it is shown (StoryCaptions sets --story-h and body[data-story]),
+   and scroll-padding makes scrolling a control into view stop short of it. The caption is not shrunk. */
+:root {
+  --story-reserve: calc(var(--story-h, 120px) + 40px);
+}
+body[data-story] {
+  padding-bottom: var(--story-reserve);
+}
+html:has(body[data-story]) {
+  scroll-padding-bottom: var(--story-reserve);
+}
 @media print {
   .story {
     display: none !important;
@@ -3451,6 +3627,11 @@ fieldset {
     font-size: 0.78rem;
     letter-spacing: 0.02em;
   }
+  /* After the check-in, the deadlines and the pause button, so the check-in stays above the fold. */
+  .stages {
+    order: 1;
+    margin-top: 28px;
+  }
   .checkin__button {
     padding-right: 18px;
   }
@@ -3499,8 +3680,9 @@ fieldset {
     justify-content: center;
     padding: 8px;
   }
+  /* Below the masthead (22 px padding twice and one line of 1.02rem text, about 70 px), never over it. */
   .tm-toast {
-    top: 12px;
+    top: 78px;
     bottom: auto;
     left: 16px;
     right: 16px;
@@ -3511,6 +3693,15 @@ fieldset {
     bottom: auto;
     width: calc(100% - 32px);
     padding: 10px 10px 10px 16px;
+  }
+  /* On a phone the caption docks to the top, so the room is reserved there instead. */
+  body[data-story] {
+    padding-top: var(--story-reserve);
+    padding-bottom: 88px;
+  }
+  html:has(body[data-story]) {
+    scroll-padding-top: var(--story-reserve);
+    scroll-padding-bottom: 0;
   }
   .story__caption {
     font-size: 1.05rem;
@@ -3543,7 +3734,8 @@ fieldset {
   .atmosphere__night,
   .atmosphere__moon,
   .atmosphere__smoke,
-  .atmosphere__cold {
+  .atmosphere__cold,
+  .atmosphere__flicker {
     transition: none;
   }
 }
@@ -3557,6 +3749,7 @@ fieldset {
   .sound-toggle,
   .btn,
   .letter__after,
+  .letter__hint,
   .keepsake-card__actions,
   .sealed__actions {
     display: none !important;

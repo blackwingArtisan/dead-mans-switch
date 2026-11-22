@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { api, REFRESH_EVENT, requestRefresh, type ClockInfo, type OutboxMessage } from '../lib/api';
 import { longDate, relative, shortDate } from '../lib/format';
+import { usePath } from '../lib/router';
 import { tour, useTour } from '../lib/tour';
 
 const DAY = 86_400_000;
@@ -70,6 +71,7 @@ export function TimeMachine() {
   const panelRef = useRef<HTMLDivElement>(null);
   const toggleRef = useRef<HTMLButtonElement>(null);
   const guide = useTour();
+  const { path } = usePath();
 
   // Polls and post-travel reloads can overlap; only the newest response is shown, so a slow,
   // older poll can never put back an outbox from before the clock moved.
@@ -105,6 +107,9 @@ export function TimeMachine() {
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [open]);
+
+  // A note belongs to the page it was made on: a route change dismisses it.
+  useEffect(() => setNote(''), [path]);
 
   // The note by the button fades after a while; the clock in the drawer keeps the full story.
   useEffect(() => {

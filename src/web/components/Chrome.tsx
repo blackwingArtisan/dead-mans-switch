@@ -23,6 +23,7 @@ export function Atmosphere() {
       <div className="atmosphere__cold" />
       <div className="atmosphere__grain" />
       <div className="atmosphere__flare" />
+      <div className="atmosphere__flicker" />
     </div>
   );
 }

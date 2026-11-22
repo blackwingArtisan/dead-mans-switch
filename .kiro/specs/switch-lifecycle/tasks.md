@@ -75,3 +75,13 @@
   - [x] 9.13 E2E: the core path by keyboard alone (demo vigil, check in, writing desk, Seal the letter) with a visible focus ring on every stop (Req 10.2, 10.6, 10.7)
   - [x] 9.14 "Seal the letter" glow is not clipped: only the unpressed stamp is clipped, and no ancestor of the button between it and `main` has overflow-x clip or hidden (Req 10.5)
   - [x] 9.15 `openLetter` rejects an IV that is not 12 bytes with a SealError before decrypting; tested with a truncated and a 16-byte IV (Req 2.11)
+
+- [x] 10. Costume polish (layout defects measured in a design review)
+  - [x] 10.1 Landing hero has exactly two buttons plus one quiet line; "What no one else does" moves below the rooms strip as three wax seals (Req 10.11, 10.12)
+  - [x] 10.2 One-second match-strike intro on the first landing visit in a session; skipped under reduced motion and on later visits; never delays the buttons (Req 10.13, 10.3)
+  - [x] 10.3 Phone time-machine toast sits below the masthead and is dismissed on route change (Req 10.14)
+  - [x] 10.4 The story caption does not cover the stage track labels or the "Keep this letter" and "Print" controls at 1440x900 and 390x844 (Req 10.15)
+  - [x] 10.5 The stage track is above the fold on the vigil at 1440x900 (Req 10.16)
+  - [x] 10.6 Phone letter page: the reading-light flame is off the title and the hint pill sits above the page at 390 px (Req 10.17)
+  - [x] 10.7 Grace room is a sickly yellow-green with a slow edge flicker, AA text contrast, and no animation under reduced motion (Req 10.18, 10.1, 10.3)
+  - [x] 10.8 Brass buttons get the pill radius and the terms form rows get a row gap (Req 10.19, 10.20)

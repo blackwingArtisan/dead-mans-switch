@@ -210,3 +210,51 @@ test('no ancestor clips the glow of the "Seal the letter" button, and the page s
   // Keeping the stamp from widening the page is still true, with the unpressed stamp in place.
   expect(await page.evaluate(() => document.documentElement.scrollWidth - 360)).toBeLessThanOrEqual(0);
 });
+
+test('the hero has two buttons and one quiet line, and "What no one else does" is a strip of three seals below the rooms (Req 10.11, 10.12)', async ({ page }) => {
+  await page.goto('/');
+  const hero = page.locator('section.hero');
+  // Exactly two buttons: the story (wax, primary) and the demo (ghost).
+  const buttons = hero.locator('.btn');
+  await expect(buttons).toHaveCount(2);
+  await expect(buttons.nth(0)).toHaveText(/^▶ Play the whole story/);
+  await expect(buttons.nth(0)).toHaveClass(/btn--wax/);
+  await expect(buttons.nth(1)).toHaveText('Try a demo vigil');
+  await expect(buttons.nth(1)).toHaveClass(/btn--ghost/);
+
+  // One quiet line below them: "begin your own" goes to the form, "a founder’s vigil" is the founder demo.
+  const quiet = hero.getByTestId('hero-more');
+  await expect(quiet).toHaveText(/^or begin your own · a founder.s vigil$/);
+  await expect(quiet.getByRole('link', { name: 'begin your own' })).toHaveAttribute('href', '#begin');
+  await expect(quiet.getByRole('button', { name: /^a founder.s vigil$/ })).toBeVisible();
+  const [buttonsBox, quietBox] = await Promise.all([buttons.nth(1).boundingBox(), quiet.boundingBox()]);
+  expect(quietBox!.y).toBeGreaterThanOrEqual(buttonsBox!.y + buttonsBox!.height);
+
+  // The thesis and the stakes stay in the hero; "What no one else does" is not there.
+  await expect(hero.getByTestId('thesis')).toBeVisible();
+  await expect(hero.locator('.stakes')).toBeVisible();
+  await expect(hero.getByTestId('distinct')).toHaveCount(0);
+
+  // Below the rooms strip: its heading, three wax seals marked I, II, III, each with a title and text.
+  const distinct = page.getByTestId('distinct');
+  await expect(distinct.getByRole('heading', { name: 'What no one else does' })).toBeVisible();
+  await expect(distinct.locator('li')).toHaveCount(3);
+  await expect(distinct.locator('li svg.wax-seal')).toHaveCount(3);
+  for (const [i, title] of ['The recipient holds half the key.', 'Any witness can veto.', 'The room is the state machine.'].entries()) {
+    await expect(distinct.locator('li').nth(i)).toContainText(title);
+  }
+  await expect(distinct).toContainText('Twelve taps a year is the whole job.');
+  const rooms = (await page.getByTestId('rooms-strip').boundingBox())!;
+  const strip = (await distinct.boundingBox())!;
+  expect(strip.y).toBeGreaterThanOrEqual(rooms.y + rooms.height);
+  // The seals sit side by side on a desktop, and nothing widens the page on a phone.
+  const tops = await distinct.locator('li').evaluateAll((els) => els.map((el) => Math.round(el.getBoundingClientRect().top)));
+  if ((page.viewportSize()?.width ?? 0) >= 900) expect(new Set(tops).size).toBe(1);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBeLessThanOrEqual(0);
+});
+
+test('"a founder’s vigil" in the quiet line starts the founder demo (Req 10.11)', async ({ page }) => {
+  await page.goto('/');
+  await page.getByTestId('hero-more').getByRole('button', { name: /a founder.s vigil/ }).click();
+  await expect(page.getByText('The vigil of Priya Raman')).toBeVisible();
+});

@@ -189,3 +189,55 @@ test('the writing desk says plainly that the operator could read a vault-custody
   await expect(vault).toBeChecked();
   await expect(group.getByText(/whoever runs the server\s+could read this letter/)).toBeVisible();
 });
+
+test('the stage track is above the fold at 1440x900, and the check-in stays above the fold at 390x844 (Req 10.16)', async ({ page }) => {
+  // With the demo guide open, which is the tallest the top of the vigil gets.
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await demoVigil(page);
+  await expect(page.getByTestId('guide')).toBeVisible();
+  const track = page.getByRole('list', { name: 'Stages of the switch' });
+  await expect(track).toBeInViewport({ ratio: 1 });
+  await expect(track.locator('.stages__label')).toHaveText(['Alive', 'Reminder', 'Grace', 'Witnesses', 'Released']);
+  const box = (await track.boundingBox())!;
+  expect(box.y + box.height).toBeLessThanOrEqual(900);
+
+  // A phone keeps the check-in first: the track follows it rather than pushing it down.
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect(page.getByTestId('check-in')).toBeInViewport({ ratio: 1 });
+  const checkIn = (await page.getByTestId('check-in').boundingBox())!;
+  const phoneTrack = (await track.boundingBox())!;
+  expect(phoneTrack.y).toBeGreaterThan(checkIn.y + checkIn.height);
+});
+
+test('brass buttons share the pill radius of the other buttons (Req 10.19)', async ({ page }) => {
+  await demoVigil(page);
+  await page.getByRole('button', { name: /^time machine/i }).click();
+  const drawer = page.getByRole('complementary', { name: /time machine/i });
+  const brass = drawer.getByRole('button', { name: '+7 days' });
+  await expect(brass).toHaveClass(/btn--brass/);
+  const radius = (locator: typeof brass) => locator.evaluate((el) => getComputedStyle(el).borderTopLeftRadius);
+  const pill = await radius(drawer.getByRole('button', { name: 'Reset the whole demo' }));
+  expect(parseFloat(pill)).toBeGreaterThanOrEqual(100);
+  for (const name of ['+1 day', '+7 days', '+30 days', 'Skip to the next event']) {
+    expect(await radius(drawer.getByRole('button', { name }))).toBe(pill);
+  }
+});
+
+test('the fields of the terms form do not touch: every row is at least 12 px from the next (Req 10.20)', async ({ page }) => {
+  await demoVigil(page);
+  const rows = page.locator('form.terms fieldset > :not(legend)');
+  await expect(rows.first()).toBeVisible();
+  const boxes = await rows.evaluateAll((els) =>
+    els
+      .map((el) => el.getBoundingClientRect())
+      .filter((r) => r.height > 0)
+      .map((r) => ({ top: r.top, bottom: r.bottom })),
+  );
+  expect(boxes.length).toBeGreaterThanOrEqual(4);
+  for (let i = 1; i < boxes.length; i++) {
+    expect(boxes[i]!.top - boxes[i - 1]!.bottom, `row ${i + 1} is ${(boxes[i]!.top - boxes[i - 1]!.bottom).toFixed(1)} px under row ${i}`).toBeGreaterThanOrEqual(12);
+  }
+  // The two inputs of a row are apart sideways too.
+  const row = (await page.locator('form.terms .field-row').first().locator('.field').evaluateAll((els) => els.map((el) => el.getBoundingClientRect())));
+  expect(row[1]!.left - row[0]!.right).toBeGreaterThanOrEqual(12);
+});

@@ -31,3 +31,25 @@ test('on a phone the sound switch and the hourglass sit in the masthead, clear o
     expect(await overlaps()).toBe(0);
   }
 });
+
+test('on a phone the time machine note sits below the masthead and goes away when the route changes (Req 10.14)', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Try a demo vigil' }).click();
+  await expect(page.getByTestId('state-title')).toBeVisible();
+  await page.getByRole('button', { name: /^time machine/i }).click();
+  await page.getByRole('button', { name: '+7 days' }).click();
+
+  const toast = page.locator('.tm-toast');
+  await expect(toast).toContainText('A week passed');
+  const masthead = (await page.locator('header.masthead').boundingBox())!;
+  const note = (await toast.boundingBox())!;
+  expect(note.y).toBeGreaterThanOrEqual(masthead.y + masthead.height);
+  // It stays on screen and inside the width.
+  expect(note.x).toBeGreaterThanOrEqual(0);
+  expect(note.x + note.width).toBeLessThanOrEqual(page.viewportSize()!.width);
+
+  // Navigating to another route dismisses it.
+  await page.getByRole('link', { name: 'How the seal works' }).click();
+  await expect(page.getByRole('heading', { level: 1, name: 'How the seal works' })).toBeVisible();
+  await expect(page.locator('.tm-toast')).toHaveCount(0);
+});

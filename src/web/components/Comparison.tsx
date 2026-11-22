@@ -1,3 +1,5 @@
+import { WaxSeal } from './WaxSeal';
+
 /**
  * The stakes line and the "why not the tools you already have" table, shared by the
  * landing page and the honest page so both always say the same thing.
@@ -94,19 +96,30 @@ export const DISTINCT = [
   { title: 'The room is the state machine.', text: 'Lit, guttering, out: the candle and the whole page show exactly where the vigil stands.' },
 ];
 
+/** The one-breath thesis line, kept in the landing hero. */
+export function Thesis() {
+  return (
+    <p className="hero__thesis" data-testid="thesis">
+      {THESIS}
+    </p>
+  );
+}
+
+/** What no one else does, as a strip of three wax seals below the rooms strip on the landing page. */
 export function Distinct() {
+  const tones = ['oxblood', 'ember', 'ink'] as const;
+  const marks = ['I', 'II', 'III'] as const;
   return (
     <section className="distinct" aria-labelledby="distinct-title" data-testid="distinct">
-      <h2 id="distinct-title" className="distinct__title">
+      <h2 id="distinct-title" className="section-title">
         What no one else does
       </h2>
-      <p className="distinct__thesis" data-testid="thesis">
-        {THESIS}
-      </p>
       <ol className="distinct__list">
-        {DISTINCT.map((d) => (
-          <li key={d.title}>
-            <strong>{d.title}</strong> {d.text}
+        {DISTINCT.map((d, i) => (
+          <li key={d.title} className="distinct__item">
+            <WaxSeal size={72} mark={marks[i]} tone={tones[i]} />
+            <h3>{d.title}</h3>
+            <p>{d.text}</p>
           </li>
         ))}
       </ol>

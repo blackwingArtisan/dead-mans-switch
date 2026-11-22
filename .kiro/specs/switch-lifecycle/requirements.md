@@ -169,6 +169,16 @@ Criteria use EARS: `WHEN` (event), `WHILE` (state), `WHERE` (optional feature), 
 8. WHEN the vigil changes state THE SYSTEM SHALL announce the new state to screen readers.
 9. THE SYSTEM SHALL hide decorative graphics (wax seals and candle) from assistive technology.
 10. WHEN a wax seal carries a mark THE SYSTEM SHALL draw that mark as a single glyph at every size from 58 to 150 px.
+11. WHEN the landing page is shown THE SYSTEM SHALL show exactly two buttons in the hero ("Play the whole story" as the primary wax button and "Try a demo vigil" as the ghost button, or "Try a demo vigil" alone as the wax button when the story is not available), and one quiet text line below them that links to the sign-up form and starts the founder demo.
+12. WHEN the landing page is shown THE SYSTEM SHALL keep the thesis line and the stakes line in the hero and show "What no one else does" below the rooms strip as three wax seals, each with its title and text.
+13. WHEN the landing page is first shown in a browser session and the user has not asked for reduced motion THE SYSTEM SHALL play a one-second match-strike on the hero candle, WHILE every button on the page stays usable.
+14. WHERE the viewport is 640 px wide or less THE SYSTEM SHALL place the time machine's note below the masthead, and WHEN the route changes THE SYSTEM SHALL dismiss it.
+15. WHILE the story caption is shown THE SYSTEM SHALL keep it clear of the stage track labels on the vigil and of the "Keep this letter" and "Print" controls on the open page, at 1440x900 and 390x844.
+16. WHEN the vigil is shown at 1440x900 THE SYSTEM SHALL show the stage track above the fold.
+17. WHERE the viewport is 390 px wide, WHEN an opened letter is in the dark THE SYSTEM SHALL keep the reading-light flame marker off the letter title and show the "Move your light over the page." hint above the page.
+18. WHILE the room is `grace` THE SYSTEM SHALL tint the room sickly yellow-green with a slow flicker at the edges of the viewport, keep every text colour at WCAG AA contrast against it, and WHILE the user prefers reduced motion THE SYSTEM SHALL show the tint without the flicker.
+19. THE SYSTEM SHALL give brass buttons the same pill radius as the other buttons.
+20. THE SYSTEM SHALL space the fields of the terms form on the vigil at least 12 px apart.
 
 ## Requirement 11: Response hardening
 

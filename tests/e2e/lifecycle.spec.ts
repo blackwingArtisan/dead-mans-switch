@@ -209,9 +209,9 @@ test('a vault-custody letter opens from its link alone', async ({ page, browser 
   await expect(june.getByTestId('opened-letter')).toContainText('Biscuit eats twice a day');
   const sheet = june.getByTestId('letter-page');
   await expect(sheet).toHaveClass(/letter__page--dark/);
-  // The hint and "Light the room" sit on the sheet, above the fold, and the first light is wide.
-  await expect(sheet.getByTestId('candle-hint')).toBeInViewport();
-  await expect(sheet.getByRole('button', { name: 'Light the room' })).toBeInViewport();
+  // The hint and "Light the room" sit above the sheet (not on it), above the fold, and the first light is wide.
+  await expect(june.getByTestId('candle-hint')).toBeInViewport();
+  await expect(june.getByTestId('candle-hint').getByRole('button', { name: 'Light the room' })).toBeInViewport();
   await expect(sheet).toHaveClass(/letter__page--first-light/);
   // She reads by Mara's own candle.
   await expect(june.getByTestId('their-candle')).toContainText('This is the candle Mara kept until');
@@ -433,7 +433,7 @@ test('the demo guide says what to try next, and the room dies and relights with 
 
 test("a founder's demo vigil seals Priya's letters and names her own witness in the guide", async ({ page }) => {
   await page.goto('/');
-  await page.getByRole('button', { name: 'or a founder’s vigil' }).click();
+  await page.getByRole('button', { name: 'a founder’s vigil' }).click();
   await expect(page.getByTestId('envelope')).toHaveCount(2);
   await expect(page.getByText('The vigil of Priya Raman')).toBeVisible();
   await expect(page.getByTestId('envelope').filter({ hasText: 'For Tomás Rivera' })).toContainText('Vault custody');

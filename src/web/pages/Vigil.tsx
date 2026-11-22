@@ -123,6 +123,19 @@ export function Vigil({ onLost }: { onLost: () => void }) {
           </h1>
           {state === 'released' ? <Epitaph vault={vault} /> : <p className="lede">{copy.plain}</p>}
 
+          <ol className="stages" aria-label="Stages of the switch">
+            {STAGES.map((s, i) => {
+              const at = STAGES.findIndex((x) => x.state === state);
+              const status = state === 'paused' ? 'upcoming' : i < at ? 'done' : i === at ? 'current' : 'upcoming';
+              return (
+                <li key={s.state} className={`stages__step stages__step--${status}`} aria-current={status === 'current' ? 'step' : undefined}>
+                  <span className="stages__dot" aria-hidden="true" />
+                  <span className="stages__label">{s.label}</span>
+                </li>
+              );
+            })}
+          </ol>
+
           {live && state !== 'paused' && (
             <div className="checkin">
               <button
@@ -242,19 +255,6 @@ export function Vigil({ onLost }: { onLost: () => void }) {
           )}
         </div>
       </section>
-
-      <ol className="stages" aria-label="Stages of the switch">
-        {STAGES.map((s, i) => {
-          const at = STAGES.findIndex((x) => x.state === state);
-          const status = state === 'paused' ? 'upcoming' : i < at ? 'done' : i === at ? 'current' : 'upcoming';
-          return (
-            <li key={s.state} className={`stages__step stages__step--${status}`} aria-current={status === 'current' ? 'step' : undefined}>
-              <span className="stages__dot" aria-hidden="true" />
-              <span className="stages__label">{s.label}</span>
-            </li>
-          );
-        })}
-      </ol>
 
       <Flourish className="divider" />
 
