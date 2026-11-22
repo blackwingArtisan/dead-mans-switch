@@ -20,7 +20,8 @@ async function expectClearOfCaption(page: Page, target: Locator, what: string): 
 }
 
 for (const size of SIZES) {
-  test(`the story caption leaves the stage track and the letter's Keep and Print controls uncovered at ${size.name} (Req 10.15)`, async ({ page }) => {
+  test(`the story caption leaves the stage track, the letter's Keep and Print controls and the candles lit back uncovered at ${size.name} (Req 10.15)`, async ({ page }) => {
+    test.setTimeout(150_000);
     await page.setViewportSize({ width: size.width, height: size.height });
     await page.goto('/?story-pace=0.2');
     await page.getByTestId('play-story').click();
@@ -35,9 +36,10 @@ for (const size of SIZES) {
 
     // The open page, on the end card: the controls are the point of the letter.
     await expect(page.getByTestId('opened-letter')).toBeVisible({ timeout: 30_000 });
-    await expect(caption).toContainText('Some words should wait', { timeout: 30_000 });
+    await expect(caption).toContainText('One went out. Two were lit.', { timeout: 120_000 });
     await expectClearOfCaption(page, page.getByRole('button', { name: 'Keep this letter (download)' }), 'Keep this letter');
     await expectClearOfCaption(page, page.getByRole('button', { name: 'Print', exact: true }), 'Print');
+    await expectClearOfCaption(page, page.getByTestId('candles-beside'), 'the candles lit back');
 
     // The room the caption needs is reserved only while it is shown.
     await caption.getByRole('button', { name: 'Close' }).click();

@@ -443,6 +443,7 @@ test("a founder's demo vigil seals Priya's letters and names her own witness in 
 });
 
 test('"Play the whole story" runs the lifecycle hands-off, with captions, to an opened letter', async ({ page }) => {
+  test.setTimeout(150_000);
   // A fifth of the real pace: about eight seconds, slow enough that every caption is seen.
   await page.goto('/?story-pace=0.2');
   await page.getByTestId('play-story').click();
@@ -451,16 +452,16 @@ test('"Play the whole story" runs the lifecycle hands-off, with captions, to an 
   await expect(caption).toContainText('This time he confirms', { timeout: 30_000 });
   await expect(caption).toContainText('She reads it by her last candle', { timeout: 30_000 });
   await expect(page.getByTestId('opened-letter')).toContainText('Biscuit eats twice a day');
-  // The last caption stays as an end card until it is closed.
+  // June's letter ends in full light, signature included, beside Mara's own candle as she left it.
   await expect(caption).toContainText('Some words should wait', { timeout: 30_000 });
-  await expect(caption).not.toContainText(/\d+ of \d+/);
-  // The story ends on the whole letter in full light, signature included.
   await expect(page.getByTestId('letter-page')).toHaveClass(/letter__page--lit/);
   await expect(page.locator('.letter__from')).toHaveClass(/letter__from--signed/);
-  // It closes on Mara's own candle, as she left it.
   await expect(caption).toContainText('Their candle, your light');
+  // Then the room fills: the last caption stays as an end card until it is closed.
+  await expect(caption).toContainText('One went out. Two were lit.', { timeout: 60_000 });
+  await expect(caption).not.toContainText(/\d+ of \d+/);
   await expect(page.getByTestId('their-candle')).toContainText('This is the candle Mara kept until');
-  await expect(page.getByTestId('their-candle').locator('svg.candle')).toBeInViewport();
+  await expect(page.getByTestId('their-candle').locator('.letter__keeper-row > svg.candle')).toBeInViewport();
   await caption.getByRole('button', { name: 'Close' }).click();
   await expect(caption).toHaveCount(0);
 });

@@ -108,6 +108,80 @@ test("the story shows June's keepsake card before her seal breaks, and the seal 
   expect(seen.filter((r) => r.includes(half!))).toEqual([]);
 });
 
+// ── the room fills back up ─────────────────────────────────────────────────────────────────────────────────
+
+/** Plays the story at a fifth of the pace to its end card. */
+async function playToTheEnd(page: Page): Promise<void> {
+  await page.goto('/?story-pace=0.2');
+  await page.getByTestId('play-story').click();
+  await expect(playing(page)).toHaveCount(0, { timeout: 120_000 });
+}
+
+test('the story ends with June and Theo each lighting a candle back beside Mara\'s, and the line "One went out. Two were lit."', async ({ page }) => {
+  test.setTimeout(150_000);
+  const caption = page.getByTestId('story').getByRole('status');
+  await page.goto('/?story-pace=0.2');
+  await page.getByTestId('play-story').click();
+
+  // June's candle first, by the real form, with her line; then Theo's. Each caption is announced in the live region.
+  await expect(caption).toContainText('June lights a candle back');
+  await expect(page.getByTestId('candle-mine')).toContainText('Your candle is lit.');
+  await expect(page.getByTestId('candle-beside')).toHaveCount(1);
+  await expect(page.getByTestId('candle-beside')).toContainText('June');
+  await expect(caption).toContainText('Theo has his own one-time link');
+  await expect(page.getByTestId('opened-letter')).toContainText('I am so proud of you');
+  await expect(caption).toContainText('Theo lights one back');
+  await expect(page.getByTestId('candle-beside')).toHaveCount(2);
+
+  // The end card: the final line, held on Mara's candle with two lit beside it.
+  await expect(playing(page)).toHaveCount(0, { timeout: 120_000 });
+  await expect(caption).toHaveText('One went out. Two were lit.');
+  const beside = page.getByTestId('candles-beside');
+  await expect(beside.getByTestId('candle-beside')).toHaveText(['June', 'Theo']);
+  await expect(page.getByTestId('candles-lit')).toContainText('Biscuit is fed.');
+  await expect(page.getByTestId('candles-lit')).toContainText('I found the blue tin.');
+  await expect(page.getByTestId('their-candle').locator('.letter__keeper-row > svg.candle')).toBeInViewport();
+  await expect(beside).toBeInViewport();
+
+  // The lines went through the real route: the ledger has both candles, and the server holds both lines.
+  const kinds = (await ledger(page)).filter((e) => e.kind === 'candle-lit').map((e) => e.note);
+  expect(kinds).toEqual(['June Okafor lit a candle back.', 'Theo Whitlock lit a candle back.']);
+
+  // The end card has no WCAG 2.2 AA violations.
+  const axe = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa']).analyze();
+  expect(axe.violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(' ')).join(', ')}`)).toEqual([]);
+
+  // Close the end card: the candles stay lit.
+  await page.getByTestId('story').getByRole('button', { name: 'Close' }).click();
+  await expect(page.getByTestId('story')).toHaveCount(0);
+  await expect(page.getByTestId('candle-beside')).toHaveCount(2);
+});
+
+test('under reduced motion the candles lit back simply appear lit, with no animation (Req 10.3, 12.13)', async ({ page }) => {
+  test.setTimeout(150_000);
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await playToTheEnd(page);
+  await expect(page.getByTestId('story').getByRole('status')).toHaveText('One went out. Two were lit.');
+  const items = page.getByTestId('candle-beside');
+  await expect(items).toHaveCount(2);
+  for (const i of [0, 1]) {
+    const style = await items.nth(i).evaluate((el) => {
+      const s = getComputedStyle(el);
+      return { animation: s.animationName, opacity: s.opacity };
+    });
+    expect(style).toEqual({ animation: 'none', opacity: '1' });
+  }
+});
+
+test('the story\'s ending also holds on a phone, with both candles in view (Req 10.15)', async ({ page }) => {
+  test.setTimeout(150_000);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await playToTheEnd(page);
+  await expect(page.getByTestId('candle-beside')).toHaveCount(2);
+  await expect(page.getByTestId('candles-beside')).toBeInViewport();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
+});
+
 // ── when the demo stops answering ──────────────────────────────────────────────────────────────────────────
 
 /** Starts the story, waits until the vigil is on screen (the setup calls are done), then makes every /api call fail. */
@@ -194,7 +268,7 @@ test('?story=1 on the landing page starts the story by itself, with sound muted 
   await expect(page.getByTestId('sound-toggle')).toHaveAttribute('aria-pressed', 'false');
   expect(await page.evaluate(() => localStorage.getItem('dms.sound'))).not.toBe('on');
   await expect(playing(page)).toHaveCount(0, { timeout: 90_000 });
-  await expect(box.getByRole('status')).toContainText('Some words should wait');
+  await expect(box.getByRole('status')).toHaveText('One went out. Two were lit.');
 });
 
 test('the landing page without ?story=1 does not start the story (Req 12.11)', async ({ page }) => {
@@ -229,7 +303,7 @@ test('the button label gives the real running time of the story at normal pace, 
   await expect(playing(page)).toHaveCount(0, { timeout: 150_000 });
   const real = (Date.now() - started) / 1000;
   // The run must have reached its end card; a story that stopped early would otherwise look like a short one.
-  await expect(page.getByTestId('story').getByRole('status')).toHaveText(/Some words should wait/);
+  await expect(page.getByTestId('story').getByRole('status')).toHaveText('One went out. Two were lit.');
   console.log(`story running time at pace 1: ${real.toFixed(1)} s (label says ${label} s)`);
   expect(Math.abs(real - label), `label ${label} s, measured ${real.toFixed(1)} s`).toBeLessThanOrEqual(5);
 });

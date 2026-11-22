@@ -1,6 +1,6 @@
 /**
- * "Play the whole story": a captioned, hands-off run of the demo. It runs for STORY_SECONDS (54 s measured at normal
- * pace: the sum of the HOLD pauses is about 51 s, and page loads and clicks add about 3 s). It needs
+ * "Play the whole story": a captioned, hands-off run of the demo. It runs for STORY_SECONDS (see below: the sum of the HOLD pauses,
+ * plus the page loads and clicks, measured at normal pace). It needs
  * the local time machine, so it only appears when the server runs with dev tools. It drives the
  * real app (the same routes, buttons and API a person would use), which also makes it a clean
  * take for a demo video. `?story-pace=0.2` in the URL plays it five times faster (used by tests and the media script).
@@ -125,6 +125,26 @@ async function readByCandle(ms: number): Promise<void> {
   }
 }
 
+/** Types a line into "A candle lit back" and presses "Light a candle", then waits until `count` candles stand beside the author's. */
+async function lightCandleBack(line: string, count: number): Promise<void> {
+  const input = (await until(() => document.querySelector<HTMLInputElement>('#candle-line'))) as HTMLInputElement;
+  input.scrollIntoView({ block: 'center' });
+  await typeInto(input, line, NOTE_CHAR_MS);
+  (await until(byTestId('light-candle'))).click();
+  await until(byTestId('candle-mine'));
+  await until(() => document.querySelectorAll('[data-testid="candle-beside"]').length >= count);
+}
+
+/** Brings the author's candle, and the candles lit beside it, into view: beside the letter on a wide screen, under it on a narrow one. */
+async function showKeeper(): Promise<void> {
+  const page = document.querySelector<HTMLElement>('[data-testid="letter-page"]');
+  const keeper = document.querySelector<HTMLElement>('[data-testid="their-candle"]');
+  const beside = page && keeper && keeper.getBoundingClientRect().right <= page.getBoundingClientRect().left;
+  if (keeper && !beside) keeper.scrollIntoView({ block: 'center', behavior: 'smooth' });
+  else if (page) window.scrollTo({ top: Math.max(0, page.getBoundingClientRect().top + window.scrollY - 24), behavior: 'smooth' });
+  await new Promise((r) => setTimeout(r, 50));
+}
+
 /** The keepsake link of each keepsake-custody letter, by recipient. It stays in this browser; it is never sent anywhere. */
 const keepsakeLinks = new Map<string, string>();
 
@@ -133,6 +153,9 @@ const STATIC_BUILD = import.meta.env.VITE_STATIC_DEMO === '1';
 
 const FALSE_ALARM_NOTE = 'Mara was hiking';
 const NOTE_CHAR_MS = 45;
+/** The line each recipient leaves with the candle they light back, in the story's last scene. */
+const JUNE_CANDLE_LINE = 'Biscuit is fed.';
+const THEO_CANDLE_LINE = 'I found the blue tin.';
 
 /**
  * Every pause the story makes on purpose, in milliseconds at normal pace (`?story-pace` scales them). The label on the
@@ -155,13 +178,20 @@ const HOLD = {
   keepsakeCard: 3500,
   opened: 1500,
   reading: 7000,
+  letterEnd: 3500,
+  beforeJuneLine: 800,
+  juneLine: JUNE_CANDLE_LINE.length * NOTE_CHAR_MS,
+  juneCandle: 3000,
+  theoOpened: 2500,
+  theoLine: THEO_CANDLE_LINE.length * NOTE_CHAR_MS,
+  theoCandle: 3000,
   endCard: 5500,
 } as const;
 
 export const STORY_HOLD_MS: number = Object.values(HOLD).reduce((sum, ms) => sum + ms, 0);
 
 /** The running time on the button, in seconds at normal pace: measured end to end, rounded. Keep it true: tests compare it. */
-export const STORY_SECONDS = 54;
+export const STORY_SECONDS = 68;
 
 const STEPS: { caption: string; run: () => Promise<void> }[] = [
   {
@@ -286,12 +316,47 @@ const STEPS: { caption: string; run: () => Promise<void> }[] = [
       const next = await until(() => lit() ?? byTestId('light-room')());
       if (!lit()) next.click();
       await until(lit);
-      // Close on her candle: beside the letter on a wide screen, under it on a narrow one.
-      const page = document.querySelector<HTMLElement>('[data-testid="letter-page"]');
-      const keeper = document.querySelector<HTMLElement>('[data-testid="their-candle"]');
-      const beside = page && keeper && keeper.getBoundingClientRect().right <= page.getBoundingClientRect().left;
-      if (keeper && !beside) keeper.scrollIntoView({ block: 'center', behavior: 'smooth' });
-      else if (page) window.scrollTo({ top: Math.max(0, page.getBoundingClientRect().top + window.scrollY - 24), behavior: 'smooth' });
+      await showKeeper();
+      await wait(HOLD.letterEnd);
+    },
+  },
+  {
+    caption: 'June lights a candle back, with one line for the others: “Biscuit is fed.” It stands beside Mara’s.',
+    run: async () => {
+      await wait(HOLD.beforeJuneLine);
+      await lightCandleBack(JUNE_CANDLE_LINE, 1);
+      await showKeeper();
+      await wait(HOLD.juneCandle);
+    },
+  },
+  {
+    caption: 'Theo has his own one-time link, and his key travels inside it. He opens his letter too, and reads it in full light.',
+    run: async () => {
+      const link = await linkFor('release', 'Theo Whitlock');
+      navigate(link.pathname + link.hash);
+      await until(byTestId('keepsake-ready'));
+      (await until(byTestId('break-seal'))).click();
+      await until(byTestId('letter-page'));
+      // Under reduced motion the letter is already lit and there is no button to press.
+      const lit = () => document.querySelector<HTMLElement>('.letter__page--lit');
+      const next = await until(() => lit() ?? byTestId('light-room')());
+      if (!lit()) next.click();
+      await until(lit);
+      await wait(HOLD.theoOpened);
+    },
+  },
+  {
+    caption: 'Theo lights one back: “I found the blue tin.” A second candle stands beside Mara’s.',
+    run: async () => {
+      await lightCandleBack(THEO_CANDLE_LINE, 2);
+      await showKeeper();
+      await wait(HOLD.theoCandle);
+    },
+  },
+  {
+    caption: 'One went out. Two were lit.',
+    run: async () => {
+      await showKeeper();
       await wait(HOLD.endCard);
     },
   },

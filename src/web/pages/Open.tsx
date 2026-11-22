@@ -1,12 +1,12 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent, type PointerEvent } from 'react';
 import { keepsakeTagOf, openLetter } from '../../core/crypto';
 import { fromBase32, toBase64Url } from '../../core/encoding';
-import type { LetterContent } from '../../core/types';
+import type { CandleBack, LetterContent } from '../../core/types';
 import { api, keepsakes, type OpenInfo } from '../lib/api';
 import { longDate } from '../lib/format';
 import { useRoom } from '../lib/room';
 import { LinkNotice } from '../components/Lost';
-import { LightACandle } from '../components/CandlesLit';
+import { CandlesBeside, LightACandle } from '../components/CandlesLit';
 import { sanitizeLetterHtml } from '../lib/sanitize';
 import { sound } from '../lib/sound';
 import { tour } from '../lib/tour';
@@ -230,6 +230,8 @@ function OpenedLetter({ token, info, letter, safeHtml }: { token: string; info: 
   const [signed, setSigned] = useState(!dark);
   // The light starts wide on the first lines and settles to a candle's reach once the reader moves it.
   const [moved, setMoved] = useState(false);
+  // The candles other readers have lit back, shown beside the author's own.
+  const [beside, setBeside] = useState<CandleBack[]>([]);
   const pageRef = useRef<HTMLDivElement>(null);
   const signRef = useRef<HTMLParagraphElement>(null);
   // A letter opened during the demo guide is the end of the story; the guide closes here.
@@ -330,7 +332,10 @@ function OpenedLetter({ token, info, letter, safeHtml }: { token: string; info: 
           <div className="letter__char" aria-hidden="true" />
         </div>
         <figure className="letter__keeper" data-testid="their-candle">
-          <Candle remaining={info.lastCandle.wax} state="alive" size={170} />
+          <div className="letter__keeper-row">
+            <Candle remaining={info.lastCandle.wax} state="alive" size={170} />
+            <CandlesBeside candles={beside} authorName={info.authorName} />
+          </div>
           <figcaption>
             This is the candle {info.authorName.split(' ')[0]} kept until {longDate(info.lastCandle.keptUntil)}.{' '}
             <em>Their candle, your light.</em>
@@ -351,7 +356,7 @@ function OpenedLetter({ token, info, letter, safeHtml }: { token: string; info: 
               Print
             </button>
           </div>
-          <LightACandle token={token} authorName={info.authorName} />
+          <LightACandle token={token} authorName={info.authorName} onCandles={setBeside} />
           <p className="hint letter__release">
             Kept a copy? Then, if you wish, let this one go.{' '}
             <button type="button" className="btn btn--ghost btn--small" onClick={letItGo} disabled={fate !== 'kept'} data-testid="let-it-go">

@@ -2,6 +2,7 @@ import { useEffect, useState, type FormEvent } from 'react';
 import { MAX_CANDLE_LINE } from '../../core/vault';
 import type { CandleBack, CandleLine } from '../../core/types';
 import { api } from '../lib/api';
+import { Candle } from './Candle';
 import { shortDate } from '../lib/format';
 
 /** The candles the recipients lit back, each with its line and who left it. */
@@ -26,7 +27,16 @@ export function CandlesLit({ candles, testId = 'candles-lit' }: { candles: Candl
  * "A candle lit back": after reading, a recipient may leave one line for the witnesses and the
  * other recipients, the story's last scene. One line, once, plain text.
  */
-export function LightACandle({ token, authorName }: { token: string; authorName: string }) {
+export function LightACandle({
+  token,
+  authorName,
+  onCandles,
+}: {
+  token: string;
+  authorName: string;
+  /** Told the candles lit so far, when the page loads and after this reader lights theirs (the letter shows them beside the author's). */
+  onCandles?: (candles: CandleBack[]) => void;
+}) {
   const first = authorName.split(' ')[0];
   const [mine, setMine] = useState<CandleLine | null>(null);
   const [candles, setCandles] = useState<CandleBack[]>([]);
@@ -40,6 +50,7 @@ export function LightACandle({ token, authorName }: { token: string; authorName:
       (info) => {
         setMine(info.candle);
         setCandles(info.candles);
+        onCandles?.(info.candles);
       },
       () => undefined,
     );
@@ -53,6 +64,7 @@ export function LightACandle({ token, authorName }: { token: string; authorName:
       const r = await api.lightCandle(token, line);
       setMine(r.candle);
       setCandles(r.candles);
+      onCandles?.(r.candles);
       setLit(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'The candle would not light.');
@@ -104,5 +116,23 @@ export function LightACandle({ token, authorName }: { token: string; authorName:
       </p>
       <CandlesLit candles={candles} />
     </section>
+  );
+}
+
+/**
+ * The candles the other readers lit back, standing beside the author's own on the letter page. Each is a small candle with its
+ * reader's first name in text. They are decorative pictures with the words beside them; under reduced motion they simply appear lit.
+ */
+export function CandlesBeside({ candles, authorName }: { candles: CandleBack[]; authorName: string }) {
+  if (candles.length === 0) return null;
+  return (
+    <ul className="letter__beside" data-testid="candles-beside" aria-label={`Candles lit back beside ${authorName.split(' ')[0]}’s`}>
+      {candles.map((c) => (
+        <li key={`${c.from}-${c.at}`} className="letter__beside-item" data-testid="candle-beside">
+          <Candle remaining={0.7} state="alive" size={84} />
+          <span>{c.from.split(' ')[0]}</span>
+        </li>
+      ))}
+    </ul>
   );
 }
