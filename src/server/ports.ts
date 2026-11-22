@@ -24,6 +24,17 @@ export interface VaultStore {
   listIds(): Promise<string[]>;
 }
 
+/**
+ * Thrown by a store that can detect a concurrent write (the DynamoDB store, on a version
+ * condition). The change was not saved; re-read the vault, apply the change again and retry.
+ */
+export class StoreConflictError extends Error {
+  constructor(message = 'This vigil changed while your change was being saved. Please try again.') {
+    super(message);
+    this.name = 'StoreConflictError';
+  }
+}
+
 export interface MailMessage {
   to: { name: string; email: string };
   subject: string;
