@@ -93,7 +93,7 @@ Wax seals carry each recipient's initial, the check-in is a seal you press, and 
 
 ## Run and test it
 
-Node 20 or newer. `npm install && npm run demo` serves everything on http://localhost:3140 with the time machine on; `npm run check` runs the typecheck, the unit suite, a production build and Playwright. Current suite: <!-- test-counts -->179 unit tests in 25 files, all passing, and 82 end-to-end runs (desktop and phone) in 12 Playwright files.<!-- /test-counts -->
+Node 20 or newer. `npm install && npm run demo` serves everything on http://localhost:3140 with the time machine on; `npm run check` runs the typecheck, the unit suite, a production build and Playwright. Current suite: <!-- test-counts -->187 unit tests in 26 files, all passing, and 89 end-to-end runs (desktop and phone) in 14 Playwright files.<!-- /test-counts -->
 
 The end-to-end suite seals a letter, lets the candle go out, confirms as a witness and opens the letter once in a fresh browser, and runs an axe WCAG 2.2 AA audit of every page and state. More in [docs/RUNNING.md](docs/RUNNING.md).
 
@@ -103,24 +103,24 @@ React and Vite in the browser, a Hono API, and a pure state machine shared by bo
 
 ## Built with Kiro
 
-**Kiro reviewed the spec, found 12 untested behaviors, built all 12 plus 17 tasks it added, caught 2 real app defects, checked a Cloudflare binding against live docs through MCP, polished the costume, scripted the story's false alarm, keepsake card and ending, wrote and built a second spec from scratch, and added 4,081 lines of tests, code and spec in 9 logged sessions.** Every session is in **[KIRO-LOG.md](KIRO-LOG.md)** with its prompt, minutes, credits, files and test results, and Kiro's own output is in [docs/kiro-sessions/](docs/kiro-sessions). The evidence for each judging criterion is mapped in [docs/JUDGES.md](docs/JUDGES.md).
+**Kiro reviewed the spec, found 12 untested behaviors, built all 12 plus 22 tasks it added, caught 2 real app defects, checked a Cloudflare binding against live docs through MCP, polished the costume, scripted the story's false alarm, keepsake card and ending, dressed the climax and the room's objects, wrote and built a second spec from scratch, and added 4,517 lines of tests, code and spec in 10 logged sessions.** Every session is in **[KIRO-LOG.md](KIRO-LOG.md)** with its prompt, minutes, credits, files and test results, and Kiro's own output is in [docs/kiro-sessions/](docs/kiro-sessions). The evidence for each judging criterion is mapped in [docs/JUDGES.md](docs/JUDGES.md).
 
 **Who wrote what**
 
 | Who | What | Lines |
 |---|---|---|
-| Kiro (kiro-cli 3.4.0 and 3.5.0, custom agent) | The EARS review of the spec and the 29 tasks it wrote into it; the `RateLimiter` port and adapters; every test in group 9; two app fixes; the rate-limit binding checked against Cloudflare's docs; the IV length check; the costume polish in group 10; the story beats in group 11; the story's ending, from a vibe prompt; the founder-runbook spec, written and built | 4,081 added, across 9 commits marked `Built-with: Kiro` |
-| Claude Code | The first build and the security hardening, from the Kiro steering files and a spec in Kiro's format; the copy, the README and the logs; two small fixes: 11 lines in Kiro's work after a screenshot review, and a 10-line rate-limiter fix that the longer suite exposed | Everything else |
+| Kiro (kiro-cli 3.4.0 and 3.5.0, custom agent) | The EARS review of the spec and the 34 tasks it wrote into it; the `RateLimiter` port and adapters; every test in group 9; two app fixes; the rate-limit binding checked against Cloudflare's docs; the IV length check; the costume polish in group 10; the story beats in group 11; the story's ending, from a vibe prompt; the founder-runbook spec, written and built; the climax and room objects in group 12 | 4,517 added, across 10 commits marked `Built-with: Kiro` |
+| Claude Code | The first build and the security hardening, from the Kiro steering files and a spec in Kiro's format; the copy, the README and the logs; three small fixes, 25 lines in all: two after screenshot reviews, and a rate-limiter fix that the longer suite exposed | Everything else |
 | The developer | The idea, the product decisions, and review of every commit | |
 
 **Kiro feature checklist**
 
 | Feature | Used | Evidence |
 |---|---|---|
-| Specs | Yes: the switch-lifecycle spec, reviewed into EARS form by Kiro, with 29 tasks Kiro wrote and built; and the founder-runbook spec, which Kiro wrote from a feature description and built in one session | [`.kiro/specs/`](.kiro/specs), [session 3](docs/kiro-sessions/session-3-unit-and-api-gaps.md) to [session 8](docs/kiro-sessions/session-8-story-beats.md), [session 10](docs/kiro-sessions/session-10-founder-runbook.md) |
+| Specs | Yes: the switch-lifecycle spec, reviewed into EARS form by Kiro, with 34 tasks Kiro wrote and built; and the founder-runbook spec, which Kiro wrote from a feature description and built in one session | [`.kiro/specs/`](.kiro/specs), [session 3](docs/kiro-sessions/session-3-unit-and-api-gaps.md) to [session 8](docs/kiro-sessions/session-8-story-beats.md), [session 10](docs/kiro-sessions/session-10-founder-runbook.md) |
 | Steering | Yes: 3 files always loaded, plus `crypto.md` and `a11y.md`, which load only when a matching file is in play; Kiro reported `crypto.md` arriving when it opened `crypto.ts` | [`.kiro/steering/`](.kiro/steering), [session 6](docs/kiro-sessions/session-6-mcp-hooks-crypto.md) |
-| Hooks | Yes: 4 workspace hooks plus the agent's SessionStart hook; 8 runs recorded in Kiro's session log in session 6, with the open-task list and the crypto-custody reminder quoted by Kiro | [`.kiro/hooks/`](.kiro/hooks), [session 6](docs/kiro-sessions/session-6-mcp-hooks-crypto.md) |
-| Custom agent | Yes: `dead-mans-switch` ran sessions 3 to 10 | [`.kiro/agents/dead-mans-switch.json`](.kiro/agents/dead-mans-switch.json) |
+| Hooks | Yes: 4 workspace hooks plus the agent's SessionStart hook; 17 runs recorded in Kiro's own session logs across sessions 6 to 11, with the open-task list and the crypto-custody reminder quoted by Kiro | [`.kiro/hooks/`](.kiro/hooks), [session 6](docs/kiro-sessions/session-6-mcp-hooks-crypto.md) |
+| Custom agent | Yes: `dead-mans-switch` ran sessions 3 to 11 | [`.kiro/agents/dead-mans-switch.json`](.kiro/agents/dead-mans-switch.json) |
 | MCP | Yes: Context7 called 4 times in session 6 to check the Workers Rate Limiting binding and the Kiro agent hook format | [`.kiro/settings/mcp.json`](.kiro/settings/mcp.json), [session 6](docs/kiro-sessions/session-6-mcp-hooks-crypto.md) |
 | Vibe coding | Yes: one conversational prompt with no spec built the story's ending, "One went out. Two were lit.", with its tests | [session 9](docs/kiro-sessions/session-9-vibe-room-fills.md) |
 
