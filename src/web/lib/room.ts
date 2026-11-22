@@ -16,7 +16,7 @@ export const ROOM_LINE: Record<Room, string> = {
   alive: 'The room is warm again.',
   reminder: 'The room is a little dimmer.',
   grace: 'The room dims and the embers slow.',
-  confirm: 'The room has gone dark and smoke hangs in the air.',
+  confirm: 'The room has gone dark and the candle has gone out. Smoke hangs in the air.',
   released: 'Moonlight fills the empty room.',
   paused: 'The room is still, under glass.',
 };

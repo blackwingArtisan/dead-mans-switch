@@ -3878,3 +3878,155 @@ html:has(body[data-story]) {
 .review-note p {
   margin: 0 0 10px;
 }
+
+/* ── the candle goes out: blackout, then a plume (Req 10.22-10.24) ── */
+
+.blackout {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  pointer-events: none; /* never takes a click, so it cannot block longer than it lasts */
+  background: radial-gradient(ellipse at 50% 55%, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.82) 45%, #000 100%);
+  opacity: 0;
+}
+.candle__plume {
+  opacity: 0.5;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .blackout {
+    animation: blackout 1.2s ease-in-out both;
+  }
+  .candle__plume--rise {
+    transform-box: fill-box;
+    transform-origin: 50% 100%;
+    animation: plume 5s ease-out 1.2s both;
+  }
+}
+@keyframes blackout {
+  0% {
+    opacity: 0;
+  }
+  55% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes plume {
+  from {
+    opacity: 0;
+    transform: translateY(40px) scale(0.3);
+  }
+  30% {
+    opacity: 0.7;
+  }
+  to {
+    opacity: 0.5;
+    transform: translateY(-20px) scale(1);
+  }
+}
+
+/* ── room objects: the ledger book page, witness candles, the brass plaque (Req 10.25-10.28) ── */
+
+body {
+  --paper: #e6d8b8;
+  --paper-edge: #b9a57a;
+  --paper-ink: #1f150d;
+  --paper-date: #5a1410;
+  --paper-red: #6b0f0c;
+  --paper-green: #123a1d;
+  --wcandle-wax: #e2d3b2;
+}
+body[data-room='grace'] {
+  --paper: #c9cc9a;
+  --paper-edge: #8f9466;
+  --wcandle-wax: #c4c79a;
+}
+body[data-room='confirm'] {
+  --paper: #9aa1b2;
+  --paper-edge: #5f677a;
+  --wcandle-wax: #98a0b4;
+}
+body[data-room='released'] {
+  --paper: #aab0be;
+  --paper-edge: #6c7385;
+  --wcandle-wax: #aab0be;
+}
+body[data-room='paused'] {
+  --paper: #d6cdb8;
+  --paper-edge: #a49878;
+  --wcandle-wax: #d2c9b4;
+}
+
+.panel--ledger {
+  background: var(--paper);
+  color: var(--paper-ink);
+  border: 0;
+  border-left: 12px solid var(--paper-edge);
+  border-radius: 3px 10px 10px 3px;
+  box-shadow: inset 8px 0 14px -8px rgba(0, 0, 0, 0.45), inset -3px 0 0 var(--paper-edge), 0 -3px 0 -1px var(--paper-edge), var(--shadow);
+}
+.panel--ledger .section-title {
+  color: var(--paper-ink);
+}
+.panel--ledger .ledger {
+  background: repeating-linear-gradient(transparent 0 31px, rgba(60, 40, 20, 0.28) 31px 32px) local;
+  line-height: 32px;
+}
+.panel--ledger .ledger__row {
+  padding: 0;
+  border: 0;
+  font-family: var(--font-hand);
+  font-size: 1.12rem;
+  line-height: 32px;
+}
+.panel--ledger .ledger__row span {
+  font-family: var(--font-hand);
+  color: var(--paper-ink);
+}
+.panel--ledger .ledger__row time {
+  color: var(--paper-date);
+}
+.panel--ledger .ledger__row--released span,
+.panel--ledger .ledger__row--confirm span {
+  color: var(--paper-red);
+}
+.panel--ledger .ledger__row--check-in span {
+  color: var(--paper-green);
+}
+
+.wcandle {
+  flex: none;
+  overflow: visible;
+}
+.wcandle__wax {
+  fill: var(--wcandle-wax);
+}
+.wcandle__flame {
+  fill: var(--flame);
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+}
+.wcandle[data-state='dim'] .wcandle__flame {
+  opacity: 0.45;
+  transform: scale(0.6);
+}
+.wcandle[data-state='out'] .wcandle__flame {
+  opacity: 0;
+}
+.tag--idle {
+  color: var(--muted);
+}
+
+.panel--plaque {
+  border: 4px solid var(--brass);
+  border-radius: 6px;
+  box-shadow: inset 0 0 0 2px var(--brass-deep), inset 0 0 0 4px rgba(0, 0, 0, 0.35), var(--shadow);
+}
+.panel--plaque .section-title {
+  color: var(--brass);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.9), 0 -1px 0 rgba(255, 255, 255, 0.18);
+}

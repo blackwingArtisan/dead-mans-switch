@@ -181,6 +181,14 @@ Criteria use EARS: `WHEN` (event), `WHILE` (state), `WHERE` (optional feature), 
 18. WHILE the room is `grace` THE SYSTEM SHALL tint the room sickly yellow-green with a slow flicker at the edges of the viewport, keep every text colour at WCAG AA contrast against it, and WHILE the user prefers reduced motion THE SYSTEM SHALL show the tint without the flicker.
 19. THE SYSTEM SHALL give brass buttons the same pill radius as the other buttons.
 20. THE SYSTEM SHALL space the fields of the terms form on the vigil at least 12 px apart.
+21. THE SYSTEM SHALL draw the vigil candle's wax column at the same height in every state, and as the days run down SHALL widen a pool of melted wax at its base instead of shrinking the column.
+22. WHEN the vigil enters `confirm` while it is on screen THE SYSTEM SHALL close a full-viewport blackout vignette over 1.2 seconds, then raise a large smoke plume from the wick, and SHALL NOT let the blackout intercept clicks.
+23. WHEN the vigil enters `confirm` THE SYSTEM SHALL announce in a polite live region that the candle has gone out.
+24. WHILE the user prefers reduced motion THE SYSTEM SHALL cut straight to the out state, with no blackout and no animated plume.
+25. THE SYSTEM SHALL draw the ledger as a ruled page of a book, with entries in the hand font and a page edge, that is still a focusable scrolling region with the accessible name "The ledger".
+26. THE SYSTEM SHALL draw each witness as a small named candle that is lit before they are asked, dimmed once asked and out once they confirm, and SHALL state the same state in text.
+27. THE SYSTEM SHALL draw the terms form on a brass plaque with an engraved heading and a brass border, with the form's fields unchanged.
+28. THE SYSTEM SHALL tint the ledger page, the witness candles and the plaque with the room (`body[data-room]`) while keeping every text colour at WCAG AA.
 
 ## Requirement 11: Response hardening
 

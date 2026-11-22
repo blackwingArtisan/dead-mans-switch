@@ -7,6 +7,8 @@ interface Props {
   size?: number;
   /** Plays the match-strike relight (flare on the wick, wax growing back). */
   relighting?: boolean;
+  /** The candle has just gone out in front of the reader: the plume rises (the stylesheet skips this under reduced motion). */
+  climax?: boolean;
 }
 
 /**
@@ -14,10 +16,12 @@ interface Props {
  * grace, and it smokes once witnesses are asked. Purely decorative: the same facts are
  * always given in text beside it.
  */
-export function Candle({ remaining, state, size = 320, relighting = false }: Props) {
+export function Candle({ remaining, state, size = 320, relighting = false, climax = false }: Props) {
   const lit = state === 'alive' || state === 'reminder' || state === 'grace' || state === 'paused';
-  const wax =
-    state === 'grace' ? 0.05 : state === 'confirm' || state === 'released' ? 0.03 : Math.max(0.06, Math.min(1, remaining));
+  // The column never shrinks: the days that run down melt into a pool at the base instead (Req 10.21).
+  const melted = state === 'grace' || state === 'confirm' || state === 'released' ? 1 : 1 - Math.max(0, Math.min(1, remaining));
+  const wax = 1;
+  const poolRx = 40 + 28 * melted;
   const base = 300;
   const height = 26 + 214 * wax;
   const top = base - height;
@@ -74,15 +78,16 @@ export function Candle({ remaining, state, size = 320, relighting = false }: Pro
       <rect x="62" y="296" width="76" height="12" rx="4" fill="#4d3d2d" />
 
       {/* wax body */}
+      <ellipse className="candle__pool" cx="100" cy="300" rx={poolRx} ry={poolRx * 0.16} fill="#e2d3b2" />
       <g className="candle__wax">
         <rect x="70" y={top} width="60" height={height} fill="url(#c-wax)" rx="3" />
         {lit && <rect x="70" y={top} width="60" height={Math.min(60, height)} fill="url(#c-wax-lit)" />}
         <ellipse cx="100" cy={top} rx="30" ry="6" fill="#f6ecd6" />
         <ellipse cx="100" cy={top + 1} rx="22" ry="3.6" fill={lit ? '#ffe2a6' : '#d8c9a8'} opacity="0.85" />
         {/* drips */}
-        <path d={`M76 ${top + 2} q-3 18 1 ${24 + wax * 30} q4 6 6 -2 q1 -12 -1 -22`} fill="#ece0c4" />
-        <path d={`M118 ${top + 3} q2 10 -1 ${14 + wax * 50} q3 7 7 1 q2 -9 0 -15`} fill="#e7dabd" />
-        <path d={`M128 ${top + 4} q3 26 -2 ${40 + wax * 40} q2 6 5 0 q1 -20 -1 -42`} fill="#d9cba9" opacity="0.9" />
+        <path d={`M76 ${top + 2} q-3 18 1 ${24 + melted * 30} q4 6 6 -2 q1 -12 -1 -22`} fill="#ece0c4" />
+        <path d={`M118 ${top + 3} q2 10 -1 ${14 + melted * 50} q3 7 7 1 q2 -9 0 -15`} fill="#e7dabd" />
+        <path d={`M128 ${top + 4} q3 26 -2 ${40 + melted * 40} q2 6 5 0 q1 -20 -1 -42`} fill="#d9cba9" opacity="0.9" />
       </g>
 
       {/* wick */}
@@ -107,6 +112,14 @@ export function Candle({ remaining, state, size = 320, relighting = false }: Pro
         <g className="candle__smoke" fill="none" stroke="#b8ab98" strokeLinecap="round">
           <path d={`M100 ${top - 14} c -10 -14, 12 -24, 0 -40 c -12 -16, 10 -26, -2 -44`} strokeWidth="2.2" />
           <path d={`M102 ${top - 20} c 12 -12, -8 -26, 6 -40 c 12 -12, -6 -24, 4 -40`} strokeWidth="1.4" />
+        </g>
+      )}
+
+      {state === 'confirm' && (
+        <g className={`candle__plume${climax ? ' candle__plume--rise' : ''}`} fill="#b8ab98">
+          <ellipse cx="100" cy={top - 30} rx="14" ry="22" />
+          <ellipse cx="92" cy={top - 78} rx="26" ry="30" />
+          <ellipse cx="110" cy={top - 140} rx="40" ry="40" />
         </g>
       )}
 

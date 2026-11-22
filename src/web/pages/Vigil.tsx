@@ -17,6 +17,8 @@ import { FieldError } from '../components/FieldError';
 import { WaxSeal } from '../components/WaxSeal';
 
 const DAY = 86_400_000;
+/** The blackout vignette lasts this long; `.blackout` in app.css has the same duration and never takes a click. */
+const BLACKOUT_MS = 1200;
 const TONES = ['oxblood', 'ink', 'verdigris', 'ember', 'gold'] as const;
 
 export function Vigil({ onLost }: { onLost: () => void }) {
@@ -25,6 +27,8 @@ export function Vigil({ onLost }: { onLost: () => void }) {
   const [announce, setAnnounce] = useState('');
   const [stamping, setStamping] = useState(false);
   const [relighting, setRelighting] = useState(false);
+  const [blackout, setBlackout] = useState(false);
+  const [climax, setClimax] = useState(false);
   const lastState = useRef<string | null>(null);
   useRoom(vault?.state ?? null);
   useHauntedTab(vault?.state ?? null);
@@ -34,6 +38,16 @@ export function Vigil({ onLost }: { onLost: () => void }) {
   const apply = useCallback((v: VaultView) => {
     if (lastState.current && lastState.current !== v.state) {
       setAnnounce(`${STATE_COPY[v.state].title}. ${STATE_COPY[v.state].plain} ${ROOM_LINE[v.state]}`);
+    }
+    if (lastState.current && lastState.current !== 'confirm' && v.state === 'confirm') {
+      // The candle goes out in front of the reader. Under reduced motion it is a straight cut: no blackout, no plume (Req 10.22, 10.24).
+      if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        setBlackout(true);
+        setClimax(true);
+        window.setTimeout(() => setBlackout(false), BLACKOUT_MS);
+      }
+    } else if (v.state !== 'confirm') {
+      setClimax(false);
     }
     lastState.current = v.state;
     setVault(v);
@@ -102,6 +116,7 @@ export function Vigil({ onLost }: { onLost: () => void }) {
 
   return (
     <Shell wide>
+      {blackout && <div className="blackout" aria-hidden="true" />}
       <p className="sr-only" role="status" aria-live="polite">
         {announce}
       </p>
@@ -115,7 +130,7 @@ export function Vigil({ onLost }: { onLost: () => void }) {
 
       <section className={`vigil vigil--${state}`} aria-labelledby="vigil-title">
         <div className="vigil__candle">
-          <Candle remaining={remaining} state={state} size={380} relighting={relighting} />
+          <Candle remaining={remaining} state={state} size={380} relighting={relighting} climax={climax} />
         </div>
         <div className="vigil__status">
           <p className="eyebrow">The vigil of {vault.author.name}</p>
@@ -467,11 +482,12 @@ function Witnesses({ vault, onChange }: { vault: VaultView; onChange: (v: VaultV
       <ul className="people">
         {vault.witnesses.map((w) => (
           <li key={w.id} className="people__row">
+            <WitnessCandle state={!w.asked ? 'lit' : w.response === 'confirmed' ? 'out' : w.response === 'pending' ? 'dim' : 'lit'} />
             <span className="people__who">
               <span className="people__name">{w.name}</span>
               <span className="people__email">{w.email}</span>
             </span>
-            {w.asked && <span className={`tag tag--${w.response}`}>{w.response === 'pending' ? 'asked' : w.response}</span>}
+            <span className={`tag tag--${w.asked ? w.response : 'idle'}`}>{!w.asked ? (live ? 'not asked yet' : 'not needed') : w.response === 'pending' ? 'asked' : w.response}</span>
             {live && (
               <button
                 type="button"
@@ -511,6 +527,17 @@ function Witnesses({ vault, onChange }: { vault: VaultView; onChange: (v: VaultV
   );
 }
 
+/** A small candle for one witness: lit until asked, dim while asked, out once they confirm. The words beside it say the same. */
+function WitnessCandle({ state }: { state: 'lit' | 'dim' | 'out' }) {
+  return (
+    <svg className="wcandle" data-state={state} viewBox="0 0 24 44" width="24" height="44" aria-hidden="true" focusable="false">
+      <rect className="wcandle__wax" x="6" y="18" width="12" height="24" rx="2" />
+      <path d="M12 18 v-4" stroke="#2a1a10" strokeWidth="1.4" strokeLinecap="round" />
+      <path className="wcandle__flame" d="M12 2 C 15 7, 16 11, 12 14 C 8 11, 9 7, 12 2 Z" />
+    </svg>
+  );
+}
+
 function Terms({ vault, onChange }: { vault: VaultView; onChange: (v: VaultView) => void }) {
   const s = vault.settings;
   const [form, setForm] = useState({
@@ -546,7 +573,7 @@ function Terms({ vault, onChange }: { vault: VaultView; onChange: (v: VaultView)
   };
 
   return (
-    <section className="panel" aria-labelledby="terms-title">
+    <section className="panel panel--plaque" aria-labelledby="terms-title">
       <h2 id="terms-title" className="section-title">
         Terms of the vigil
       </h2>

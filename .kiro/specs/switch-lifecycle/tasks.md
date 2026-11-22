@@ -92,3 +92,10 @@
   - [x] 11.3 An honest failure state with "Reset the demo" and "Play it again" (Req 12.8-12.10)
   - [x] 11.4 Start from a link: `?story=1` on the landing page (Req 12.11)
   - [x] 11.5 Relabel the duration from the measured running time, with a test that keeps the label true (Req 12.12)
+
+- [x] 12. Climax and room objects
+  - [x] 12.1 The candle keeps its baseline height in every state; the wax melts into a widening pool at the base (Req 10.21, 10.1)
+  - [x] 12.2 Candle-out climax: a 1.2 s blackout vignette, then a smoke plume, a polite "candle has gone out" line, and a straight cut under reduced motion (Req 10.22-10.24, 10.3, 10.8)
+  - [x] 12.3 The ledger is a handwritten book page, still a focusable named scrolling region (Req 10.25, 10.28, 10.1)
+  - [x] 12.4 Witnesses are small named candles that dim when asked and go out on confirm, with the state in text (Req 10.26, 10.28, 10.4)
+  - [x] 12.5 The terms form sits on a brass plaque with the fields unchanged (Req 10.27, 10.28)
