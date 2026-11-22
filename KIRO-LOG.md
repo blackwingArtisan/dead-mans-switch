@@ -2,7 +2,7 @@
 
 How Kiro was used on Last Candle (repository `dead-mans-switch`), session by session, with the evidence for each. Tools: `kiro-cli 3.4.0` for the first spec calls and Pass 2, `kiro-cli 3.5.0` (V3 engine) from session 3 on.
 
-**In short.** Kiro reviewed the spec against working code, rewrote every acceptance criterion in strict EARS form and found 12 untested behaviors. It then built all 12 and the tasks it added on the way, caught and fixed 2 real app defects, checked a Cloudflare binding against current docs through the Context7 MCP server, and ran under the project's custom agent with its hooks firing on the record. Every session below lists its prompt, minutes, credits, files and test results. The first build and the security hardening came earlier, from Claude Code working from the Kiro steering files and a spec in Kiro's format (see [Who wrote what](#who-wrote-what)).
+**In short.** Kiro reviewed the spec against working code, rewrote every acceptance criterion in strict EARS form and found 12 untested behaviors. It then built all 12 and the tasks it added on the way, caught and fixed 2 real app defects, checked a Cloudflare binding against current docs through the Context7 MCP server, ran under the project's custom agent with its hooks firing on the record, and gave the costume its final polish, measuring the grace room's colours against WCAG AA itself. Every session below lists its prompt, minutes, credits, files and test results. The first build and the security hardening came earlier, from Claude Code working from the Kiro steering files and a spec in Kiro's format (see [Who wrote what](#who-wrote-what)).
 
 ## Sessions
 
@@ -14,7 +14,8 @@ How Kiro was used on Last Candle (repository `dead-mans-switch`), session by ses
 | [4](docs/kiro-sessions/session-4-e2e-gaps.md) | 9.4 to 9.7: download and print, reduced motion and 360 px, the keepsake page, axe in every room; fixed a 360 px overflow and an unfocusable ledger | `b20f263` | 5.6 | 7.97 | 242 | Playwright 39 |
 | [5](docs/kiro-sessions/session-5-dashboard-and-keyboard.md) | 9.8 to 9.10, plus 9.13 (keyboard-only core path) and 9.14 (the seal button's glow), which Kiro added | `2977dbf` | 6.9 | 6.75 | 325 | Playwright 47 |
 | [6](docs/kiro-sessions/session-6-mcp-hooks-crypto.md) | 8.7: the rate-limit binding checked with Context7 and rewritten in the documented form; 9.15: `openLetter` refuses a wrong-length IV; the agent's hook format checked against the Kiro CLI docs | `69975ba` | 3.6 | 3.04 | 53 | Vitest 144, Playwright 47 |
-| **Total** | | | **30.5** | **26.72** | **1,271** | |
+| [7](docs/kiro-sessions/session-7-costume-polish.md) | Group 10, the costume polish it wrote into the spec: two hero buttons, a match-strike intro, the phone toast, the story caption and stage track kept clear, the reading light off the title, a green grace room it measured for contrast | `ed0ab49` | 18.8 | 49.42 | 914 | Vitest 144, Playwright 64 |
+| **Total** | | | **49.3** | **76.14** | **2,185** | |
 
 Kiro's lines are the lines it added in each commit, counted with `git show --numstat`, leaving out the lockfile and the session excerpts the developer copied into `docs/kiro-sessions/`.
 
@@ -22,7 +23,7 @@ Kiro's lines are the lines it added in each commit, counted with `git show --num
 
 | Who | What |
 |---|---|
-| Kiro | Everything in the sessions table: the EARS spec review, 16 tasks it wrote into the spec and built (9.1 to 9.15 and 8.7), tasks 8.6 and 6.11, two app fixes, and every test those tasks needed |
+| Kiro | Everything in the sessions table: the EARS spec review, 24 tasks it wrote into the spec and built (9.1 to 9.15, 8.7 and 10.1 to 10.8), tasks 8.6 and 6.11, two app fixes, and every test those tasks needed |
 | Claude Code | The first build and the security hardening (before Pass 2), the copy, the README and these logs, running the shell and the commits, and 11 lines changed in Kiro's work: a screenshot at 360 px showed Kiro's width fix clipped the seal button's glow (sent back to Kiro as 9.14), and Kiro's fix for that clipped the stamp's sides on desktop, so the clip was limited to screens of 520 px or less (`3d3394e`, 7 lines added, 4 removed) |
 | The developer | The idea, the product decisions, and review of each commit |
 
@@ -33,7 +34,7 @@ Kiro's lines are the lines it added in each commit, counted with `git show --num
 | **Specs** | [`.kiro/specs/switch-lifecycle/`](.kiro/specs/switch-lifecycle) | Pass 2 rewrote it into EARS form; sessions 3 to 6 built its tasks and added 9.13, 9.14, 9.15 and 8.7 |
 | **Steering** | [`.kiro/steering/`](.kiro/steering) | `product.md`, `tech.md` and `structure.md` load in every session. `crypto.md` and `a11y.md` load only when a matching file is in play; they were in the workspace from sessions 3 to 5, and in session 6 Kiro reported `crypto.md` arriving when it read `src/core/crypto.ts` |
 | **Hooks** | [`.kiro/hooks/`](.kiro/hooks) and the agent's SessionStart hook | Session 6's log: `hooks.reload.loaded {"read":4,"registered":4}` and 8 `ContextualHookInvoked` events. By hook: SessionStart (open tasks) 1, quoted by Kiro; `crypto-guard` 1, quoted by Kiro; `test-on-save` 5, each just after a save to `src/` or `tests/unit/`; `verify-before-stop` 1, as the turn ended. `spec-drift` (PostTaskExec) has not fired in a CLI session yet |
-| **Custom agent** | [`.kiro/agents/dead-mans-switch.json`](.kiro/agents/dead-mans-switch.json) | Ran sessions 3 to 6; Kiro checked its hook format against the Kiro CLI v3 docs in session 6 |
+| **Custom agent** | [`.kiro/agents/dead-mans-switch.json`](.kiro/agents/dead-mans-switch.json) | Ran sessions 3 to 7; Kiro checked its hook format against the Kiro CLI v3 docs in session 6 |
 | **MCP** | [`.kiro/settings/mcp.json`](.kiro/settings/mcp.json) | Session 6: both servers connected (`mcp.connect.ok` for `context7` and `aws-docs`); 4 Context7 calls (2 `resolve-library-id`, 2 `query-docs`) for the Workers Rate Limiting binding and the Kiro agent hook format |
 | **Prompts on file** | [`.kiro/prompts/`](.kiro/prompts) and each session excerpt | Every prompt is kept verbatim, so each call can be re-run |
 
