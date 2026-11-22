@@ -17,9 +17,9 @@ The live demo runs entirely in your browser and keeps its data in this browser's
 
 [![CI](https://github.com/blackwingArtisan/dead-mans-switch/actions/workflows/ci.yml/badge.svg)](https://github.com/blackwingArtisan/dead-mans-switch/actions/workflows/ci.yml)
 
-![The whole story, hands-off: the candle burns, gutters in grace and goes out as the room dies with it; the witness confirms; the recipient breaks the seal and reads by the author's own candle.](docs/media/story.gif)
+![The whole story, hands-off: the candle burns, gutters in grace and goes out as the room dies with it; a witness stops a false alarm, then confirms; the recipients read by the author's own candle and light two candles back.](docs/media/story.gif)
 
-*The 60-second walk-through, as **Play the whole story** runs it: Mara's candle burns, a missed month turns the room green, a week later it goes out and her witness Silas confirms, and June breaks the seal and reads by Mara's own candle.*
+*A 7-second time-lapse of the story, as **Play the whole story** runs it in about 68 seconds: Mara's candle burns, a missed month turns the room green and the candle goes out, her witness Silas stops a false alarm, the second time he confirms, June brings her keepsake and reads by Mara's own candle, and June and Theo each light a candle back.*
 
 **Costume Contest: the candle is the state machine, and the whole room wears it.** Built for Kiroween 2026. Not an account handover: a letter, in your words, that nobody (not even us) can open until the people you trust agree you are gone.
 

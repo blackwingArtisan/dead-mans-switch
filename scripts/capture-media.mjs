@@ -116,8 +116,9 @@ async function demoVigil(page) {
   await page.addStyleTag({ content: '.atmosphere__grain { display: none !important; }' });
   await page.waitForTimeout(800);
   await page.getByTestId('play-story').click();
-  await page.getByTestId('story').filter({ hasText: 'Some words should wait' }).waitFor({ timeout: 60_000 });
-  await page.waitForTimeout(1200);
+  // The story ends as the room fills: June and Theo each light a candle back.
+  await page.getByTestId('story').filter({ hasText: 'One went out. Two were lit.' }).waitFor({ timeout: 120_000 });
+  await page.waitForTimeout(1500);
   await ctx.close();
   const video = join(TMP, readdirSync(TMP).find((f) => f.endsWith('.webm')));
   renameSync(video, join(TMP, 'story.webm'));
@@ -125,8 +126,8 @@ async function demoVigil(page) {
     'ffmpeg',
     [
       '-y', '-loglevel', 'error', '-ss', '1.2', '-i', join(TMP, 'story.webm'),
-      // 960 px wide and under 3 MB: a faster cut, 6 frames a second and a 48-colour palette without dithering.
-      '-vf', 'setpts=PTS/2.1,fps=6,scale=960:-1:flags=lanczos,split[a][b];[a]palettegen=max_colors=48:stats_mode=diff[p];[b][p]paletteuse=dither=none:diff_mode=rectangle',
+      // 960 px wide and about 3 MB: a faster cut, 6 frames a second and a 48-colour palette without dithering.
+      '-vf', 'setpts=PTS/3.5,fps=6,scale=960:-1:flags=lanczos,split[a][b];[a]palettegen=max_colors=48:stats_mode=diff[p];[b][p]paletteuse=dither=none:diff_mode=rectangle',
       join(OUT, 'story.gif'),
     ],
     { stdio: 'inherit' },
