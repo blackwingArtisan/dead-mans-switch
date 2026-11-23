@@ -32,7 +32,7 @@ No install needed for a first look: the [live demo](https://dead-mans-switch-ce1
 | Hardened responses | `src/server/security.ts` (CSP, Permissions-Policy, COOP, rate limits) with `tests/unit/security.test.ts` |
 | Spec-driven, traceable | Three specs, [`switch-lifecycle`](../.kiro/specs/switch-lifecycle), [`founder-runbook`](../.kiro/specs/founder-runbook) and [`aws-release-runtime`](../.kiro/specs/aws-release-runtime); every EARS criterion has an ID, and tests name the criteria they prove, such as "(Req 10.5)" or "(Founder Req 2.3)" |
 | Kiro built and checked real parts | [KIRO-LOG.md](../KIRO-LOG.md) and [docs/kiro-sessions/](kiro-sessions); commits marked `Built-with: Kiro` (`git log --grep "Built-with: Kiro"`) |
-| Hooks and MCP ran on the record | [Session 6](kiro-sessions/session-6-mcp-hooks-crypto.md): 8 hook runs and 4 Context7 calls, quoted from Kiro's own session log; 28 hook runs across sessions 6 to 14; [session 12](kiro-sessions/session-12-aws-runtime-spec.md): 11 AWS documentation calls behind the AWS spec |
+| Hooks and MCP ran on the record | [Session 6](kiro-sessions/session-6-mcp-hooks-crypto.md): 8 hook runs and 4 Context7 calls, quoted from Kiro's own session log; 30 hook runs across sessions 6 to 15; [session 12](kiro-sessions/session-12-aws-runtime-spec.md): 11 AWS documentation calls behind the AWS spec |
 | Spec work and vibe work side by side | [Session 10](kiro-sessions/session-10-founder-runbook.md): Kiro wrote a spec from a feature description and built it in one session; [session 9](kiro-sessions/session-9-vibe-room-fills.md): one chat-style prompt with no spec built the story's ending |
 
 ## Design
@@ -50,6 +50,7 @@ No install needed for a first look: the [live demo](https://dead-mans-switch-ce1
 |---|---|
 | The recipient holds half the key | `src/core/crypto.ts`, the [How the seal works](../src/web/pages/HowItWorks.tsx) page and its diagram |
 | Any witness can veto | Req 6.4 in the spec; `tests/unit/machine.test.ts` (witness denial cancels); the story's false alarm, where Silas stops a release with a note (`tests/e2e/story.spec.ts`, Req 12.1 to 12.5) |
+| No one can open it alone | The séance seal, Requirement 13 in [`switch-lifecycle`](../.kiro/specs/switch-lifecycle/requirements.md): the vault half is split with Shamir's secret sharing across the witnesses (`src/core/shamir.ts`, with seeded property tests from 1-of-1 to 5-of-7 in `tests/unit/shamir.test.ts`); `tests/e2e/seance.spec.ts` shows one confirmation is not enough, a second releases a 2-of-3 letter, and a veto keeps it sealed. Built by Kiro in [sessions 14](kiro-sessions/session-14-seance-seal-core.md) and [15](kiro-sessions/session-15-seance-seal-finish.md) |
 | Not a timer, a vigil | The thesis line on the landing page and in the share card (`src/web/index.html`) |
 | Different from the tools people have | The seven-tool comparison in the README and on the honest page, each row checked at the product's own pages |
 
