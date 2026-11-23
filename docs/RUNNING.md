@@ -40,9 +40,7 @@ node scripts/sync-counts.mjs   # refresh the counts below from a real run (--che
 npm run smoke:live    # 3 checks on desktop and phone against the live demo (LIVE_URL to point elsewhere); not part of check
 ```
 
-Current suite (kept in step with the README by `scripts/sync-counts.mjs`): see the README's **Test it** line.
-
-
+Current suite (kept in step with the README by `scripts/sync-counts.mjs`): see the README's **Run and test it** line.
 
 The end-to-end suite writes a letter, fast-forwards past the grace period, confirms as a witness in a separate browser, opens the letter as the recipient in a fresh browser with a pasted keepsake, and checks the link refuses a second opening. It also covers a check-in during grace, a one-tap check-in from the grace email on a second device, a vault-custody link, a candle lit back by a recipient, the sealed export opened by the offline page from disk with the network off, the calendar reminder, the founder's demo, the hands-off story, in-theme form errors, broken and unknown links, the room relighting on check-in, mobile layout, and an axe WCAG 2.2 AA audit of every page and state.
 
