@@ -115,6 +115,7 @@ export interface LetterView {
   releasedAt: number | null;
   openedAt: number | null;
   candle: CandleLine | null;
+  seance: { k: number; n: number } | null;
 }
 
 export interface VaultView {
@@ -165,6 +166,7 @@ export function viewOf(vault: Vault, now: number): VaultView {
       releasedAt: l.releasedAt,
       openedAt: l.openedAt,
       candle: l.candle ?? null,
+      seance: l.seance ?? null,
     })),
     history: vault.history.slice(-60).reverse(),
     releasedAt: vault.releasedAt,

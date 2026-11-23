@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent, type PointerEvent } from 'react';
-import { keepsakeTagOf, openLetter } from '../../core/crypto';
+import { keepsakeTagOf, openLetter, openSeanceLetter } from '../../core/crypto';
 import { fromBase32, toBase64Url } from '../../core/encoding';
 import type { CandleBack, LetterContent } from '../../core/types';
 import { api, keepsakes, type OpenInfo } from '../lib/api';
@@ -96,7 +96,10 @@ export function Open({ token, hash }: { token: string; hash: string }) {
     sound.crack();
     try {
       const sealed = await api.breakSeal(token);
-      const content = await openLetter(sealed.letterId, sealed, k);
+      // Séance seal: the witnesses' shares come back instead of a vault half, and B is rebuilt here.
+      const content = sealed.shares
+        ? await openSeanceLetter(sealed.letterId, sealed, k, sealed.shares, info.seance?.k ?? sealed.shares.length)
+        : await openLetter(sealed.letterId, { ...sealed, vaultHalf: sealed.vaultHalf ?? '' }, k);
       const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
       await new Promise((r) => setTimeout(r, reduce ? 0 : 1300));
       setLetter(content);

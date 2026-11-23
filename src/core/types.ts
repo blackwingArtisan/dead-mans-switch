@@ -2,7 +2,8 @@
 
 export type SwitchState = 'alive' | 'reminder' | 'grace' | 'confirm' | 'released' | 'paused';
 
-export type Custody = 'keepsake' | 'vault';
+/** `witnesses` is the séance seal: B is split across the witnesses and the server never holds it whole. */
+export type Custody = 'keepsake' | 'vault' | 'witnesses';
 
 export interface Person {
   name: string;
@@ -42,7 +43,7 @@ export interface SealedLetter {
   ciphertext: string;
   /** base64url 96-bit IV. */
   iv: string;
-  /** base64url 32-byte vault half B. */
+  /** base64url 32-byte vault half B. Empty in séance custody: the server never holds B whole. */
   vaultHalf: string;
   /** base64url SHA-256 of the keepsake half A, so a recipient can check A before breaking the seal. */
   keepsakeTag: string;
@@ -62,6 +63,10 @@ export interface Letter {
   openedAt: number | null;
   /** "A candle lit back": one line the recipient may leave after reading. Absent on older vaults. */
   candle?: CandleLine | null;
+  /** Séance custody only: any `k` of the `n` shares rebuild B. */
+  seance?: { k: number; n: number };
+  /** Séance custody only: shares sent with this round's confirmations, by witness id. Discarded on denial, check-in and a new round. */
+  shares?: Record<string, string>;
 }
 
 export interface CandleLine {

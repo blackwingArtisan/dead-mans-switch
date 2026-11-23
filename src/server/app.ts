@@ -104,7 +104,7 @@ export function createApp(deps: AppDeps) {
   app.get('/api/witness/:token', async (c) => c.json(await service.witnessInfo(c.req.param('token'))));
   app.post('/api/witness/:token', async (c) => {
     const body = await json(c);
-    return c.json(await service.witnessRespond(c.req.param('token'), body.response, body.note));
+    return c.json(await service.witnessRespond(c.req.param('token'), body.response, body.note, body.shares));
   });
 
   // One-tap check-in links from emails. GET only describes; checking in needs the POST, so mail

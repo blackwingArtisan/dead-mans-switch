@@ -11,6 +11,8 @@ export interface SealedResult {
   keepsakeHalf: string;
   keepsakeLink: string;
   vault: VaultView;
+  /** Séance custody only: one share per witness, in witness order. They stay in this browser until the author hands them over. */
+  shares?: string[];
 }
 
 export function keepsakeLinkFor(letterId: string, half: string, from: string, to: string): string {
@@ -23,15 +25,20 @@ export async function sealAndStore(args: {
   custody: Custody;
   content: LetterContent;
   authorName: string;
+  /** Séance custody: how B is split (k of n, from the vigil view). */
+  seance?: { k: number; n: number };
 }): Promise<SealedResult> {
   const letterId = `L${randomId(9)}`;
-  const { sealed, keepsakeHalf } = await sealLetter(letterId, args.content);
+  const split = args.custody === 'witnesses' ? args.seance : undefined;
+  if (args.custody === 'witnesses' && !split) throw new Error('A séance letter needs its witnesses first.');
+  const { sealed, keepsakeHalf, shares } = await sealLetter(letterId, args.content, split);
   const vault = await api.addLetter({
     id: letterId,
     recipient: args.recipient,
     custody: args.custody,
     sealed,
     ...(args.custody === 'vault' ? { keepsakeHalf } : {}),
+    ...(split ? { seance: split } : {}),
   });
   authored.save(letterId, keepsakeHalf);
   return {
@@ -39,6 +46,7 @@ export async function sealAndStore(args: {
     keepsakeHalf,
     keepsakeLink: keepsakeLinkFor(letterId, keepsakeHalf, args.authorName, args.recipient.name),
     vault,
+    ...(shares ? { shares } : {}),
   };
 }
 

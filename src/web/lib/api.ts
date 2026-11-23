@@ -90,7 +90,10 @@ async function request<T>(method: string, path: string, body?: unknown, auth = f
 
 export interface WitnessInfo {
   authorName: string;
+  witnessId: string;
   witnessName: string;
+  /** Séance letters waiting on this witness's share: the letter id and the quorum k. */
+  seanceLetters: Array<{ id: string; k: number }>;
   state: VaultView['state'];
   lastCheckInAt: number;
   response: 'pending' | 'confirmed' | 'denied';
@@ -109,10 +112,12 @@ export interface CheckInLinkResult extends CheckInLinkInfo {
 }
 
 export interface OpenInfo {
+  /** Séance custody: the quorum and witness count the letter was split for. */
+  seance?: { k: number; n: number } | null;
   letterId: string;
   authorName: string;
   recipientName: string;
-  custody: 'keepsake' | 'vault';
+  custody: 'keepsake' | 'vault' | 'witnesses';
   sealedAt: number;
   releasedAt: number | null;
   openedAt: number | null;
@@ -153,23 +158,25 @@ export const api = {
   addLetter: (body: {
     id: string;
     recipient: { name: string; email: string };
-    custody: 'keepsake' | 'vault';
+    custody: 'keepsake' | 'vault' | 'witnesses';
     sealed: SealedLetter;
     keepsakeHalf?: string;
+    seance?: { k: number; n: number };
   }) => request<VaultView>('POST', '/api/vault/letters', body, true),
   exportSealed: () => request<SealedExport>('GET', '/api/vault/export', undefined, true),
   burnLetter: (id: string) => request<VaultView>('DELETE', `/api/vault/letters/${encodeURIComponent(id)}`, undefined, true),
   witness: (token: string) => request<WitnessInfo>('GET', `/api/witness/${encodeURIComponent(token)}`),
-  witnessRespond: (token: string, response: 'confirm' | 'deny', note?: string) =>
+  witnessRespond: (token: string, response: 'confirm' | 'deny', note?: string, shares?: Record<string, string>) =>
     request<{ state: string; response: string }>('POST', `/api/witness/${encodeURIComponent(token)}`, {
       response,
       ...(note ? { note } : {}),
+      ...(shares && Object.keys(shares).length ? { shares } : {}),
     }),
   checkInLink: (token: string) => request<CheckInLinkInfo>('GET', `/api/check-in/${encodeURIComponent(token)}`),
   checkInByLink: (token: string) => request<CheckInLinkResult>('POST', `/api/check-in/${encodeURIComponent(token)}`, {}),
   openInfo: (token: string) => request<OpenInfo>('GET', `/api/open/${encodeURIComponent(token)}`),
   breakSeal: (token: string) =>
-    request<{ letterId: string; ciphertext: string; iv: string; vaultHalf: string }>(
+    request<{ letterId: string; ciphertext: string; iv: string; vaultHalf?: string; shares?: string[] }>(
       'POST',
       `/api/open/${encodeURIComponent(token)}/break`,
       {},

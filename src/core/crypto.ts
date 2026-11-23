@@ -10,6 +10,7 @@
  * so a sealed copy cannot be swapped onto another letter.
  */
 import type { LetterContent, SealedLetter } from './types';
+import { combineShares, splitSecret, ShamirError } from './shamir';
 import { fromBase64Url, fromUtf8, randomBytes, sha256, toBase64Url, utf8, xorBytes } from './encoding';
 
 export const KEY_BYTES = 32;
@@ -27,6 +28,8 @@ export interface SealResult {
   sealed: SealedLetter;
   /** base64url keepsake half A. Give it to the recipient; never send it to the server in keepsake custody. */
   keepsakeHalf: string;
+  /** Séance custody only: one base64url share of B per witness, in witness order. Never send these to the server. */
+  shares?: string[];
 }
 
 function aad(letterId: string): BufferSource {
@@ -41,7 +44,8 @@ export async function keepsakeTagOf(keepsakeHalf: string): Promise<string> {
   return sha256(`${FORMAT}:keepsake:${keepsakeHalf}`);
 }
 
-export async function sealLetter(letterId: string, content: LetterContent): Promise<SealResult> {
+/** With `split`, B is cut into `n` Shamir shares (any `k` rebuild it) and the sealed copy carries no vault half. */
+export async function sealLetter(letterId: string, content: LetterContent, split?: { k: number; n: number }): Promise<SealResult> {
   const k = randomBytes(KEY_BYTES);
   const a = randomBytes(KEY_BYTES);
   const b = xorBytes(k, a);
@@ -51,18 +55,21 @@ export async function sealLetter(letterId: string, content: LetterContent): Prom
     const plaintext = utf8(JSON.stringify({ format: FORMAT, ...content }));
     const ct = await crypto.subtle.encrypt({ name: 'AES-GCM', iv: iv as BufferSource, additionalData: aad(letterId) }, key, plaintext as BufferSource);
     const keepsakeHalf = toBase64Url(a);
+    const shares = split ? splitSecret(b, split.k, split.n).map(toBase64Url) : undefined;
     return {
       keepsakeHalf,
+      ...(shares ? { shares } : {}),
       sealed: {
         ciphertext: toBase64Url(new Uint8Array(ct)),
         iv: toBase64Url(iv),
-        vaultHalf: toBase64Url(b),
+        vaultHalf: shares ? '' : toBase64Url(b),
         keepsakeTag: await keepsakeTagOf(keepsakeHalf),
       },
     };
   } finally {
     k.fill(0);
     a.fill(0);
+    b.fill(0);
   }
 }
 
@@ -110,5 +117,32 @@ export async function openLetter(
     throw new SealError('The seal will not break: the keepsake does not match, or the letter was altered.');
   } finally {
     k.fill(0);
+  }
+}
+
+/** Opens a séance letter: rebuilds B from the witnesses' shares, then K = A xor B. */
+export async function openSeanceLetter(
+  letterId: string,
+  sealed: Pick<SealedLetter, 'ciphertext' | 'iv'>,
+  keepsakeHalf: string,
+  shares: string[],
+  needed: number,
+): Promise<LetterContent> {
+  if (shares.length < needed) {
+    throw new SealError(
+      `This letter needs ${needed} witnesses to have spoken, and only ${shares.length} share${shares.length === 1 ? ' was' : 's were'} sent. It cannot be opened yet.`,
+    );
+  }
+  let b: Uint8Array;
+  try {
+    b = combineShares(shares.map(fromBase64Url));
+  } catch (err) {
+    if (err instanceof ShamirError) throw new SealError('The witnesses\' shares do not fit together, so the seal cannot be rebuilt.');
+    throw new SealError('A witness share is not in a form this letter recognises.');
+  }
+  try {
+    return await openLetter(letterId, { ...sealed, vaultHalf: toBase64Url(b) }, keepsakeHalf);
+  } finally {
+    b.fill(0);
   }
 }

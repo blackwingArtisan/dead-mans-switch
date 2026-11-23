@@ -161,6 +161,18 @@ Beats, in order: set up Mara's vigil; a month passes; the candle goes out; **the
 - **Duration.** `STORY_SECONDS` in `story.ts` is the label on the button. A unit test keeps it within 5 s of the sum of the beats' declared holds, and an end-to-end run at pace 1 keeps it within 5 s of the measured time.
 - **Motion.** Beats add no animation of their own. The relight already has a reduced-motion path in `app.css`, and the note field is plain text input.
 
+## The séance seal (Req 13)
+
+A third custody, `witnesses`. In the browser, B is split with Shamir over GF(256) (`src/core/shamir.ts`, pure, no dependency): for each of the 32 bytes of B, a random polynomial of degree k-1 with that byte as its constant term, evaluated at x = 1..n (AES polynomial 0x11b, log tables). A share is `[x, k, y0..y31]`, 34 bytes, base64url (46 characters). The k byte lets `combine` refuse too few, mixed or duplicate shares before it computes anything. Wrong well-formed shares fail at AES-GCM with the existing "seal will not break" message.
+
+Adjusted from the brief: shares are per letter (each letter has its own B), so a witness holds one share per séance letter and a share link carries `#s=<letterId>.<share>,...` in the fragment. The letter stores `seance: { k, n }`; its `sealed.vaultHalf` is the empty string, and the server rejects any vault half, keepsake half or share at upload. k and n must equal `requiredConfirmations` and the witness count at upload, and while an unreleased séance letter exists the witness list and `witnessesRequired` cannot change, so the split can never disagree with the quorum.
+
+Flow. The author hands each witness their share link and the recipient the keepsake, out of band. On the round link the witness page adds the shares it holds (from this device's `localStorage` or pasted) to the confirm request as `shares: { [letterId]: share }`. `step` stores them in `letter.shares[witnessId]` (events carry them; the machine stays pure). `resetWitnesses` (check-in, denial, new round) and every cancel path clear all `letter.shares`. At release the `shares` stay until `breakSeal`, which returns them in place of `vaultHalf` and deletes them with the sealed copy. Fewer than k: 409, nothing spent. The recipient's browser calls `combine`, then K = A xor B.
+
+Silence. A release by silence mints open links as always, but a séance letter then has no shares, so the break refuses in plain words.
+
+What the server sees. Before quorum it holds fewer than k shares of B, so a breach then reveals nothing about B. At quorum it has seen k shares and can rebuild B, but not A, which stays with the recipient. Anyone with k shares and A can open the letter.
+
 ## Error handling
 
 Every route validates input and returns a message that says what to do. The UI shows errors in `role="alert"` regions and never loses a typed letter on failure. A 401 on the vigil clears the stored owner token and returns to the landing page.

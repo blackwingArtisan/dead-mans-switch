@@ -229,3 +229,26 @@ Criteria use EARS: `WHEN` (event), `WHILE` (state), `WHERE` (optional feature), 
 11. WHEN the landing page is opened with `?story=1` and the time machine is available THE SYSTEM SHALL start the story, and WHILE it plays THE SYSTEM SHALL keep sound muted unless the visitor turned it on.
 12. THE SYSTEM SHALL label the "Play the whole story" button with the story's real running time in seconds at normal pace, within 5 seconds of the measured time.
 13. WHILE the user prefers reduced motion THE SYSTEM SHALL show every new beat's end state at once, with no animation.
+
+## Requirement 13: The séance seal
+
+**User story:** As an author, I want a letter that no one can open alone (not the server, the recipient or one witness), so that it opens only when enough witnesses agree.
+
+A **share** is one Shamir piece of vault half B over GF(256): 34 bytes (x, k, 32 data), base64url.
+
+#### Acceptance criteria
+1. WHERE the vigil names at least one witness THE SYSTEM SHALL offer "Séance seal" as a third custody choice, beside keepsake and vault custody.
+2. WHEN the author seals a séance letter THE SYSTEM SHALL split B in the browser into n shares, one per witness, any k of which rebuild B, with n the number of witnesses and k the required confirmations capped at n.
+3. THE SYSTEM SHALL refuse a share set with fewer than k shares, duplicate shares, mixed k or malformed shares, and SHALL NOT return wrong key bytes.
+4. WHEN a séance letter is uploaded THE SYSTEM SHALL accept the ciphertext, IV, keepsake tag, k and n, and SHALL reject any vault half, keepsake half or share, and any k or n that differs from the vigil's.
+5. WHEN a séance letter is sealed THE SYSTEM SHALL show the author one share link per witness, with the shares in the URL fragment, and the keepsake for the recipient; no share goes to the server at sealing.
+6. WHEN a witness confirms THE SYSTEM SHALL accept an optional share per séance letter and keep it for this round.
+7. WHEN a witness confirms without a share THE SYSTEM SHALL count the confirmation toward the quorum.
+8. IF a share is malformed, names a letter that is not a séance letter, or has a different k THEN THE SYSTEM SHALL refuse the answer and change nothing.
+9. WHEN any witness answers "they still live", the author checks in, or a new round starts THE SYSTEM SHALL discard every share.
+10. WHEN a séance letter is released THE SYSTEM SHALL return its k or more shares from the break route instead of a vault half, and SHALL delete them with the sealed copy.
+11. IF fewer than k shares were sent THEN THE SYSTEM SHALL refuse the break with a plain message and leave the link unspent.
+12. WHEN the recipient opens a séance letter THE SYSTEM SHALL rebuild B and then K = A xor B in the browser.
+13. THE SYSTEM SHALL NOT make the silence window open a séance letter; WHEN the author chooses the mode while a silence window is on THE SYSTEM SHALL say so in text.
+14. WHILE a séance letter is unreleased THE SYSTEM SHALL refuse changes to the witness list and to the required confirmations, and say to burn the letter first.
+15. THE SYSTEM SHALL state in text that before quorum the server holds fewer than k shares and after quorum has seen k, and that A stays with the recipient.

@@ -1,7 +1,7 @@
 /** Use-cases: load a vault, apply a change, save it, then deliver the resulting mail. */
 import { keepsakeTagOf } from '../core/crypto';
-import { randomId, randomToken, sha256 } from '../core/encoding';
-import { step, SwitchError, type EmailEffect, type Effect, type MachineContext, type MintedToken, type SwitchEvent } from '../core/machine';
+import { fromBase64Url, randomId, randomToken, sha256 } from '../core/encoding';
+import { requiredConfirmations, step, SwitchError, type EmailEffect, type Effect, type MachineContext, type MintedToken, type SwitchEvent } from '../core/machine';
 import { EXPORT_FORMAT, type ExportedLetter, type SealedExport } from '../core/export';
 import { lastCandleOf, nextEventAt } from '../core/time';
 import type { Custody, Letter, Person, SealedLetter, Vault } from '../core/types';
@@ -87,7 +87,11 @@ export class SwitchService {
   async updateSettings(vaultId: string, input: unknown): Promise<VaultView> {
     return this.transact(vaultId, (vault, ctx) => {
       editable(vault);
-      vault.settings = cleanSettings(input, vault.settings);
+      const next = cleanSettings(input, vault.settings);
+      if (hasSeance(vault) && next.witnessesRequired !== vault.settings.witnessesRequired) {
+        throw new ValidationError(SEANCE_LOCK);
+      }
+      vault.settings = next;
       vault.history.push({ at: ctx.now, kind: 'settings', note: 'The vigil settings changed.' });
       const r = step(vault, { type: 'tick' }, ctx);
       return { vault: r.vault, effects: r.effects, result: viewOf(r.vault, ctx.now) };
@@ -98,6 +102,7 @@ export class SwitchService {
     const p = cleanPerson(input, 'witness');
     return this.transact(vaultId, (vault, ctx) => {
       editable(vault);
+      if (hasSeance(vault)) throw new ValidationError(SEANCE_LOCK);
       if (vault.witnesses.length >= MAX_WITNESSES) throw new ValidationError(`A vigil can have up to ${MAX_WITNESSES} witnesses.`);
       if (vault.witnesses.some((w) => w.email === p.email)) throw new ValidationError('That witness is already named.');
       if (p.email === vault.author.email) throw new ValidationError('You cannot be your own witness.');
@@ -116,6 +121,7 @@ export class SwitchService {
   async removeWitness(vaultId: string, witnessId: string): Promise<VaultView> {
     return this.transact(vaultId, (vault, ctx) => {
       editable(vault);
+      if (hasSeance(vault)) throw new ValidationError(SEANCE_LOCK);
       const w = vault.witnesses.find((x) => x.id === witnessId);
       if (!w) throw new HttpError(404, 'That witness is not on the list.');
       vault.witnesses = vault.witnesses.filter((x) => x.id !== witnessId);
@@ -132,11 +138,13 @@ export class SwitchService {
       custody?: unknown;
       sealed?: Partial<Record<keyof SealedLetter, unknown>>;
       keepsakeHalf?: unknown;
+      seance?: unknown;
+      shares?: unknown;
     };
     const id = typeof body.id === 'string' && LETTER_ID.test(body.id) ? body.id : null;
     if (!id) throw new ValidationError('The letter needs an id made in the browser.');
     const recipient = cleanPerson(body.recipient, 'recipient');
-    const custody: Custody = body.custody === 'vault' ? 'vault' : 'keepsake';
+    const custody: Custody = body.custody === 'vault' ? 'vault' : body.custody === 'witnesses' ? 'witnesses' : 'keepsake';
     const s = body.sealed ?? {};
     const field = (v: unknown, name: string, len?: number, max = 200) => {
       if (typeof v !== 'string' || !B64U.test(v) || (len !== undefined && v.length !== len) || v.length > max) {
@@ -147,9 +155,18 @@ export class SwitchService {
     const sealed: SealedLetter = {
       ciphertext: field(s.ciphertext, 'ciphertext', undefined, MAX_CIPHERTEXT),
       iv: field(s.iv, 'iv', 16),
-      vaultHalf: field(s.vaultHalf, 'vault half', 43),
+      vaultHalf: custody === 'witnesses' ? '' : field(s.vaultHalf, 'vault half', 43),
       keepsakeTag: field(s.keepsakeTag, 'keepsake tag', 43),
     };
+    if (custody === 'witnesses') {
+      // The séance seal: B is split across the witnesses in the browser. The server never holds B whole.
+      if (s.vaultHalf !== undefined && s.vaultHalf !== '') throw new ValidationError('A séance letter has no vault half: the witnesses hold it in shares.');
+      if (body.keepsakeHalf !== undefined || body.shares !== undefined) {
+        throw new ValidationError('A séance letter must not send the keepsake half or any share when it is sealed.');
+      }
+    } else if (body.seance !== undefined || body.shares !== undefined) {
+      throw new ValidationError('Only a séance letter has a witness split.');
+    }
     if (custody === 'vault') {
       const half = field(body.keepsakeHalf, 'keepsake half', 43);
       if ((await keepsakeTagOf(half)) !== sealed.keepsakeTag) throw new ValidationError('The keepsake half does not match its tag.');
@@ -161,6 +178,16 @@ export class SwitchService {
       editable(vault);
       if (vault.letters.length >= MAX_LETTERS) throw new ValidationError(`A vault holds up to ${MAX_LETTERS} letters.`);
       if (vault.letters.some((l) => l.id === id)) throw new ValidationError('A letter with this id already exists.');
+      let seance: { k: number; n: number } | undefined;
+      if (custody === 'witnesses') {
+        const want = { k: requiredConfirmations(vault), n: vault.witnesses.length };
+        const got = (body.seance ?? {}) as { k?: unknown; n?: unknown };
+        if (want.n < 1) throw new ValidationError('A séance letter needs at least one witness. Name a witness first.');
+        if (got.k !== want.k || got.n !== want.n) {
+          throw new ValidationError(`The witnesses changed while you wrote. This vigil now needs ${want.k} of ${want.n}; seal the letter again.`);
+        }
+        seance = want;
+      }
       const letter: Letter = {
         id,
         recipient,
@@ -170,6 +197,7 @@ export class SwitchService {
         openTokenHash: null,
         releasedAt: null,
         openedAt: null,
+        ...(seance ? { seance } : {}),
       };
       vault.letters.push(letter);
       vault.history.push({ at: ctx.now, kind: 'letter-sealed', note: `A letter to ${recipient.name} was sealed (${custody} custody).` });
@@ -182,7 +210,8 @@ export class SwitchService {
     const vault = await this.mustGet(vaultId);
     const letters: ExportedLetter[] = [];
     for (const l of vault.letters) {
-      if (!l.sealed) continue;
+      // A séance letter has no vault half to export: it opens only with the witnesses' shares.
+      if (!l.sealed || l.custody === 'witnesses') continue;
       letters.push({
         id: l.id,
         recipientName: l.recipient.name,
@@ -244,7 +273,9 @@ export class SwitchService {
         vault,
         result: {
           authorName: vault.author.name,
+          witnessId: w.id,
           witnessName: w.name,
+          seanceLetters: vault.letters.filter((l) => l.seance && l.sealed).map((l) => ({ id: l.id, k: l.seance!.k })),
           state: vault.state,
           lastCheckInAt: vault.lastCheckInAt,
           response: w.response,
@@ -255,14 +286,22 @@ export class SwitchService {
     });
   }
 
-  async witnessRespond(token: string, response: unknown, rawNote?: unknown) {
+  async witnessRespond(token: string, response: unknown, rawNote?: unknown, rawShares?: unknown) {
     if (response !== 'confirm' && response !== 'deny') throw new ValidationError('Answer "confirm" or "deny".');
     const note = cleanWitnessNote(rawNote);
+    const shares = response === 'confirm' ? cleanShares(rawShares) : undefined;
     const { vaultId, hash } = await this.lookup('witness', token, 'This witness link has expired or was never valid.');
     return this.transact(vaultId, (vault, ctx) => {
       const w = vault.witnesses.find((x) => x.tokenHash === hash);
       if (!w) throw new HttpError(410, 'This witness link is no longer needed.');
-      const r = step(vault, response === 'confirm' ? { type: 'witnessConfirm', witnessId: w.id } : { type: 'witnessDeny', witnessId: w.id, ...(note ? { note } : {}) }, ctx);
+      if (shares) {
+        for (const [letterId, share] of Object.entries(shares)) {
+          const l = vault.letters.find((x) => x.id === letterId);
+          if (!l?.seance || !l.sealed) throw new ValidationError('A share was sent for a letter that is not a séance letter.');
+          if (fromBase64Url(share)[1] !== l.seance.k) throw new ValidationError('A share does not belong to this letter.');
+        }
+      }
+      const r = step(vault, response === 'confirm' ? { type: 'witnessConfirm', witnessId: w.id, ...(shares ? { shares } : {}) } : { type: 'witnessDeny', witnessId: w.id, ...(note ? { note } : {}) }, ctx);
       return { vault: r.vault, effects: r.effects, result: { state: r.vault.state, response: response === 'confirm' ? 'confirmed' : 'denied' } };
     });
   }
@@ -279,6 +318,7 @@ export class SwitchService {
       authorName: vault.author.name,
       recipientName: l.recipient.name,
       custody: l.custody,
+      seance: l.seance ?? null,
       sealedAt: l.sealedAt,
       releasedAt: l.releasedAt,
       openedAt: l.openedAt,
@@ -324,11 +364,26 @@ export class SwitchService {
   /** Hands over the sealed copy exactly once, then forgets it. */
   async breakSeal(token: string) {
     const { vaultId, hash } = await this.lookup('open', token, 'This letter link is not valid.');
-    return this.transact(vaultId, (vault, ctx) => {
+    type Handover = { letterId: string; ciphertext: string; iv: string; vaultHalf?: string; shares?: string[] };
+    return this.transact<Handover>(vaultId, (vault, ctx) => {
       const l = vault.letters.find((x) => x.openTokenHash === hash);
       if (!l) throw new HttpError(404, 'This letter link is not valid.');
       if (!l.sealed) throw new HttpError(410, 'This seal has already been broken. The letter can only be opened once.');
       const { ciphertext, iv, vaultHalf } = l.sealed;
+      if (l.seance) {
+        const shares = Object.values(l.shares ?? {});
+        if (shares.length < l.seance.k) {
+          throw new HttpError(
+            409,
+            `This letter needs ${l.seance.k} witnesses to have sent their shares, and ${shares.length} did. It cannot be opened yet, and the link is not spent.`,
+          );
+        }
+        l.sealed = null;
+        delete l.shares;
+        l.openedAt = ctx.now;
+        vault.history.push({ at: ctx.now, kind: 'letter-opened', note: `${l.recipient.name} opened their letter.` });
+        return { vault, result: { letterId: l.id, ciphertext, iv, shares } };
+      }
       l.sealed = null;
       l.openedAt = ctx.now;
       vault.history.push({ at: ctx.now, kind: 'letter-opened', note: `${l.recipient.name} opened their letter.` });
@@ -522,3 +577,28 @@ async function tokenPool(size: number): Promise<() => MintedToken> {
 }
 
 export type { Person };
+
+const SEANCE_LOCK = 'A séance letter is sealed to these witnesses and this number of confirmations. Burn the séance letter first, then change them.';
+const SHARE_LEN = 46;
+
+function hasSeance(vault: Vault): boolean {
+  return vault.letters.some((l) => l.seance && l.sealed && l.releasedAt === null);
+}
+
+/** Validates the shares sent with a confirmation: `{ letterId: share }`, each a well-formed 34-byte share. */
+function cleanShares(raw: unknown): Record<string, string> | undefined {
+  if (raw === undefined || raw === null) return undefined;
+  if (typeof raw !== 'object' || Array.isArray(raw)) throw new ValidationError('The shares must be an object keyed by letter.');
+  const out: Record<string, string> = {};
+  const entries = Object.entries(raw as Record<string, unknown>);
+  if (entries.length > MAX_LETTERS) throw new ValidationError('Too many shares were sent.');
+  for (const [id, share] of entries) {
+    if (!LETTER_ID.test(id) || typeof share !== 'string' || share.length !== SHARE_LEN || !B64U.test(share)) {
+      throw new ValidationError('A share is malformed. Open your share link again and press confirm.');
+    }
+    const bytes = fromBase64Url(share);
+    if (bytes.length !== 34 || bytes[0] === 0 || bytes[1] === 0) throw new ValidationError('A share is malformed. Open your share link again and press confirm.');
+    out[id] = share;
+  }
+  return Object.keys(out).length ? out : undefined;
+}

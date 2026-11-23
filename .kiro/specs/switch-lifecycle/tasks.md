@@ -53,7 +53,7 @@
 - [ ] 8. Hardening (next)
   - [ ] 8.1 Durable Object per vigil to serialise concurrent writes in production
   - [x] 8.2 Rate limiting on token routes, per process or isolate (Req 11.3, 11.11, 11.12, 11.14)
-  - [ ] 8.3 Optional Shamir split of the vault half across witnesses
+  - [ ] 8.3 Optional Shamir split of the vault half across witnesses (covered by group 13)
   - [x] 8.4 Security headers on every response, including Worker static assets (Req 11.1, 11.2, 11.4-11.10)
   - [x] 8.5 Time machine opt-in and refused for public origins (Req 9.4, 9.5)
   - [x] 8.6 Rate limiter swap point: a `RateLimiter` port with an in-memory default and a Cloudflare Workers Rate Limiting binding adapter, chosen in the Worker only when the binding is present (Req 11.3, 11.13-11.15)
@@ -99,3 +99,11 @@
   - [x] 12.3 The ledger is a handwritten book page, still a focusable named scrolling region (Req 10.25, 10.28, 10.1)
   - [x] 12.4 Witnesses are small named candles that dim when asked and go out on confirm, with the state in text (Req 10.26, 10.28, 10.4)
   - [x] 12.5 The terms form sits on a brass plaque with the fields unchanged (Req 10.27, 10.28)
+
+- [ ] 13. The séance seal (Req 13)
+  - [x] 13.1 `src/core/shamir.ts`: split and combine over GF(256), with seeded property tests (Req 13.3)
+  - [x] 13.2 Sealing, types, validation and upload for `witnesses` custody (Req 13.1, 13.2, 13.4, 13.14)
+  - [x] 13.3 Server: shares on confirm, discarded on denial, check-in and new round, returned on break (Req 13.6-13.11)
+  - [ ] 13.4 Open page rebuilds B from shares with plain messages (Req 13.11, 13.12)
+  - [ ] 13.5 Write page option, witness share links, silence-window warning, honest text (Req 13.1, 13.5, 13.13, 13.15)
+  - [ ] 13.6 E2E: 2-of-3 needs a second confirmation; a veto after one keeps it sealed (Req 13.6-13.12)

@@ -16,7 +16,7 @@ export type SwitchEvent =
   | { type: 'checkIn' }
   | { type: 'pause' }
   | { type: 'resume' }
-  | { type: 'witnessConfirm'; witnessId: string }
+  | { type: 'witnessConfirm'; witnessId: string; /** Séance letters: this witness's share per letter id, already validated. */ shares?: Record<string, string> }
   | { type: 'witnessDeny'; witnessId: string; /** An optional line from the witness to the author, already trimmed. */ note?: string };
 
 export type EmailEffect =
@@ -122,6 +122,10 @@ export function step(input: Vault, event: SwitchEvent, ctx: MachineContext): Ste
       witness.respondedAt = ctx.now;
       if (event.type === 'witnessConfirm') {
         witness.response = 'confirmed';
+        for (const [letterId, share] of Object.entries(event.shares ?? {})) {
+          const l = vault.letters.find((x) => x.id === letterId);
+          if (l?.seance) l.shares = { ...l.shares, [witness.id]: share };
+        }
         log('witness-confirmed', `${witness.name} confirmed.`);
         if (confirmations(vault) >= requiredConfirmations(vault)) release(vault, ctx, emit, log, 'Witnesses confirmed.');
       } else {
@@ -162,7 +166,12 @@ function checkIn(vault: Vault, ctx: MachineContext, emit: Emit, log: Log, note: 
   log('check-in', wasConfirming ? `${note} Witnesses were told to stand down.` : note);
 }
 
+function discardShares(vault: Vault): void {
+  for (const l of vault.letters) delete l.shares;
+}
+
 function resetWitnesses(vault: Vault): void {
+  discardShares(vault);
   for (const w of vault.witnesses) {
     w.response = 'pending';
     w.respondedAt = null;
@@ -231,6 +240,7 @@ function enterConfirm(vault: Vault, ctx: MachineContext, emit: Emit, log: Log): 
   vault.stateSince = ctx.now;
   vault.confirmStartedAt = ctx.now;
   vault.confirmRound += 1;
+  discardShares(vault);
   for (const w of vault.witnesses) {
     const minted = ctx.mint();
     w.tokenHash = minted.hash;
@@ -259,6 +269,7 @@ function deny(vault: Vault, witnessName: string, note: string | undefined, ctx: 
   vault.stateSince = ctx.now;
   vault.graceEndsOverride = graceEndsAt;
   vault.confirmStartedAt = null;
+  discardShares(vault);
   for (const w of vault.witnesses) w.tokenHash = null;
   emit({ template: 'denied', to: vault.author, witnessName, graceEndsAt, ...(note ? { witnessNote: note } : {}) });
   log(
