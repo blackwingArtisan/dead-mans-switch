@@ -32,7 +32,7 @@ No install needed for a first look: the [live demo](https://dead-mans-switch-ce1
 | Hardened responses | `src/server/security.ts` (CSP, Permissions-Policy, COOP, rate limits) with `tests/unit/security.test.ts` |
 | Spec-driven, traceable | Three specs, [`switch-lifecycle`](../.kiro/specs/switch-lifecycle), [`founder-runbook`](../.kiro/specs/founder-runbook) and [`aws-release-runtime`](../.kiro/specs/aws-release-runtime); every EARS criterion has an ID, and tests name the criteria they prove, such as "(Req 10.5)" or "(Founder Req 2.3)" |
 | Kiro built and checked real parts | [KIRO-LOG.md](../KIRO-LOG.md) and [docs/kiro-sessions/](kiro-sessions); commits marked `Built-with: Kiro` (`git log --grep "Built-with: Kiro"`) |
-| Hooks and MCP ran on the record | [Session 6](kiro-sessions/session-6-mcp-hooks-crypto.md): 8 hook runs and 4 Context7 calls, quoted from Kiro's own session log; 26 hook runs across sessions 6 to 13; [session 12](kiro-sessions/session-12-aws-runtime-spec.md): 11 AWS documentation calls behind the AWS spec |
+| Hooks and MCP ran on the record | [Session 6](kiro-sessions/session-6-mcp-hooks-crypto.md): 8 hook runs and 4 Context7 calls, quoted from Kiro's own session log; 28 hook runs across sessions 6 to 14; [session 12](kiro-sessions/session-12-aws-runtime-spec.md): 11 AWS documentation calls behind the AWS spec |
 | Spec work and vibe work side by side | [Session 10](kiro-sessions/session-10-founder-runbook.md): Kiro wrote a spec from a feature description and built it in one session; [session 9](kiro-sessions/session-9-vibe-room-fills.md): one chat-style prompt with no spec built the story's ending |
 
 ## Design
