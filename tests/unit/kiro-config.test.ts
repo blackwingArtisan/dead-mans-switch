@@ -34,13 +34,15 @@ function expand(glob: string): string[] {
   const star = path.indexOf('*');
   if (star === -1) return [path];
   const base = path.slice(0, star).replace(/\/$/, '');
-  const ext = path.slice(path.lastIndexOf('.'));
+  // The last segment is either `*.ext` (any file with that extension) or an exact file name.
+  const last = path.slice(path.lastIndexOf('/') + 1);
+  const matches = last.startsWith('*') ? (name: string) => name.endsWith(last.slice(1)) : (name: string) => name === last;
   const deep = path.includes('**');
   const walk = (dir: string): string[] =>
     readdirSync(dir, { withFileTypes: true }).flatMap((d) => {
       const full = join(dir, d.name);
       if (d.isDirectory()) return deep ? walk(full) : [];
-      return d.name.endsWith(ext) ? [full] : [];
+      return matches(d.name) ? [full] : [];
     });
   return walk(base);
 }
@@ -82,10 +84,13 @@ describe('Kiro custom agent (.kiro/agents/dead-mans-switch.json)', () => {
     name: string; prompt: string; tools: string[]; resources: string[]; hooks: Hook[]; includeMcpJson: boolean;
   };
 
-  it('loads the steering and every spec within the CLI context limits', () => {
+  it('loads the steering and every spec\'s requirements and tasks within the CLI context limits', () => {
     const files = agent.resources.flatMap(expand);
     expect(files.some((f) => f.endsWith('steering/product.md'))).toBe(true);
     expect(files.some((f) => f.endsWith('switch-lifecycle/requirements.md'))).toBe(true);
+    expect(files.some((f) => f.endsWith('switch-lifecycle/tasks.md'))).toBe(true);
+    // Designs are opened on demand, so they do not count against the limit.
+    expect(files.some((f) => f.endsWith('design.md'))).toBe(false);
     // Kiro CLI loads at most 32 file:// resources and 100,000 characters in total.
     expect(files.length).toBeLessThanOrEqual(32);
     const chars = files.reduce((n, f) => n + readFileSync(f, 'utf8').length, 0);
