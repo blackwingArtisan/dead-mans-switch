@@ -347,7 +347,7 @@ function Letters({ vault, onChange, onError }: { vault: VaultView; onChange: (v:
                 <p className="envelope__to">For {l.recipient.name}</p>
                 <p className="envelope__meta">
                   Sealed {shortDate(l.sealedAt)} ·{' '}
-                  <span className={`tag tag--${l.custody}`}>{l.custody === 'keepsake' ? 'Keepsake custody' : 'Vault custody'}</span>
+                  <span className={`tag tag--${l.custody}`}>{l.custody === 'keepsake' ? 'Keepsake custody' : l.custody === 'witnesses' ? 'Séance seal' : 'Vault custody'}</span>
                 </p>
                 <p className="envelope__meta">
                   {l.openedAt !== null
@@ -358,7 +358,7 @@ function Letters({ vault, onChange, onError }: { vault: VaultView; onChange: (v:
                 </p>
                 {live && (
                   <div className="envelope__actions">
-                    {l.custody === 'keepsake' && link && (
+                    {l.custody !== 'vault' && link && (
                       <button
                         type="button"
                         className="btn btn--ghost btn--small"

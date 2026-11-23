@@ -1,6 +1,6 @@
 import { LinkNotice } from '../components/Lost';
 import { useEffect, useState } from 'react';
-import { api, type WitnessInfo } from '../lib/api';
+import { api, shareStore, type WitnessInfo } from '../lib/api';
 import { longDate } from '../lib/format';
 import { Shell } from '../components/Chrome';
 import { DriftingEnvelopes } from '../components/SealCeremony';
@@ -21,10 +21,16 @@ export function Witness({ token }: { token: string }) {
     api.witness(token).then(setInfo, (err) => setError(err instanceof Error ? err.message : 'This link could not be read.'));
   }, [token]);
 
+  // Séance letters: the shares this device holds travel with a confirmation, and only with that.
+  const held = (info?.seanceLetters ?? []).flatMap((l) => {
+    const share = shareStore.get(l.id);
+    return share ? [{ id: l.id, share }] : [];
+  });
+
   const answer = async (response: 'confirm' | 'deny') => {
     setBusy(true);
     try {
-      const r = await api.witnessRespond(token, response, response === 'deny' ? note.trim() : undefined);
+      const r = await api.witnessRespond(token, response, response === 'deny' ? note.trim() : undefined, response === 'confirm' ? Object.fromEntries(held.map((h) => [h.id, h.share])) : undefined);
       setDone(response === 'confirm' ? 'confirmed' : 'denied');
       setReleased(r.state === 'released');
     } catch (err) {
@@ -107,6 +113,13 @@ export function Witness({ token }: { token: string }) {
               Before anything is released, we need someone who knows {first} to tell us. {info.confirmationsRequired > 1 && `${info.confirmationsRequired} witnesses must agree; ${info.confirmations} have so far.`} If
               {' '}{first} is alive and well, stop the release: they will be asked to check in.
             </p>
+            {info.seanceLetters.length > 0 && (
+              <p className="hint" role="status" data-testid="witness-shares">
+                {held.length === info.seanceLetters.length
+                  ? `Your share is on this device and will be sent with your confirmation, so the letter can open once ${info.seanceLetters[0]!.k} witnesses have sent theirs.`
+                  : `This device holds ${held.length} of the ${info.seanceLetters.length} shares you were given. Open your share link on this device first, or the letter cannot open from your confirmation. Your confirmation still counts.`}
+              </p>
+            )}
             {asking === 'confirm' ? (
               <div className="witness__confirm" role="group" aria-labelledby="are-you-sure">
                 <p id="are-you-sure" className="witness__sure">

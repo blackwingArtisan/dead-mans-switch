@@ -66,6 +66,22 @@ export const keepsakes = {
   get: (letterId: string) => local.get(`dms.keepsake.${letterId}`),
 };
 
+/** A witness's browser keeps the séance shares it was handed. They go to the server only inside that witness's own confirmation. */
+export const shareStore = {
+  save: (letterId: string, share: string) => local.set(`dms.share.${letterId}`, share),
+  get: (letterId: string) => local.get(`dms.share.${letterId}`),
+};
+
+/** Reads `#s=<letterId>.<share>,...` into pairs, ignoring anything malformed. */
+export function parseShareFragment(hash: string): Array<{ letterId: string; share: string }> {
+  const raw = new URLSearchParams(hash.replace(/^#/, '')).get('s') ?? '';
+  return raw
+    .split(',')
+    .map((part) => part.trim().split('.'))
+    .filter((p): p is [string, string] => p.length === 2 && /^L[\w-]+$/.test(p[0]!) && /^[\w-]{46}$/.test(p[1]!))
+    .map(([letterId, share]) => ({ letterId, share }));
+}
+
 let failedRequests = 0;
 /** How many requests have failed so far (no answer, or a 5xx). The story compares it before and after to notice a demo that went quiet. */
 export const failedRequestCount = (): number => failedRequests;

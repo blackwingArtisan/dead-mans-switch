@@ -155,7 +155,7 @@ export function Open({ token, hash }: { token: string; hash: string }) {
     );
   }
 
-  const needsKeepsake = info.custody === 'keepsake' && !half;
+  const needsKeepsake = info.custody !== 'vault' && !half;
 
   return (
     <Shell>
@@ -196,7 +196,7 @@ export function Open({ token, hash }: { token: string; hash: string }) {
             </div>
           ) : (
             <p className="hint" data-testid="keepsake-ready">
-              {info.custody === 'vault' ? 'This link carries its own key.' : 'Your keepsake was found on this device.'} The letter is
+              {info.custody === 'vault' ? 'This link carries its own key.' : 'Your keepsake was found on this device.'}{info.seance ? ` This letter also needs ${info.seance.k} of ${info.seance.n} witnesses to have sent their shares; they did so when they confirmed.` : ''} The letter is
               decrypted here, in your browser.
             </p>
           )}

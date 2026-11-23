@@ -47,6 +47,8 @@ export function Write() {
       .catch(() => navigate('/'));
   }, []);
 
+  const n = vault?.witnesses.length ?? 0;
+  const k = Math.min(vault?.settings.witnessesRequired ?? 1, n);
   const body = mode === 'runbook' ? runbookHtml(sections) : html;
   // The check runs here in the browser on the draft as it stands, and never sends or stores it.
   const findings = useMemo(() => findLikelySecrets(htmlToPlainText(body)), [body]);
@@ -72,6 +74,7 @@ export function Write() {
         custody,
         content: { title: title.trim(), html: body, from: from.trim() },
         authorName: vault.author.name,
+        ...(custody === 'witnesses' ? { seance: { k, n } } : {}),
       });
       // Let the seal finish pressing before the keepsake appears.
       await new Promise((res) => setTimeout(res, matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 900));
@@ -83,7 +86,7 @@ export function Write() {
     }
   };
 
-  if (result) return <Sealed result={result} custody={custody} recipient={recipientName} author={vault?.author.name ?? ''} />;
+  if (result) return <Sealed result={result} custody={custody} seance={custody === 'witnesses' ? { k, n } : null} recipient={recipientName} author={vault?.author.name ?? ''} />;
 
   return (
     <Shell wide>
@@ -169,7 +172,32 @@ export function Write() {
                 could read this letter.
               </span>
             </label>
+            {n > 0 && (
+              <label className={`custody__option ${custody === 'witnesses' ? 'custody__option--on' : ''}`}>
+                <input type="radio" name="custody" value="witnesses" checked={custody === 'witnesses'} onChange={() => setCustody('witnesses')} />
+                <span className="custody__title">Séance seal (no one opens it alone)</span>
+                <span className="custody__text">
+                  The vault half is split into {n} shares, one for each witness. Any {k} of them must send theirs when they confirm, and the
+                  recipient still needs the keepsake.
+                </span>
+              </label>
+            )}
           </fieldset>
+          {custody === 'witnesses' && (
+            <div className="hint" data-testid="seance-honesty">
+              <p>
+                Before enough witnesses confirm, the server holds fewer than {k} shares, so it cannot rebuild the vault half. After they
+                confirm it has seen {k}. A stays with the recipient, so the server never has both halves.
+              </p>
+              <p>You hand each witness a share link yourself, now. The shares never pass through the server when you seal.</p>
+              {vault?.settings.silenceReleaseDays != null && (
+                <p data-testid="seance-silence">
+                  Your silence window will not open this letter: if it releases the vigil by silence, this letter stays sealed because no
+                  witness has sent a share. Turn the window off in the terms if you want no release without witnesses.
+                </p>
+              )}
+            </div>
+          )}
 
           {error && (
             <p className="form-error" role="alert">
@@ -190,7 +218,7 @@ export function Write() {
   );
 }
 
-function Sealed({ result, custody, recipient, author }: { result: SealedResult; custody: Custody; recipient: string; author: string }) {
+function Sealed({ result, custody, seance, recipient, author }: { result: SealedResult; custody: Custody; seance: { k: number; n: number } | null; recipient: string; author: string }) {
   const authorFirst = author.trim().split(/\s+/)[0] || 'the writer';
   const [copied, setCopied] = useState(false);
   const code = groupCode(toBase32(fromBase64Url(result.keepsakeHalf)));
@@ -213,7 +241,33 @@ function Sealed({ result, custody, recipient, author }: { result: SealedResult; 
         <h1 id="sealed-title" className="display display--md" data-testid="sealed-title" tabIndex={-1}>
           The letter is sealed
         </h1>
-        {custody === 'keepsake' ? (
+        {custody === 'witnesses' && result.shares && seance && (
+          <div data-testid="share-links">
+            <p className="lede">
+              Give each witness their own share link, and give {recipient} the keepsake below. Any {seance.k} of {seance.n} shares rebuild
+              the vault half; one alone is noise.
+            </p>
+            <ul className="share-links">
+              {result.shares.map((share, i) => {
+                const name = result.vault.witnesses[i]?.name ?? `Witness ${i + 1}`;
+                return (
+                  <li key={i}>
+                    <label htmlFor={`share-link-${i}`}>Share link for {name}</label>
+                    <input
+                      id={`share-link-${i}`}
+                      className="keepsake-card__link"
+                      readOnly
+                      data-testid="share-link"
+                      value={`${window.location.origin}/share#s=${result.letterId}.${share}`}
+                    />
+                  </li>
+                );
+              })}
+            </ul>
+            <p className="hint">Send each one yourself and keep none of them. Whoever holds a share link holds that witness's share.</p>
+          </div>
+        )}
+        {custody !== 'vault' ? (
           <>
             <p className="lede">
               Now give {recipient} their keepsake. Without it, this letter cannot be opened by anyone, including us.

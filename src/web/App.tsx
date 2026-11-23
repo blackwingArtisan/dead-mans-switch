@@ -11,6 +11,7 @@ import { HowItWorks } from './pages/HowItWorks';
 import { Keepsake } from './pages/Keepsake';
 import { Landing } from './pages/Landing';
 import { Open } from './pages/Open';
+import { Share } from './pages/Share';
 import { Vigil } from './pages/Vigil';
 import { Witness } from './pages/Witness';
 import { Write } from './pages/Write';
@@ -25,6 +26,7 @@ function Route({ path, hash }: { path: string; hash: string }) {
   if (open) return <Open token={open[1]!} hash={hash} />;
   const keepsake = path.match(/^\/keepsake\/([A-Za-z0-9_-]+)$/);
   if (keepsake) return <Keepsake letterId={keepsake[1]!} hash={hash} />;
+  if (path === '/share') return <Share hash={hash} />;
   if (path === '/how-it-works') return <HowItWorks />;
   if (path !== '/' && path !== '/write') return <NotFound />;
   if (session.token()) {
